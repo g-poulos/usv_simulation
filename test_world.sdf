@@ -36,8 +36,16 @@
 
       <!-- enable by nested model name -->
       <enable>box</enable>
-
     </plugin>
+    <plugin filename="gz-sim-apply-link-wrench-system"
+            name="gz::sim::systems::ApplyLinkWrench">
+      <persistent>
+        <entity_name>box</entity_name>
+        <entity_type>model</entity_type>
+        <force>1 1 0</force>
+      </persistent>
+    </plugin>
+
 
     <light type="directional" name="sun">
       <cast_shadows>true</cast_shadows>
@@ -77,14 +85,14 @@
       <pose>0 0 0 0 0 0</pose>
       <link name='body'>
         <inertial>
-          <mass>200</mass>
+          <mass>400</mass>
           <inertia>
-            <ixx>33.33</ixx>
+            <ixx>66.66</ixx>
             <ixy>0</ixy>
             <ixz>0</ixz>
-            <iyy>33.33</iyy>
+            <iyy>66.66</iyy>
             <iyz>0</iyz>
-            <izz>33.33</izz>
+            <izz>66.66</izz>
           </inertia>
         </inertial>
 
