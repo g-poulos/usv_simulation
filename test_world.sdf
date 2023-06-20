@@ -37,15 +37,56 @@
       <!-- enable by nested model name -->
       <enable>box</enable>
     </plugin>
+
     <plugin filename="gz-sim-apply-link-wrench-system"
             name="gz::sim::systems::ApplyLinkWrench">
       <persistent>
         <entity_name>box</entity_name>
         <entity_type>model</entity_type>
-        <force>1 1 0</force>
+        <force>0 0 0</force>
       </persistent>
     </plugin>
 
+    <!-- Load the plugin for the wind -->
+    <plugin
+            filename="gz-sim-wind-effects-system"
+            name="gz::sim::systems::WindEffects">
+      <force_approximation_scaling_factor>1</force_approximation_scaling_factor>
+      <horizontal>
+        <magnitude>
+          <time_for_rise>30</time_for_rise>
+          <sin>
+            <amplitude_percent>0.05</amplitude_percent>
+            <period>60</period>
+          </sin>
+          <noise type="gaussian">
+            <mean>0</mean>
+            <stddev>0.0002</stddev>
+          </noise>
+        </magnitude>
+        <direction>
+          <time_for_rise>30</time_for_rise>
+          <sin>
+            <amplitude>5</amplitude>
+            <period>20</period>
+          </sin>
+          <noise type="gaussian">
+            <mean>0</mean>
+            <stddev>0.03</stddev>
+          </noise>
+        </direction>
+      </horizontal>
+      <vertical>
+        <noise type="gaussian">
+          <mean>0</mean>
+          <stddev>0.03</stddev>
+        </noise>
+      </vertical>
+    </plugin>
+
+    <wind>
+      <linear_velocity>0 1 0</linear_velocity>
+    </wind>
 
     <light type="directional" name="sun">
       <cast_shadows>true</cast_shadows>
@@ -83,16 +124,21 @@
     <!-- This box should float. -->
     <model name='box'>
       <pose>0 0 0 0 0 0</pose>
+      <static>false</static>
+      <enable_wind>true</enable_wind>
+      <self_collide>true</self_collide>
+
       <link name='body'>
+        <enable_wind>true</enable_wind>
         <inertial>
-          <mass>400</mass>
+          <mass>100</mass>
           <inertia>
-            <ixx>66.66</ixx>
+            <ixx>33.3</ixx>
             <ixy>0</ixy>
             <ixz>0</ixz>
-            <iyy>66.66</iyy>
+            <iyy>33.33</iyy>
             <iyz>0</iyz>
-            <izz>66.66</izz>
+            <izz>33.33</izz>
           </inertia>
         </inertial>
 
