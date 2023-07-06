@@ -1,0 +1,71 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+    <!-- This box should float. -->
+    <model name='box'>
+        <pose>0 0 0 0 0 0</pose>
+        <enable_wind>true</enable_wind>
+
+        <link name='body'>
+            <inertial>
+                <mass>100</mass>
+                <inertia>
+                    <ixx>33.3</ixx>
+                    <ixy>0</ixy>
+                    <ixz>0</ixz>
+                    <iyy>33.33</iyy>
+                    <iyz>0</iyz>
+                    <izz>33.33</izz>
+                </inertia>
+            </inertial>
+
+            <visual name='body_visual'>
+                <geometry>
+                    <box>
+                        <size>1 1 1</size>
+                    </box>
+                </geometry>
+            </visual>
+            <collision name='body_collision'>
+                <geometry>
+                    <box>
+                        <size>1 1 1</size>
+                    </box>
+                </geometry>
+            </collision>
+        </link>
+
+        <plugin
+                filename="gz-waves1-hydrodynamics-system"
+                name="gz::sim::systems::Hydrodynamics">
+
+            <!-- Hydrodynamics -->
+            <hydrodynamics>
+                <damping_on>1</damping_on>
+                <viscous_drag_on>1</viscous_drag_on>
+                <pressure_drag_on>1</pressure_drag_on>
+
+                <!-- Linear and Angular Damping -->
+                <cDampL1>1.0E-6</cDampL1>
+                <cDampL2>1.0E-6</cDampL2>
+                <cDampR1>1.0E-6</cDampR1>
+                <cDampR2>1.0E-6</cDampR2>
+
+                <!-- 'Pressure' Drag -->
+                <cPDrag1>1.0E+2</cPDrag1>
+                <cPDrag2>1.0E+2</cPDrag2>
+                <fPDrag>0.4</fPDrag>
+                <cSDrag1>1.0E+2</cSDrag1>
+                <cSDrag2>1.0E+2</cSDrag2>
+                <fSDrag>0.4</fSDrag>
+                <vRDrag>1.0</vRDrag>
+
+                <markers>
+                    <update_rate>5</update_rate>
+                    <water_patch>1</water_patch>
+                    <waterline>1</waterline>
+                    <underwater_surface>1</underwater_surface>
+                </markers>
+            </hydrodynamics>
+        </plugin>
+    </model>
+</sdf>
