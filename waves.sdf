@@ -27,7 +27,15 @@
         <plugin
                 filename="gz-sim-wind-effects-system"
                 name="gz::sim::systems::WindEffects">
-            <force_approximation_scaling_factor>1</force_approximation_scaling_factor>
+<!--            <force_approximation_scaling_factor>1</force_approximation_scaling_factor>-->
+            <force_approximation_scaling_factor>
+                <!-- No wind below sea surface -->
+                <when zlt="0.1">0</when>
+                <!-- NOTE(hidmic): enable wind forces slightly
+                     below sea surface for the partially submerged
+                     vehicle hull to be affected by them -->
+                <when zge="0.1">1</when>
+            </force_approximation_scaling_factor>
             <horizontal>
                 <magnitude>
                     <time_for_rise>5</time_for_rise>
