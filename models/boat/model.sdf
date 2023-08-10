@@ -1,0 +1,78 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+
+    <model name='box'>
+        <pose>0 0 0 0 0 0</pose>
+        <enable_wind>true</enable_wind>
+
+        <link name='body'>
+            <inertial>
+                <mass>784.1 g</mass>
+                <inertia>
+                    <ixx>462.2</ixx>
+                    <ixy>0.007048</ixy>
+                    <ixz>-24.75</ixz>
+                    <iyx>0.007048</iyx>
+                    <iyy>1852.2</iyy>
+                    <iyz>0.002061</iyz>
+                    <izx>-24.75</izx>
+                    <izy>0.00206</izy>
+                    <izz>2054</izz>
+                </inertia>
+            </inertial>
+
+            <visual name='body_visual'>
+                <pose>-2.5 0 -0.5 0 0 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://boat/meshes/boat.dae</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+            <collision name='body_collision'>
+                <pose>-2.5 0 -0.5 0 0 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://boat/meshes/boat_206.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+        </link>
+
+        <plugin
+                filename="gz-waves1-hydrodynamics-system"
+                name="gz::sim::systems::Hydrodynamics">
+
+            <!-- Hydrodynamics -->
+            <hydrodynamics>
+                <damping_on>1</damping_on>
+                <viscous_drag_on>1</viscous_drag_on>
+                <pressure_drag_on>1</pressure_drag_on>
+
+                <!-- Linear and Angular Damping -->
+                <cDampL1>1.0E-6</cDampL1>
+                <cDampL2>1.0E-6</cDampL2>
+                <cDampR1>1.0E-6</cDampR1>
+                <cDampR2>1.0E-6</cDampR2>
+
+                <!-- 'Pressure' Drag -->
+                <cPDrag1>1.0E+2</cPDrag1>
+                <cPDrag2>1.0E+2</cPDrag2>
+                <fPDrag>0.4</fPDrag>
+                <cSDrag1>1.0E+2</cSDrag1>
+                <cSDrag2>1.0E+2</cSDrag2>
+                <fSDrag>0.4</fSDrag>
+                <vRDrag>1.0</vRDrag>
+
+                <markers>
+                    <update_rate>5</update_rate>
+                    <water_patch>1</water_patch>
+                    <waterline>1</waterline>
+                    <underwater_surface>1</underwater_surface>
+                </markers>
+            </hydrodynamics>
+        </plugin>
+    </model>
+</sdf>

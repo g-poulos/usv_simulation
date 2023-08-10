@@ -69,7 +69,7 @@
         </plugin>
 
         <wind>
-            <linear_velocity>0 5 0</linear_velocity>
+            <linear_velocity>0 0 0</linear_velocity>
         </wind>
 
         <scene>
@@ -91,14 +91,23 @@
             <uri>model://waves</uri>
         </include>
 
-        <include>
-            <pose>0 0 5 0 0 0</pose>
-            <uri>models/wind_model.sdf</uri>
-        </include>
+<!--        <include>-->
+<!--            <pose>0 0 5 0 0 0</pose>-->
+<!--            <uri>models/wind_model.sdf</uri>-->
+<!--        </include>-->
+
+<!--        <include>-->
+<!--            <uri>models/box.sdf</uri>-->
+<!--        </include>-->
 
         <include>
-            <uri>models/box.sdf</uri>
+            <uri>model://models/boat</uri>
         </include>
+
+<!--        <include>-->
+<!--            <pose>5 0 0 0 0 0</pose>-->
+<!--            <uri>model://wam-v</uri>-->
+<!--        </include>-->
 
     </world>
 </sdf>
