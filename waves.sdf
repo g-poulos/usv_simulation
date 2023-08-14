@@ -101,13 +101,8 @@
 <!--        </include>-->
 
         <include>
-            <uri>model://models/boat</uri>
+            <uri>model://boat</uri>
         </include>
-
-<!--        <include>-->
-<!--            <pose>5 0 0 0 0 0</pose>-->
-<!--            <uri>model://wam-v</uri>-->
-<!--        </include>-->
 
     </world>
 </sdf>
