@@ -60,5 +60,9 @@
             <uri>model://models/boat</uri>
         </include>
 
+<!--        <include>-->
+<!--            <uri>model://models/box</uri>-->
+<!--        </include>-->
+
     </world>
 </sdf>

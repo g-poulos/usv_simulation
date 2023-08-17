@@ -30,11 +30,11 @@
 <!--            <force_approximation_scaling_factor>1</force_approximation_scaling_factor>-->
             <force_approximation_scaling_factor>
                 <!-- No wind below sea surface -->
-                <when zlt="0.1">0</when>
+                <when zlt="-1">0</when>
                 <!-- NOTE(hidmic): enable wind forces slightly
                      below sea surface for the partially submerged
                      vehicle hull to be affected by them -->
-                <when zge="0.1">1</when>
+                <when zge="-1">1</when>
             </force_approximation_scaling_factor>
             <horizontal>
                 <magnitude>
@@ -69,7 +69,7 @@
         </plugin>
 
         <wind>
-            <linear_velocity>0 0 0</linear_velocity>
+            <linear_velocity>7 0 0</linear_velocity>
         </wind>
 
         <scene>
@@ -91,18 +91,24 @@
             <uri>model://waves</uri>
         </include>
 
-<!--        <include>-->
-<!--            <pose>0 0 5 0 0 0</pose>-->
-<!--            <uri>models/wind_model.sdf</uri>-->
-<!--        </include>-->
+        <include>
+            <pose>0 0 5 0 0 0</pose>
+            <uri>models/wind_model.sdf</uri>
+        </include>
 
 <!--        <include>-->
+<!--            <pose>5 5 0 0 0 0</pose>-->
 <!--            <uri>models/box.sdf</uri>-->
 <!--        </include>-->
 
         <include>
             <uri>model://boat</uri>
         </include>
+
+<!--        <include>-->
+<!--            <pose>5 5 0 0 0 0</pose>-->
+<!--            <uri>model://wam-v</uri>-->
+<!--        </include>-->
 
     </world>
 </sdf>
