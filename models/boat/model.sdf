@@ -4,8 +4,8 @@
         <enable_wind>true</enable_wind>
         <link name='boat_body'>
             <inertial>
-                <pose>2 0 0 0 0 0</pose>
-                <mass>250</mass>
+                <pose>1 0 -2 0 0 0</pose>
+                <mass>750</mass>
                 <inertia>
                     <ixx>710.059</ixx>
                     <ixy>-0.002</ixy>
@@ -18,7 +18,7 @@
             <visual name='boat_visual'>
                 <geometry>
                     <mesh>
-                        <uri>model://boat/meshes/boat_v19.dae</uri>
+                        <uri>model://boat/meshes/boat3.dae</uri>
 <!--                        <scale>0.5 0.5 0.5</scale>-->
                     </mesh>
                 </geometry>
@@ -32,7 +32,7 @@
             <collision name='boat_collision'>
                 <geometry>
                     <mesh>
-                        <uri>model://boat/meshes/boat_v19.stl</uri>
+                        <uri>model://boat/meshes/boat3.stl</uri>
 <!--                        <scale>0.5 0.5 0.5</scale>-->
                     </mesh>
                 </geometry>
@@ -40,7 +40,7 @@
         </link>
 
         <link name="engine_link">
-            <pose>0 0 0.5 0 0 0</pose>
+            <pose>-1 0 -0.5 0 0 0</pose>
             <visual name="visual">
                 <geometry>
                     <mesh>
@@ -158,8 +158,8 @@
             <!-- <p_gain>1.0</p_gain>
             <i_gain>0.0</i_gain>
             <d_gain>0.0</d_gain> -->
-            <max_thrust_cmd>2000.0</max_thrust_cmd>
-            <min_thrust_cmd>-2000.0</min_thrust_cmd>
+            <max_thrust_cmd>3000.0</max_thrust_cmd>
+            <min_thrust_cmd>-3000.0</min_thrust_cmd>
         </plugin>
 
 
@@ -200,7 +200,7 @@
             <lock_step>1</lock_step>
             <modelXYZToAirplaneXForwardZDown>0 0 0 3.141593 0 0</modelXYZToAirplaneXForwardZDown>
             <gazeboXYZToNED>0 0 0 3.141593 0 1.57079632</gazeboXYZToNED>
-            <imuName>imu_sensor</imuName>
+<!--            <imuName>imu_sensor</imuName>-->
 
             <!--
               SERVO1_FUNCTION 26 (GroundSteering)
