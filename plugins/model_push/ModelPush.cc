@@ -2,6 +2,7 @@
 #include <gz/common/Profiler.hh>
 #include <gz/plugin/Register.hh>
 #include <sdf/sdf.hh>
+#include "gz/sim/Util.hh"
 #include "gz/sim/Model.hh"
 #include "gz/sim/Link.hh"
 
@@ -9,11 +10,14 @@
 
 using namespace model_push;
 
-std::string linkName = "default";
-gz::sim::Link modelLink;
+class model_push::ModelPush::Implementation
+{
+    public: gz::sim::Link link{gz::sim::kNullEntity};
+};
 
-
-ModelPush::ModelPush() {
+ModelPush::ModelPush()
+    : System(), dataPtr(gz::utils::MakeUniqueImpl<Implementation>())
+{
 }
 
 void ModelPush::Configure(const gz::sim::Entity &_entity,
@@ -21,17 +25,29 @@ void ModelPush::Configure(const gz::sim::Entity &_entity,
                           gz::sim::EntityComponentManager &_ecm,
                           gz::sim::EventManager &_eventMgr)
 {
+    // Parse required elements.
+    if (!_sdf->HasElement("link_name"))
+    {
+        gzerr << "No <link_name> specified" << std::endl;
+        return;
+    }
     gz::sim::Model model(_entity);
-    linkName = _sdf->Get<std::string>("link_name");
-    modelLink = gz::sim::Link(model.LinkByName(_ecm, linkName));
+    std::string linkName = _sdf->Get<std::string>("link_name");
+    this->dataPtr->link = gz::sim::Link(model.LinkByName(_ecm, linkName));
+
+    if (!this->dataPtr->link.Valid(_ecm))
+    {
+        gzerr << "Could not find link named [" << linkName
+              << "] in model" << std::endl;
+        return;
+    }
 }
 
 void ModelPush::PreUpdate(const gz::sim::UpdateInfo &_info,
                           gz::sim::EntityComponentManager &_ecm)
 {
-    gzmsg << " edw " << linkName << std::endl;
-    modelLink.AddWorldForce(_ecm,
-                            gz::math::Vector3d(1000, 0, 0));
+
+    this->dataPtr->link.AddWorldForce(_ecm, gz::math::Vector3d(1000, 0, 0));
 }
 
 GZ_ADD_PLUGIN(model_push::ModelPush,

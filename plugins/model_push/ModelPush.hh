@@ -24,7 +24,7 @@ namespace model_push
          // Documentation inherited.
         public: void PreUpdate(const gz::sim::UpdateInfo &_info,
                                gz::sim::EntityComponentManager &_ecm) override;
-//        GZ_UTILS_UNIQUE_IMPL_PTR(dataPtr)
+        GZ_UTILS_UNIQUE_IMPL_PTR(dataPtr)
     };
 }
 
