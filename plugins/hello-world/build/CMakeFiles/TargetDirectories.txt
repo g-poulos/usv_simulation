@@ -1,3 +1,0 @@
-/home/g-poulos/gz_ws/src/build/hello-world/build/CMakeFiles/HelloWorld.dir
-/home/g-poulos/gz_ws/src/build/hello-world/build/CMakeFiles/edit_cache.dir
-/home/g-poulos/gz_ws/src/build/hello-world/build/CMakeFiles/rebuild_cache.dir
