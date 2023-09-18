@@ -55,10 +55,10 @@
       <force_approximation_scaling_factor>1</force_approximation_scaling_factor>
       <horizontal>
         <magnitude>
-          <time_for_rise>30</time_for_rise>
+          <time_for_rise>5</time_for_rise>
           <sin>
             <amplitude_percent>0.05</amplitude_percent>
-            <period>60</period>
+            <period>20</period>
           </sin>
           <noise type="gaussian">
             <mean>0</mean>
@@ -66,10 +66,10 @@
           </noise>
         </magnitude>
         <direction>
-          <time_for_rise>30</time_for_rise>
+          <time_for_rise>5</time_for_rise>
           <sin>
             <amplitude>5</amplitude>
-            <period>20</period>
+            <period>10</period>
           </sin>
           <noise type="gaussian">
             <mean>0</mean>
@@ -84,7 +84,6 @@
         </noise>
       </vertical>
     </plugin>
-
     <wind>
       <linear_velocity>0 1 0</linear_velocity>
     </wind>
@@ -158,40 +157,31 @@
           </geometry>
         </collision>
       </link>
+      <!--     hydrodynamics plugin-->
+      <plugin
+              filename="gz-sim-hydrodynamics-system"
+              name="gz::sim::systems::Hydrodynamics">
+        <link_name>body</link_name>
+<!--        <xDotU>-4.876161</xDotU>-->
+<!--        <yDotV>-126.324739</yDotV>-->
+<!--        <zDotW>-126.324739</zDotW>-->
+<!--        <kDotP>0</kDotP>-->
+<!--        <mDotQ>-33.46</mDotQ>-->
+<!--        <nDotR>-33.46</nDotR>-->
+<!--        <xUabsU>-6.2282</xUabsU>-->
+<!--        <xU>0</xU>-->
+<!--        <yVabsV>-601.27</yVabsV>-->
+<!--        <yV>0</yV>-->
+<!--        <zWabsW>-601.27</zWabsW>-->
+<!--        <zW>0</zW>-->
+<!--        <kPabsP>-0.1916</kPabsP>-->
+<!--        <kP>0</kP>-->
+<!--        <mQabsQ>-632.698957</mQabsQ>-->
+<!--        <mQ>0</mQ>-->
+<!--        <nRabsR>-632.698957</nRabsR>-->
+<!--        <nR>0</nR>-->
+      </plugin>
     </model>
 
-    <model name="my_mesh">
-    <pose>2 2 0  0 0 0</pose>
-    <link name="test_body">
-      <enable_wind>true</enable_wind>
-      <inertial>
-        <mass>100</mass>
-        <inertia>
-          <ixx>33.3</ixx>
-          <ixy>0</ixy>
-          <ixz>0</ixz>
-          <iyy>33.33</iyy>
-          <iyz>0</iyz>
-          <izz>33.33</izz>
-        </inertia>
-      </inertial>
-
-      <visual name="test_visual">
-        <geometry>
-          <mesh>
-            <uri>file://Test_v8.stl</uri>
-            <scale>0.01 0.01 0.01</scale>
-          </mesh>
-        </geometry>
-      </visual>
-      <collision name='mesh_collision'>
-        <geometry>
-          <box>
-            <size>1 1 1</size>
-          </box>
-        </geometry>
-      </collision>
-    </link>
-    </model>
   </world>
 </sdf>
