@@ -11,8 +11,7 @@ $HOME/gz_ws/src/usv_simulation/models
 export GZ_SIM_SYSTEM_PLUGIN_PATH=\
 $GZ_SIM_SYSTEM_PLUGIN_PATH:\
 $HOME/gz_ws/install/lib:\
-$HOME/gz_ws/src/usv_simulation/plugins/model_push/build:\
-$HOME/gz_ws/src/usv_simulation/plugins/hello-world/build
+$HOME/gz_ws/src/usv_simulation/plugins/build
 
 export GZ_GUI_PLUGIN_PATH=\
 $GZ_GUI_PLUGIN_PATH:\
