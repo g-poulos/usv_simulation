@@ -2,6 +2,11 @@
 <sdf version="1.6">
     <model name='boat'>
         <enable_wind>true</enable_wind>
+        <plugin filename="ModelPush" name="model_push::ModelPush">
+            <link_name>boat_body</link_name>
+        </plugin>
+
+
         <link name='boat_body'>
             <inertial>
                 <pose>0.999251 0.000005 -1.223034 0 0 0</pose>
@@ -243,10 +248,5 @@
             </control>
         </plugin>
 
-        <plugin filename="ModelPush" name="model_push::ModelPush">
-        </plugin>
-
-<!--         <plugin filename="libModelPush.so" name="model_push::ModelPush">-->
-<!--         </plugin>-->
     </model>
 </sdf>
