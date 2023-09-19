@@ -1,3 +1,4 @@
+# Run source source.bash from the usv_simulation directory
 
 export GZ_VERSION=garden
 export GZ_IP=127.0.0.1

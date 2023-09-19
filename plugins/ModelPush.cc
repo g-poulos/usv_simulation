@@ -5,6 +5,8 @@
 #include "gz/sim/Util.hh"
 #include "gz/sim/Model.hh"
 #include "gz/sim/Link.hh"
+#include <gz/transport/Node.hh>
+#include <gz/msgs/float.pb.h>
 
 #include "ModelPush.hh"
 
@@ -12,7 +14,13 @@ using namespace model_push;
 
 class model_push::ModelPush::Implementation
 {
-    public: gz::sim::Link link{gz::sim::kNullEntity};
+public: gz::sim::Link link{gz::sim::kNullEntity};
+
+public: gz::transport::Node node;
+
+public: gz::transport::Node::Publisher forcePub;
+
+public: std::string topicForce = "/modelPushInfo";
 };
 
 ModelPush::ModelPush()
@@ -41,13 +49,32 @@ void ModelPush::Configure(const gz::sim::Entity &_entity,
               << "] in model" << std::endl;
         return;
     }
+
+    // Set up publisher
+
+    double updateRate = 10;
+    gz::transport::AdvertiseMessageOptions opts;
+    opts.SetMsgsPerSec(updateRate);
+
+    this->dataPtr->forcePub =
+        this->dataPtr->node.Advertise<gz::msgs::Float>(this->dataPtr->topicForce, opts);
+
 }
 
 void ModelPush::PreUpdate(const gz::sim::UpdateInfo &_info,
                           gz::sim::EntityComponentManager &_ecm)
 {
+    // Don't add force if the simulation is paused
+    if (_info.paused) {
+        return;
+    }
 
-    this->dataPtr->link.AddWorldForce(_ecm, gz::math::Vector3d(1000, 0, 0));
+    float x_force = 1000;
+    this->dataPtr->link.AddWorldForce(_ecm, gz::math::Vector3d(x_force, 0, 0));
+
+    gz::msgs::Float forceMsg;
+    forceMsg.set_data(x_force);
+    this->dataPtr->forcePub.Publish(forceMsg);
 }
 
 GZ_ADD_PLUGIN(model_push::ModelPush,
