@@ -19,7 +19,8 @@ target_link_libraries(HelloWorld
 
 
 # Push model
-add_library(ModelPush SHARED ModelPush.cc)
+add_library(ModelPush SHARED ModelPush.cc
+        utility.cc)
 set_property(TARGET ModelPush PROPERTY CXX_STANDARD 17)
 target_link_libraries(ModelPush
         PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}

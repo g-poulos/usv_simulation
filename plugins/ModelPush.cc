@@ -9,6 +9,7 @@
 #include <gz/msgs/float.pb.h>
 
 #include "ModelPush.hh"
+#include "utility.hh"
 
 using namespace model_push;
 
@@ -21,6 +22,8 @@ public: gz::transport::Node node;
 public: gz::transport::Node::Publisher forcePub;
 
 public: std::string topicForce = "/modelPushInfo";
+
+public: GaussianNoise distr;
 };
 
 ModelPush::ModelPush()
@@ -59,6 +62,8 @@ void ModelPush::Configure(const gz::sim::Entity &_entity,
     this->dataPtr->forcePub =
         this->dataPtr->node.Advertise<gz::msgs::Float>(this->dataPtr->topicForce, opts);
 
+    // Set up the noise distribution
+    this->dataPtr->distr = GaussianNoise(0, 10);
 }
 
 void ModelPush::PreUpdate(const gz::sim::UpdateInfo &_info,
@@ -69,7 +74,7 @@ void ModelPush::PreUpdate(const gz::sim::UpdateInfo &_info,
         return;
     }
 
-    float x_force = 1000;
+    float x_force = 1000 + this->dataPtr->distr.getNoise();
     this->dataPtr->link.AddWorldForce(_ecm, gz::math::Vector3d(x_force, 0, 0));
 
     gz::msgs::Float forceMsg;
