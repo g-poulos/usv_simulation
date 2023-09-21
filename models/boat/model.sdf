@@ -2,7 +2,7 @@
 <sdf version="1.6">
     <model name='boat'>
         <enable_wind>true</enable_wind>
-        <plugin filename="ModelPush" name="model_push::ModelPush">
+        <plugin filename="WaterCurrent" name="water_current::WaterCurrent">
             <link_name>boat_body</link_name>
         </plugin>
 

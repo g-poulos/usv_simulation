@@ -11,7 +11,8 @@ gz_find_package(gz-sim7 REQUIRED)
 set(GZ_SIM_VER ${gz-sim7_VERSION_MAJOR})
 
 # Hello World
-add_library(HelloWorld SHARED HelloWorld.cc)
+add_library(HelloWorld SHARED HelloWorld.cc
+        WaterCurrent.hh)
 set_property(TARGET HelloWorld PROPERTY CXX_STANDARD 17)
 target_link_libraries(HelloWorld
         PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
@@ -19,9 +20,16 @@ target_link_libraries(HelloWorld
 
 
 # Push model
-add_library(ModelPush SHARED ModelPush.cc
-        utility.cc)
+add_library(ModelPush SHARED ModelPush.cc)
 set_property(TARGET ModelPush PROPERTY CXX_STANDARD 17)
 target_link_libraries(ModelPush
+        PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
+        PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
+
+# Water Current
+add_library(WaterCurrent SHARED WaterCurrent.cc
+        utility.cc)
+set_property(TARGET WaterCurrent PROPERTY CXX_STANDARD 17)
+target_link_libraries(WaterCurrent
         PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
         PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
