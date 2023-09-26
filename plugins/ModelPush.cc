@@ -8,6 +8,11 @@
 #include <gz/transport/Node.hh>
 #include <gz/msgs/float.pb.h>
 
+#include <gz/math/Vector3.hh>
+#include <gz/physics.hh>
+//#include <gazebo-11/gazebo/gazebo.hh>
+
+
 #include "ModelPush.hh"
 #include "utility.hh"
 
@@ -53,6 +58,7 @@ void ModelPush::Configure(const gz::sim::Entity &_entity,
         return;
     }
 
+//    gz::math::Vector3 force = (this->dataPtr->link)->GetExternalForces();
     // Set up publisher
 
     double updateRate = 10;

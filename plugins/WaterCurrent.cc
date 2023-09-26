@@ -19,12 +19,34 @@ public: gz::sim::Link link{gz::sim::kNullEntity};
 
 public: gz::transport::Node node;
 
-public: gz::transport::Node::Publisher forcePub;
+public: gz::transport::Node::Publisher magnitudePub;
 
-public: std::string topicForce = "/waterCurrentInfo";
+public: gz::transport::Node::Publisher azimuthPub;
+
+public: std::string magnitudeTopic = "/waterCurrent/magnitude";
+
+public: std::string azimuthTopic = "/waterCurrent/azimuth";
 
 public: GaussianNoise distr;
 };
+
+gz::math::Vector3d createForceVector(double magnitude, double elevation, double azimuth) {
+    gz::math::Vector3d result;
+
+    // Convert degrees to radians
+    elevation = elevation * M_PI / 180.0;
+    azimuth = azimuth * M_PI / 180.0;
+
+    // Calculate the components
+//    result.X() = magnitude * sin(elevation) * cos(azimuth);
+//    result.Y() = magnitude * sin(elevation) * sin(azimuth);
+//    result.Z() = magnitude * cos(elevation);
+
+    result.X(magnitude * sin(elevation) * cos(azimuth));
+    result.Y(magnitude * sin(elevation) * sin(azimuth));
+    result.Z(magnitude * cos(elevation));
+    return result;
+}
 
 WaterCurrent::WaterCurrent()
     : System(), dataPtr(gz::utils::MakeUniqueImpl<Implementation>())
@@ -53,12 +75,16 @@ void WaterCurrent::Configure(const gz::sim::Entity &_entity,
         return;
     }
 
+    // Set up the publisher
     double updateRate = 10;
     gz::transport::AdvertiseMessageOptions opts;
     opts.SetMsgsPerSec(updateRate);
 
-    this->dataPtr->forcePub =
-        this->dataPtr->node.Advertise<gz::msgs::Float>(this->dataPtr->topicForce, opts);
+    this->dataPtr->magnitudePub =
+        this->dataPtr->node.Advertise<gz::msgs::Float>(this->dataPtr->magnitudeTopic, opts);
+
+    this->dataPtr->azimuthPub =
+        this->dataPtr->node.Advertise<gz::msgs::Float>(this->dataPtr->azimuthTopic, opts);
 
     // Set up the noise distribution
     this->dataPtr->distr = GaussianNoise(0, 10);
@@ -72,12 +98,23 @@ void WaterCurrent::PreUpdate(const gz::sim::UpdateInfo &_info,
         return;
     }
 
-    float x_force = 1000 + this->dataPtr->distr.getNoise();
-    this->dataPtr->link.AddWorldForce(_ecm, gz::math::Vector3d(x_force, 0, 0));
+//    float x_force = 1000 + this->dataPtr->distr.getNoise();
+//    this->dataPtr->link.AddWorldForce(_ecm, gz::math::Vector3d(x_force, 0, 0));
+
+    double magnitude = 1000 + this->dataPtr->distr.getNoise();
+    double azimuth = 30 + this->dataPtr->distr.getNoise();
+    gz::math::Vector3d current = createForceVector(magnitude, 90, azimuth);
+    this->dataPtr->link.AddWorldForce(_ecm, current);
+    gzmsg << "Current: " << current << std::endl;
+
 
     gz::msgs::Float forceMsg;
-    forceMsg.set_data(x_force);
-    this->dataPtr->forcePub.Publish(forceMsg);
+    forceMsg.set_data(magnitude);
+    this->dataPtr->magnitudePub.Publish(forceMsg);
+
+    gz::msgs::Float azimuthMsg;
+    azimuthMsg.set_data(azimuth);
+    this->dataPtr->azimuthPub.Publish(azimuthMsg);
 }
 
 GZ_ADD_PLUGIN(water_current::WaterCurrent,
