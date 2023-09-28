@@ -2,8 +2,11 @@
 <sdf version="1.6">
     <model name='boat'>
         <enable_wind>true</enable_wind>
+
         <plugin filename="WaterCurrent" name="water_current::WaterCurrent">
             <link_name>boat_body</link_name>
+            <magnitude>1000</magnitude>
+            <azimuth>30</azimuth>
         </plugin>
 
 
