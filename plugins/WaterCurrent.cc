@@ -27,7 +27,9 @@ public: std::string magnitudeTopic = "/waterCurrent/magnitude";
 
 public: std::string azimuthTopic = "/waterCurrent/azimuth";
 
-public: GaussianNoise distr;
+public: GaussianNoise magnitudeDistr;
+
+public: GaussianNoise azimuthDistr;
 
 public: float waterCurrentMagnitude = 0;     //TODO: Do I need to convert speed to force?
 
@@ -104,7 +106,8 @@ void WaterCurrent::Configure(const gz::sim::Entity &_entity,
         this->dataPtr->node.Advertise<gz::msgs::Float>(this->dataPtr->azimuthTopic, opts);
 
     // Set up the noise distribution
-    this->dataPtr->distr = GaussianNoise(0, 10);
+    this->dataPtr->magnitudeDistr = GaussianNoise(0, 100);
+    this->dataPtr->azimuthDistr = GaussianNoise(0, 2);
 }
 
 void WaterCurrent::PreUpdate(const gz::sim::UpdateInfo &_info,
@@ -115,13 +118,13 @@ void WaterCurrent::PreUpdate(const gz::sim::UpdateInfo &_info,
         return;
     }
 
-    double magnitude = this->dataPtr->waterCurrentMagnitude + this->dataPtr->distr.getNoise();
-    double azimuth = this->dataPtr->waterCurrentAzimuth + this->dataPtr->distr.getNoise();
-    double elevation = this->dataPtr->waterCurrentElevation + this->dataPtr->distr.getNoise();
+    double magnitude = this->dataPtr->waterCurrentMagnitude + this->dataPtr->magnitudeDistr.getNoise();
+    double azimuth = this->dataPtr->waterCurrentAzimuth + this->dataPtr->azimuthDistr.getNoise();
+    double elevation = this->dataPtr->waterCurrentElevation + this->dataPtr->magnitudeDistr.getNoise();
 
     gz::math::Vector3d current = createForceVector(magnitude, elevation, azimuth);
     this->dataPtr->link.AddWorldForce(_ecm, current);
-    gzmsg << "Current: " << current << std::endl;
+//    gzmsg << "Current: " << current << std::endl;
 
 
     gz::msgs::Float forceMsg;

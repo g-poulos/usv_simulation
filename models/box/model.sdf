@@ -1,0 +1,41 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+    <model name='box'>
+        <plugin
+                filename="gz-waves1-hydrodynamics-system"
+                name="gz::sim::systems::Hydrodynamics">
+        </plugin>
+        <link name='body'>
+            <inertial>
+                <mass>100</mass>
+                <inertia>
+                    <ixx>33.3</ixx>
+                    <ixy>0</ixy>
+                    <ixz>0</ixz>
+                    <iyy>33.33</iyy>
+                    <iyz>0</iyz>
+                    <izz>33.33</izz>
+                </inertia>
+            </inertial>
+
+            <visual name='body_visual'>
+                <geometry>
+                    <mesh>
+                        <uri>model://box/meshes/bbox.dae</uri>
+<!--                        <scale>0.01 0.01 0.01</scale>-->
+                    </mesh>
+                </geometry>
+            </visual>
+            <collision name='body_collision'>
+                <geometry>
+                    <mesh>
+                        <uri>model://box/meshes/bbox.stl</uri>
+<!--                        <scale>0.01 0.01 0.01</scale>-->
+                    </mesh>
+                </geometry>
+            </collision>
+        </link>
+
+
+    </model>
+</sdf>
