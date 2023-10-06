@@ -2,8 +2,10 @@ from ament_index_python.packages import get_package_share_directory
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch import LaunchDescription
+from launch_ros.actions import Node
 
 import os
+
 
 def gz_simulation(world_name, headless=False, paused=False, extra_gz_args=''):
     gz_args = ['-v 4']
@@ -26,7 +28,17 @@ def gz_simulation(world_name, headless=False, paused=False, extra_gz_args=''):
     return gz_sim
 
 
+def bridges():
+    waves_force = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        arguments=['/waves/force@geometry_msgs/msg/Vector3@gz.msgs.Vector3d'],
+        output='screen')
+    return waves_force
+
+
 def generate_launch_description():
     return LaunchDescription([
-        gz_simulation("../worlds/waves", paused=True)
+        gz_simulation("../worlds/waves", paused=True),
+        bridges()
     ])
