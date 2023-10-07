@@ -65,12 +65,13 @@ def gz_shutdown_handle():
 
 
 def bridges():
-    waves_force = Node(
+    waves_bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
-        arguments=['/waves/force@geometry_msgs/msg/Vector3@gz.msgs.Vector3d'],
+        arguments=['/wave/force@geometry_msgs/msg/Vector3[gz.msgs.Vector3d',
+                   '/wave/torque@geometry_msgs/msg/Vector3[gz.msgs.Vector3d'],
         output='screen')
-    return waves_force
+    return waves_bridge
 
 
 def generate_launch_description():
