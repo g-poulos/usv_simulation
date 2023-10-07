@@ -10,8 +10,6 @@
 
 #include <gz/math/Vector3.hh>
 #include <gz/physics.hh>
-//#include <gazebo-11/gazebo/gazebo.hh>
-
 
 #include "ModelPush.hh"
 #include "utility.hh"
