@@ -112,7 +112,7 @@
 
 <!--        <include>-->
 <!--            <pose>5 5 0 0 0 0</pose>-->
-<!--            <uri>models/box.sdf</uri>-->
+<!--            <uri>../models/box.sdf</uri>-->
 <!--        </include>-->
 
         <include>
