@@ -8,6 +8,7 @@
 #include <gz/transport/Node.hh>
 #include <gz/msgs/float.pb.h>
 #include <gz/math/Vector3.hh>
+#include <cmath>
 
 #include "WaterCurrent.hh"
 #include "utility.hh"
@@ -32,7 +33,7 @@ public: GaussianNoise magnitudeDistr;
 
 public: GaussianNoise azimuthDistr;
 
-public: float waterCurrentMagnitude = 0;     //TODO: Do I need to convert speed to force?
+public: float waterCurrentMagnitude = 0;
 
 public: float waterCurrentAzimuth = 0;
 
@@ -65,21 +66,23 @@ gz::math::Vector3d speedToForce(gz::sim::EntityComponentManager &_ecm,
     gz::math::Vector3d linkSpeedVector = toGZVec(link.WorldLinearVelocity(_ecm));
     gz::math::Vector3d currentSpeedVector = createForceVector(currentSpeed, 90, direction);
     gz::math::Vector3d relativeVelocity = currentSpeedVector.operator-(linkSpeedVector);
+    relativeVelocity = currentSpeedVector;
 
     float resistanceCoefficient = 1.2;
     float fluidDensity = 1000.0;
-    float relativeVelMagnitude = relativeVelocity.Dot(relativeVelocity);
-    float surface = 2.0;
+    float relativeVelMagnitude = sqrt(relativeVelocity.Dot(relativeVelocity));
+    float surface = 1.0;
 
     double currentMagnitude = 0.5 * fluidDensity * resistanceCoefficient * relativeVelMagnitude * surface;
 //    double currentMagnitude = 600 * relativeVelMagnitude;
 
-    gzmsg << "linkSpeedVector: " << linkSpeedVector << std::endl;
+    //DEBUG
+    gzmsg << "|WATER_CURRENT|_________________________________________\n";
+    gzmsg << "linkSpeedVector   : " << linkSpeedVector << std::endl;
     gzmsg << "currentSpeedVector: " << currentSpeedVector << std::endl;
-    gzmsg << "relativeVelocity: " << relativeVelocity << std::endl;
-
-    gzmsg << "Relative Vel Mang: " << relativeVelMagnitude << std::endl;
-    gzmsg << "Current Magnitude: " << currentMagnitude << std::endl;
+    gzmsg << "relativeVelocity  : " << relativeVelocity << std::endl;
+    gzmsg << "Relative Vel Mang : " << relativeVelMagnitude << " m/s" << std::endl;
+    gzmsg << "Current Magnitude : " << currentMagnitude << " N"<<std::endl;
 
 
     return createForceVector(currentMagnitude, 90, direction);
