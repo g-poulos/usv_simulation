@@ -69,7 +69,9 @@ def bridges():
         package='ros_gz_bridge',
         executable='parameter_bridge',
         arguments=['/wave/force@geometry_msgs/msg/Vector3[gz.msgs.Vector3d',
-                   '/wave/torque@geometry_msgs/msg/Vector3[gz.msgs.Vector3d'],
+                   '/wave/torque@geometry_msgs/msg/Vector3[gz.msgs.Vector3d',
+                   '/model/boat/joint/engine_joint/cmd_steer@std_msgs/msg/Float64]gz.msgs.Double',
+                   '/model/boat/joint/propeller_joint/cmd_thrust@std_msgs/msg/Float64]gz.msgs.Double'],
         output='screen')
     return waves_bridge
 

@@ -94,9 +94,13 @@
                 <limit>
                     <lower>-1.57</lower>
                     <upper>1.57</upper>
+                    <stifness>10</stifness>
                 </limit>
                 <dynamics>
-                    <damping>0.05</damping>
+                    <damping>30</damping>
+                    <spring_stiffness>100.0</spring_stiffness>
+                    <spring_reference>0</spring_reference>
+                    <friction>1.0</friction>
                 </dynamics>
             </axis>
         </joint>
@@ -153,7 +157,7 @@
 <!--
         1. Steer the engine:
 
-        gz topic -t /model/boat/joint/engine_joint/0/cmd_pos \
+        gz topic -t /model/boat/joint/engine_joint/cmd_steer \
         -m gz.msgs.Double -p 'data: -0.17'
 
         2. Propel the vehicle:
@@ -167,12 +171,14 @@
                 name="gz::sim::systems::JointPositionController">
             <joint_name>engine_joint</joint_name>
             <p_gain>1</p_gain>
-            <i_gain>0.1</i_gain>
-            <d_gain>0.01</d_gain>
-            <i_max>1</i_max>
-            <i_min>-1</i_min>
-            <cmd_max>1000</cmd_max>
-            <cmd_min>-1000</cmd_min>
+<!--            <i_gain>0.1</i_gain>-->
+<!--            <d_gain>0.01</d_gain>-->
+<!--            <i_max>1</i_max>-->
+<!--            <i_min>-1</i_min>-->
+<!--            <p_gain>0.05</p_gain>-->
+<!--            <cmd_max>1000</cmd_max>-->
+<!--            <cmd_min>-1000</cmd_min>-->
+            <topic>/model/boat/joint/engine_joint/cmd_steer</topic>
         </plugin>
 
         <!-- Thruster plugins -->
@@ -189,8 +195,8 @@
 <!--            <p_gain>1.0</p_gain>-->
 <!--            <i_gain>0.0</i_gain>-->
 <!--            <d_gain>0.0</d_gain>-->
-<!--            <max_thrust_cmd>10000.0</max_thrust_cmd>-->
-<!--            <min_thrust_cmd>-10000.0</min_thrust_cmd>-->
+            <max_thrust_cmd>10000.0</max_thrust_cmd>
+            <min_thrust_cmd>-10000.0</min_thrust_cmd>
         </plugin>
 
 
