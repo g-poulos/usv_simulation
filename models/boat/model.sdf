@@ -177,8 +177,12 @@
 
         2. Propel the vehicle:
 
-        gz topic -t /model/boat/joint/propeller_joint/cmd_thrust
-        -m gz.msgs.Double -p 'data: 1000'
+        + If use_angvel_cmd is 0:
+          gz topic -t /model/boat/joint/propeller_joint/cmd_thrust
+          -m gz.msgs.Double -p 'data: 1625'
+        + else
+          gz topic -t /model/boat/joint/propeller_joint/cmd_vel
+          -m gz.msgs.Double -p 'data: 55'
 -->
 
         <plugin
@@ -202,14 +206,10 @@
                 name="gz::sim::systems::Thruster">
             <namespace>boat</namespace>
             <joint_name>propeller_joint</joint_name>
-<!--            <use_angvel_cmd>1</use_angvel_cmd>-->
+            <use_angvel_cmd>1</use_angvel_cmd>
             <fluid_density>1025</fluid_density>
             <propeller_diameter>0.48</propeller_diameter>
             <thrust_coefficient>0.01</thrust_coefficient>
-<!--            <velocity_control>1</velocity_control>-->
-<!--            <p_gain>1.0</p_gain>-->
-<!--            <i_gain>0.0</i_gain>-->
-<!--            <d_gain>0.0</d_gain>-->
             <max_thrust_cmd>10000.0</max_thrust_cmd>
             <min_thrust_cmd>-10000.0</min_thrust_cmd>
         </plugin>
