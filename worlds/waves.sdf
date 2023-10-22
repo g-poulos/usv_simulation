@@ -76,16 +76,6 @@
             <linear_velocity>0 0 0</linear_velocity>
         </wind>
 
-<!--        <plugin filename="gz-sim-apply-link-wrench-system"-->
-<!--                name="gz::sim::systems::ApplyLinkWrench">-->
-<!--            <persistent>-->
-<!--                <entity_name>boat</entity_name>-->
-<!--                <entity_type>model</entity_type>-->
-<!--                <force>1200 0 0</force>-->
-<!--            </persistent>-->
-<!--        </plugin>-->
-
-
         <scene>
             <ambient>1.0 1.0 1.0</ambient>
             <background>0.8 0.8 0.8</background>
@@ -118,13 +108,13 @@
         <include>
             <pose>0 0 4 0 0 0</pose>
             <uri>model://boat</uri>
+
+            <plugin filename="WaterCurrent" name="water_current::WaterCurrent">
+                <link_name>boat_body</link_name>
+                <magnitude>0</magnitude>
+                <azimuth>30</azimuth>
+            </plugin>
         </include>
 
-<!--        <include>-->
-<!--            <pose>5 5 0 0 0 0</pose>-->
-<!--            <uri>model://wam-v</uri>-->
-<!--        </include>-->
-<!--        <plugin filename="HelloWorld" name="hello_world::HelloWorld">-->
-<!--        </plugin>-->
     </world>
 </sdf>
