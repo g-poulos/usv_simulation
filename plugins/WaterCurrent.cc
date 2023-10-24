@@ -21,19 +21,19 @@ public: gz::sim::Link link{gz::sim::kNullEntity};
 
 public: gz::transport::Node node;
 
-public: gz::transport::Node::Publisher magnitudePub;
+public: gz::transport::Node::Publisher currentSpeedPub;
 
 public: gz::transport::Node::Publisher azimuthPub;
 
-public: std::string magnitudeTopic = "/waterCurrent/magnitude";
+public: std::string magnitudeTopic = "/waterCurrent/speed";
 
 public: std::string azimuthTopic = "/waterCurrent/azimuth";
 
-public: GaussianNoise magnitudeDistr;
+public: GaussianNoise speedDistr;
 
 public: GaussianNoise azimuthDistr;
 
-public: float waterCurrentMagnitude = 0;
+public: float waterCurrentSpeed = 0;
 
 public: float waterCurrentAzimuth = 0;
 
@@ -113,9 +113,9 @@ void WaterCurrent::Configure(const gz::sim::Entity &_entity,
         return;
     }
 
-    if (_sdf->HasElement("magnitude"))
+    if (_sdf->HasElement("speed"))
     {
-        this->dataPtr->waterCurrentMagnitude = _sdf->Get<float>("magnitude");
+        this->dataPtr->waterCurrentSpeed = _sdf->Get<float>("speed");
     }
 
     if (_sdf->HasElement("azimuth"))
@@ -133,14 +133,14 @@ void WaterCurrent::Configure(const gz::sim::Entity &_entity,
     gz::transport::AdvertiseMessageOptions opts;
     opts.SetMsgsPerSec(updateRate);
 
-    this->dataPtr->magnitudePub =
+    this->dataPtr->currentSpeedPub =
         this->dataPtr->node.Advertise<gz::msgs::Float>(this->dataPtr->magnitudeTopic, opts);
 
     this->dataPtr->azimuthPub =
         this->dataPtr->node.Advertise<gz::msgs::Float>(this->dataPtr->azimuthTopic, opts);
 
     // Set up the noise distribution
-    this->dataPtr->magnitudeDistr = GaussianNoise(0, 100);
+    this->dataPtr->speedDistr = GaussianNoise(0, 0.5);
     this->dataPtr->azimuthDistr = GaussianNoise(0, 2);
 }
 
@@ -152,23 +152,19 @@ void WaterCurrent::PreUpdate(const gz::sim::UpdateInfo &_info,
         return;
     }
 
-    double magnitude = this->dataPtr->waterCurrentMagnitude + this->dataPtr->magnitudeDistr.getNoise();
+    double speed = this->dataPtr->waterCurrentSpeed + this->dataPtr->speedDistr.getNoise();
     double azimuth = this->dataPtr->waterCurrentAzimuth + this->dataPtr->azimuthDistr.getNoise();
-    double elevation = this->dataPtr->waterCurrentElevation + this->dataPtr->magnitudeDistr.getNoise();
-
-//    gz::math::Vector3d current = createForceVector(magnitude, elevation, azimuth);
-//    this->dataPtr->link.AddWorldForce(_ecm, current);
-
+    double elevation = this->dataPtr->waterCurrentElevation + this->dataPtr->speedDistr.getNoise();
 
     if (this->dataPtr->link.WorldPose(_ecm)->Z() < 1) {
-        gz::math::Vector3d current = speedToForce(_ecm, this->dataPtr->link, 1, 45);
+        gz::math::Vector3d current = speedToForce(_ecm, this->dataPtr->link, speed, azimuth);
         this->dataPtr->link.AddWorldForce(_ecm, current);
     }
 
 
     gz::msgs::Float forceMsg;
-    forceMsg.set_data(magnitude);
-    this->dataPtr->magnitudePub.Publish(forceMsg);
+    forceMsg.set_data(speed);
+    this->dataPtr->currentSpeedPub.Publish(forceMsg);
 
     gz::msgs::Float azimuthMsg;
     azimuthMsg.set_data(azimuth);

@@ -111,8 +111,8 @@
 
             <plugin filename="WaterCurrent" name="water_current::WaterCurrent">
                 <link_name>boat_body</link_name>
-                <magnitude>0</magnitude>
-                <azimuth>30</azimuth>
+                <speed>1</speed>
+                <azimuth>45</azimuth>
             </plugin>
         </include>
 
