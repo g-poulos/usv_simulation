@@ -112,7 +112,15 @@
             <plugin filename="WaterCurrent" name="water_current::WaterCurrent">
                 <link_name>boat_body</link_name>
                 <speed>1</speed>
+                <speed_stddev>0.5</speed_stddev>
+
                 <azimuth>45</azimuth>
+                <azimuth_stddev>5</azimuth_stddev>
+
+                <res_coef>1.2</res_coef>
+                <density>1025</density>
+                <update_rate>10</update_rate>
+
             </plugin>
         </include>
 

@@ -38,7 +38,18 @@ public: float waterCurrentSpeed = 0;
 public: float waterCurrentAzimuth = 0;
 
 public: float waterCurrentElevation = 90;
+
+public: float speedstddev = 0;
+
+public: float azimuthstddev = 0;
+
+public: int updateRate = 10;
 };
+
+float resCoefficient = 1;
+
+float fluidDensity = 1000;
+
 
 gz::math::Vector3d createForceVector(double magnitude, double elevation, double azimuth) {
     gz::math::Vector3d result;
@@ -67,11 +78,9 @@ gz::math::Vector3d speedToForce(gz::sim::EntityComponentManager &_ecm,
     gz::math::Vector3d wcurrentLinearVel = createForceVector(currentSpeed, 90, direction);
     gz::math::Vector3d relativeVel = wcurrentLinearVel.operator-(linkLinearVel);
 
-    float resistanceCoefficient = 1.2;
-    float fluidDensity = 1025.0;
     float surface = 1.0;
 
-    gz::math::Vector3d wcurrentVector = 0.5 * fluidDensity * resistanceCoefficient * relativeVel * surface;
+    gz::math::Vector3d wcurrentVector = 0.5 * fluidDensity * resCoefficient * relativeVel * surface;
     float relativeVelMagnitude = sqrt(relativeVel.Dot(relativeVel));
 
     //DEBUG
@@ -97,8 +106,7 @@ void WaterCurrent::Configure(const gz::sim::Entity &_entity,
                           gz::sim::EventManager &_eventMgr)
 {
     // Parse required elements.
-    if (!_sdf->HasElement("link_name"))
-    {
+    if (!_sdf->HasElement("link_name")) {
         gzerr << "No <link_name> specified" << std::endl;
         return;
     }
@@ -106,30 +114,47 @@ void WaterCurrent::Configure(const gz::sim::Entity &_entity,
     std::string linkName = _sdf->Get<std::string>("link_name");
     this->dataPtr->link = gz::sim::Link(model.LinkByName(_ecm, linkName));
 
-    if (!this->dataPtr->link.Valid(_ecm))
-    {
+    if (!this->dataPtr->link.Valid(_ecm)) {
         gzerr << "Could not find link named [" << linkName
               << "] in model" << std::endl;
         return;
     }
 
-    if (_sdf->HasElement("speed"))
-    {
+    if (_sdf->HasElement("speed")) {
         this->dataPtr->waterCurrentSpeed = _sdf->Get<float>("speed");
     }
 
-    if (_sdf->HasElement("azimuth"))
-    {
+    if (_sdf->HasElement("azimuth")) {
         this->dataPtr->waterCurrentAzimuth = _sdf->Get<float>("azimuth");
     }
 
-    if (_sdf->HasElement("elevation"))
-    {
+    if (_sdf->HasElement("elevation")) {
         this->dataPtr->waterCurrentElevation = _sdf->Get<float>("elevation");
     }
 
+    if (_sdf->HasElement("speed_stddev")) {
+        this->dataPtr->speedstddev = _sdf->Get<float>("speed_stddev");
+    }
+
+    if (_sdf->HasElement("azimuth_stddev")) {
+        this->dataPtr->azimuthstddev = _sdf->Get<float>("azimuth_stddev");
+    }
+
+    if (_sdf->HasElement("res_coef")) {
+        resCoefficient = _sdf->Get<float>("res_coef");
+    }
+
+    if (_sdf->HasElement("density")) {
+        fluidDensity = _sdf->Get<float>("density");
+    }
+
+    if (_sdf->HasElement("update_rate")) {
+        this->dataPtr->updateRate = _sdf->Get<float>("update_rate");
+    }
+
+
     // Set up the publisher
-    double updateRate = 10;
+    double updateRate = this->dataPtr->updateRate;
     gz::transport::AdvertiseMessageOptions opts;
     opts.SetMsgsPerSec(updateRate);
 
@@ -140,8 +165,8 @@ void WaterCurrent::Configure(const gz::sim::Entity &_entity,
         this->dataPtr->node.Advertise<gz::msgs::Float>(this->dataPtr->azimuthTopic, opts);
 
     // Set up the noise distribution
-    this->dataPtr->speedDistr = GaussianNoise(0, 0.5);
-    this->dataPtr->azimuthDistr = GaussianNoise(0, 2);
+    this->dataPtr->speedDistr = GaussianNoise(0, this->dataPtr->speedstddev);
+    this->dataPtr->azimuthDistr = GaussianNoise(0, this->dataPtr->azimuthstddev);
 }
 
 void WaterCurrent::PreUpdate(const gz::sim::UpdateInfo &_info,
