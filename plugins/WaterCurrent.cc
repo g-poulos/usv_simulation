@@ -63,29 +63,27 @@ gz::math::Vector3d speedToForce(gz::sim::EntityComponentManager &_ecm,
                                 float currentSpeed,
                                 float direction) {
 
-    gz::math::Vector3d linkSpeedVector = toGZVec(link.WorldLinearVelocity(_ecm));
-    gz::math::Vector3d currentSpeedVector = createForceVector(currentSpeed, 90, direction);
-    gz::math::Vector3d relativeVelocity = currentSpeedVector.operator-(linkSpeedVector);
-    relativeVelocity = currentSpeedVector;
+    gz::math::Vector3d linkLinearVel = toGZVec(link.WorldLinearVelocity(_ecm));
+    gz::math::Vector3d wcurrentLinearVel = createForceVector(currentSpeed, 90, direction);
+    gz::math::Vector3d relativeVel = wcurrentLinearVel.operator-(linkLinearVel);
 
     float resistanceCoefficient = 1.2;
-    float fluidDensity = 1000.0;
-    float relativeVelMagnitude = sqrt(relativeVelocity.Dot(relativeVelocity));
+    float fluidDensity = 1025.0;
     float surface = 1.0;
 
-    double currentMagnitude = 0.5 * fluidDensity * resistanceCoefficient * relativeVelMagnitude * surface;
-//    double currentMagnitude = 600 * relativeVelMagnitude;
+    gz::math::Vector3d wcurrentVector = 0.5 * fluidDensity * resistanceCoefficient * relativeVel * surface;
+    float relativeVelMagnitude = sqrt(relativeVel.Dot(relativeVel));
 
     //DEBUG
     gzmsg << "|WATER_CURRENT|_________________________________________\n";
-    gzmsg << "linkSpeedVector   : " << linkSpeedVector << std::endl;
-    gzmsg << "currentSpeedVector: " << currentSpeedVector << std::endl;
-    gzmsg << "relativeVelocity  : " << relativeVelocity << std::endl;
-    gzmsg << "Relative Vel Mang : " << relativeVelMagnitude << " m/s" << std::endl;
-    gzmsg << "Current Magnitude : " << currentMagnitude << " N"<<std::endl;
+    gzmsg << "linkLinearVel     : " << linkLinearVel << std::endl;
+    gzmsg << "wcurrentLinearVel : " << wcurrentLinearVel << std::endl;
+    gzmsg << "relativeVel       : " << relativeVel << std::endl;
+    gzmsg << "Relative Vel Speed: " << relativeVelMagnitude << " m/s" << std::endl;
+    gzmsg << "Current Magnitude : " << sqrt(wcurrentVector.Dot(wcurrentVector)) << " N"<<std::endl;
+    gzmsg << "Current           : " << wcurrentVector << std::endl;
 
-
-    return createForceVector(currentMagnitude, 90, direction);
+    return wcurrentVector;
 }
 
 WaterCurrent::WaterCurrent()
@@ -163,9 +161,8 @@ void WaterCurrent::PreUpdate(const gz::sim::UpdateInfo &_info,
 
 
     if (this->dataPtr->link.WorldPose(_ecm)->Z() < 1) {
-        gz::math::Vector3d current = speedToForce(_ecm, this->dataPtr->link, 3, 45);
+        gz::math::Vector3d current = speedToForce(_ecm, this->dataPtr->link, 1, 45);
         this->dataPtr->link.AddWorldForce(_ecm, current);
-        gzmsg << "Current: " << current << std::endl;
     }
 
 
@@ -176,15 +173,6 @@ void WaterCurrent::PreUpdate(const gz::sim::UpdateInfo &_info,
     gz::msgs::Float azimuthMsg;
     azimuthMsg.set_data(azimuth);
     this->dataPtr->azimuthPub.Publish(azimuthMsg);
-
-    auto linVelocity = this->dataPtr->link.WorldLinearVelocity(_ecm);
-    gz::math::Vector3d gz_linVel(linVelocity->X(), linVelocity->Y(), linVelocity->Z());
-
-//    gzmsg << "linear velocity: " << linVelocity->X() << " " <<
-//                                    linVelocity->Y() << " " <<
-//                                    linVelocity->Z() << std::endl;
-//    gzmsg << "Current: " << current << std::endl;
-//    gzmsg << "SUM: " << current.operator+(gz_linVel) << std::endl;
 }
 
 GZ_ADD_PLUGIN(water_current::WaterCurrent,
