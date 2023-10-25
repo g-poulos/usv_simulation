@@ -9,6 +9,12 @@
 #include <gz/msgs/float.pb.h>
 #include <gz/math/Vector3.hh>
 #include <cmath>
+#include <gz/common/Mesh.hh>
+#include <gz/common/MeshManager.hh>
+#include <gz/sim/components/Collision.hh>
+#include <gz/sim/components/Volume.hh>
+#include <gz/sim/components/World.hh>
+
 
 #include "WaterCurrent.hh"
 #include "utility.hh"
@@ -44,6 +50,8 @@ public: float speedstddev = 0;
 public: float azimuthstddev = 0;
 
 public: int updateRate = 10;
+
+public: float volumeRatio;
 };
 
 float resCoefficient = 1;
@@ -94,6 +102,13 @@ gz::math::Vector3d speedToForce(gz::sim::EntityComponentManager &_ecm,
 
     return wcurrentVector;
 }
+
+double getBBVolume(gz::math::Vector3d min, gz::math::Vector3d max) {
+    return abs(min.X()) + abs(max.X())
+         * abs(min.Y()) + abs(max.Y())
+         * abs(min.Z()) + abs(max.Z());
+}
+
 
 WaterCurrent::WaterCurrent()
     : System(), dataPtr(gz::utils::MakeUniqueImpl<Implementation>())
@@ -152,7 +167,6 @@ void WaterCurrent::Configure(const gz::sim::Entity &_entity,
         this->dataPtr->updateRate = _sdf->Get<float>("update_rate");
     }
 
-
     // Set up the publisher
     double updateRate = this->dataPtr->updateRate;
     gz::transport::AdvertiseMessageOptions opts;
@@ -167,6 +181,30 @@ void WaterCurrent::Configure(const gz::sim::Entity &_entity,
     // Set up the noise distribution
     this->dataPtr->speedDistr = GaussianNoise(0, this->dataPtr->speedstddev);
     this->dataPtr->azimuthDistr = GaussianNoise(0, this->dataPtr->azimuthstddev);
+
+
+    // Compute surface area of application
+    gz::sim::Entity collision = _ecm.EntityByComponents(gz::sim::components::Collision());
+    const gz::sim::components::CollisionElement *coll =
+        _ecm.Component<gz::sim::components::CollisionElement>(collision);
+    if (!coll)
+    {
+        gzerr << "Invalid collision pointer. This shouldn't happen\n";
+    }
+    gzmsg << "[WaterCurrent]: Mesh URI " << coll->Data().Geom()->MeshShape()->Uri() << std::endl;
+
+    std::string file = gz::sim::asFullPath(
+        coll->Data().Geom()->MeshShape()->Uri(),
+        coll->Data().Geom()->MeshShape()->FilePath());
+    const gz::common::Mesh *mesh = gz::common::MeshManager::Instance()->Load(file);
+
+    gzmsg << "[WaterCurrent]: Volume " << mesh->Volume() << std::endl;
+    gzmsg << "[WaterCurrent]: BBMin " << mesh->Min() <<
+                            "\n BBMax" << mesh->Max() << std::endl;
+
+    float boundingBoxVolume = getBBVolume(mesh->Min(), mesh->Max());
+    this->dataPtr->volumeRatio = mesh->Volume()/boundingBoxVolume;
+
 }
 
 void WaterCurrent::PreUpdate(const gz::sim::UpdateInfo &_info,
