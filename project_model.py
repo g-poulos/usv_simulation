@@ -3,6 +3,10 @@ import pyvista as pv
 from pyvista import examples
 
 
+def compute_draft(weight, water_density, length, width):
+    return ((weight/water_density)/(length*width)) * 3
+
+
 def make_example_data():
     surface = examples.download_saddle_surface()
     points = examples.download_sparse_points()
@@ -10,7 +14,20 @@ def make_example_data():
     return poly
 
 
-def project_points_to_plane(mesh, origin=None, normal=(1,0,0), inplace=False):
+def project_mesh_to_plane(mesh, normal):
+    # Project that surface to a plane
+    og = mesh.center
+    og[-1] -= mesh.length / 3.
+    return project_points_to_plane(mesh, origin=og, normal=normal)
+
+
+def angle_to_vector(angle):
+    vec = (np.cos(angle), np.sin(angle), 0)
+    print(vec)
+    return vec
+
+
+def project_points_to_plane(mesh, origin=None, normal=(1, 0, 0), inplace=False):
     """Project points of this mesh to a plane"""
     if not isinstance(mesh, (pv.PolyData)):
         raise TypeError('Please use surface meshes only.')
@@ -34,18 +51,19 @@ def project_points_to_plane(mesh, origin=None, normal=(1,0,0), inplace=False):
 
 
 if __name__ == '__main__':
-    # poly = make_example_data()
+
     poly = pv.read('models/boat/meshes/boat3.stl')
-    # poly.plot()
 
-    # Project that surface to a plane
-    og = poly.center
-    og[-1] -= poly.length / 3.
-    projected = project_points_to_plane(poly, origin=og, normal=(1, 1, 0))
-    print(projected.area)
+    clipped = poly.clip('z', value=-(1.5/2)+0.23, invert=True)
 
-    p = pv.Plotter()
-    p.add_mesh(poly,)
-    p.add_mesh(projected, )
-    p.show()
+    for a in np.arange(0, 2*np.pi, np.pi/4):
+        projected = project_mesh_to_plane(clipped, normal=angle_to_vector(a))
+
+        p = pv.Plotter()
+        p.add_text(f"Area: {projected.area}")
+        p.add_mesh(poly, style='wireframe')
+        p.add_mesh(clipped)
+        p.add_mesh(projected, color="red")
+        p.add_points(np.array([np.array(poly.center), [0, 0, 0]]), render_points_as_spheres=True, point_size=10)
+        p.show()
 
