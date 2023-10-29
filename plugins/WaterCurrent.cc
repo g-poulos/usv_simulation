@@ -20,6 +20,7 @@
 #include "utility.hh"
 
 using namespace water_current;
+using namespace std;
 
 class water_current::WaterCurrent::Implementation
 {
@@ -58,6 +59,10 @@ float resCoefficient = 1;
 
 float fluidDensity = 1000;
 
+float *area_p;
+
+float *angle_p;
+
 
 gz::math::Vector3d createForceVector(double magnitude, double elevation, double azimuth) {
     gz::math::Vector3d result;
@@ -89,24 +94,18 @@ gz::math::Vector3d speedToForce(gz::sim::EntityComponentManager &_ecm,
     float surface = 1.0;
 
     gz::math::Vector3d wcurrentVector = 0.5 * fluidDensity * resCoefficient * relativeVel * surface;
-    float relativeVelMagnitude = sqrt(relativeVel.Dot(relativeVel));
 
     //DEBUG
-    gzmsg << "|WATER_CURRENT|_________________________________________\n";
-    gzmsg << "linkLinearVel     : " << linkLinearVel << std::endl;
-    gzmsg << "wcurrentLinearVel : " << wcurrentLinearVel << std::endl;
-    gzmsg << "relativeVel       : " << relativeVel << std::endl;
-    gzmsg << "Relative Vel Speed: " << relativeVelMagnitude << " m/s" << std::endl;
-    gzmsg << "Current Magnitude : " << sqrt(wcurrentVector.Dot(wcurrentVector)) << " N"<<std::endl;
-    gzmsg << "Current           : " << wcurrentVector << std::endl;
+//    float relativeVelMagnitude = sqrt(relativeVel.Dot(relativeVel));
+//    gzmsg << "|WATER_CURRENT|_________________________________________\n";
+//    gzmsg << "linkLinearVel     : " << linkLinearVel << std::endl;
+//    gzmsg << "wcurrentLinearVel : " << wcurrentLinearVel << std::endl;
+//    gzmsg << "relativeVel       : " << relativeVel << std::endl;
+//    gzmsg << "Relative Vel Speed: " << relativeVelMagnitude << " m/s" << std::endl;
+//    gzmsg << "Current Magnitude : " << sqrt(wcurrentVector.Dot(wcurrentVector)) << " N"<<std::endl;
+//    gzmsg << "Current           : " << wcurrentVector << std::endl;
 
     return wcurrentVector;
-}
-
-double getBBVolume(gz::math::Vector3d min, gz::math::Vector3d max) {
-    return abs(min.X()) + abs(max.X())
-         * abs(min.Y()) + abs(max.Y())
-         * abs(min.Z()) + abs(max.Z());
 }
 
 
@@ -198,13 +197,8 @@ void WaterCurrent::Configure(const gz::sim::Entity &_entity,
         coll->Data().Geom()->MeshShape()->FilePath());
     const gz::common::Mesh *mesh = gz::common::MeshManager::Instance()->Load(file);
 
-    gzmsg << "[WaterCurrent]: Volume " << mesh->Volume() << std::endl;
-    gzmsg << "[WaterCurrent]: BBMin " << mesh->Min() <<
-                            "\n BBMax" << mesh->Max() << std::endl;
 
-    float boundingBoxVolume = getBBVolume(mesh->Min(), mesh->Max());
-    this->dataPtr->volumeRatio = mesh->Volume()/boundingBoxVolume;
-
+    readAreaFile(angle_p, area_p);
 }
 
 void WaterCurrent::PreUpdate(const gz::sim::UpdateInfo &_info,
@@ -223,6 +217,25 @@ void WaterCurrent::PreUpdate(const gz::sim::UpdateInfo &_info,
         gz::math::Vector3d current = speedToForce(_ecm, this->dataPtr->link, speed, azimuth);
         this->dataPtr->link.AddWorldForce(_ecm, current);
     }
+
+    auto q = this->dataPtr->link.WorldPose(_ecm)->Rot().Normalized();
+
+    double siny_cosp = 2 * (q.W() * q.Z() + q.X() * q.Y());
+    double cosy_cosp = 1 - 2 * (q.Y() * q.Y() + q.Z() * q.Z());
+    double yaw = std::atan2(siny_cosp, cosy_cosp);
+
+    if (yaw < 0) {
+        yaw = yaw + 2*M_PI;
+    }
+
+    float total_a = (azimuth * (M_PI/180)) - yaw;
+
+    if (total_a < 0) {
+        total_a = total_a + 2*M_PI;
+    }
+
+    int closest_i = findClosest(angle_p, 256, total_a);
+    gzmsg << "A_matrix: " << angle_p[closest_i] << " b_yaw" << yaw << " Total: " << total_a <<std::endl;
 
 
     gz::msgs::Float forceMsg;

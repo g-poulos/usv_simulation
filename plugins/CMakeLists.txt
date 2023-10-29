@@ -33,3 +33,10 @@ set_property(TARGET WaterCurrent PROPERTY CXX_STANDARD 17)
 target_link_libraries(WaterCurrent
         PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
         PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
+
+# Added Mass
+#add_library(AddedMass SHARED AddedMass.cc)
+#set_property(TARGET AddedMass PROPERTY CXX_STANDARD 17)
+#target_link_libraries(AddedMass
+#        PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
+#        PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})

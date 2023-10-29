@@ -23,7 +23,6 @@ def project_mesh_to_plane(mesh, normal):
 
 def angle_to_vector(angle):
     vec = (np.cos(angle), np.sin(angle), 0)
-    print(vec)
     return vec
 
 
@@ -50,20 +49,58 @@ def project_points_to_plane(mesh, origin=None, normal=(1, 0, 0), inplace=False):
     return
 
 
+def write_file(filename, angle_list, area_list):
+    f = open(filename, "w")
+    f.write(f"{len(area_list)}\n")
+    for angle in angle_list:
+        f.write(f"{angle}\n")
+    f.write("#\n")
+    for area in area_list:
+        if area == area_list[-1]:
+            f.write(f"{area}")
+        else:
+            f.write(f"{area}\n")
+    f.close()
+
+
 if __name__ == '__main__':
 
     poly = pv.read('models/boat/meshes/boat3.stl')
+    # poly = pv.read('models/triangle_platform/meshes/triangle_platform.stl')
 
     clipped = poly.clip('z', value=-(1.5/2)+0.23, invert=True)
 
-    for a in np.arange(0, 2*np.pi, np.pi/4):
+    area_list = []
+    angle_list = []
+    i = 1
+    for a in np.arange(0, 2*np.pi, np.pi/128):
         projected = project_mesh_to_plane(clipped, normal=angle_to_vector(a))
 
-        p = pv.Plotter()
-        p.add_text(f"Area: {projected.area}")
-        p.add_mesh(poly, style='wireframe')
-        p.add_mesh(clipped)
-        p.add_mesh(projected, color="red")
-        p.add_points(np.array([np.array(poly.center), [0, 0, 0]]), render_points_as_spheres=True, point_size=10)
-        p.show()
+        # p = pv.Plotter()
+        # p.add_text(f"{i} out of {len(np.arange(0, 2*np.pi, np.pi/4))}\n"
+        #            f"Area: {projected.area:.3f} m^2")
+        # p.add_mesh(poly, style='wireframe')
+        # p.add_mesh(clipped)
+        # p.add_mesh(projected, color="red")
+        # p.add_points(np.array(poly.center), render_points_as_spheres=True, point_size=10, color='red')
+        # p.add_points(np.array([0.0, 0.0, 0.0]), render_points_as_spheres=True, point_size=10, color='yellow')
+        # p.show()
+        # i = i + 1
+
+        angle_list.append(a)
+        area_list.append(projected.area)
+
+    write_file("angles.txt", angle_list, area_list)
+
+    # projected = project_mesh_to_plane(clipped, normal=angle_to_vector(1.39))
+    # p = pv.Plotter()
+    # p.add_text(f"Area: {projected.area:.3f} m^2")
+    # p.add_mesh(poly, style='wireframe')
+    # p.add_mesh(clipped)
+    # p.add_mesh(projected, color="red")
+    # p.add_points(np.array(poly.center), render_points_as_spheres=True, point_size=10, color='red')
+    # p.add_points(np.array([0.0, 0.0, 0.0]), render_points_as_spheres=True, point_size=10, color='yellow')
+    # p.show()
+
+
 

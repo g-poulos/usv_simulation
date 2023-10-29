@@ -13,4 +13,7 @@ public:
     double getNoise();
 };
 
+int findClosest(float arr[], int n, float target);
+
+void readAreaFile(float* &angle_table_ptr, float* &area_table_ptr);
 #endif
