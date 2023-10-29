@@ -21,6 +21,7 @@
 
 using namespace water_current;
 using namespace std;
+using namespace gz;
 
 class water_current::WaterCurrent::Implementation
 {
@@ -82,6 +83,32 @@ gz::math::Vector3d toGZVec(std::optional<gz::math::Vector3<double>> vec) {
     return gz::math::Vector3d(vec->X(), vec->Y(), vec->Z());
 }
 
+float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimuth) {
+    auto q = link.WorldPose(_ecm)->Rot().Normalized();
+
+    // Convert quaternion to yaw
+    double siny_cosp = 2 * (q.W() * q.Z() + q.X() * q.Y());
+    double cosy_cosp = 1 - 2 * (q.Y() * q.Y() + q.Z() * q.Z());
+    double yaw = std::atan2(siny_cosp, cosy_cosp);
+
+    if (yaw < 0)
+        yaw = yaw + 2*M_PI;
+
+    float relative_angle = (azimuth * (M_PI / 180)) - yaw;
+
+    if (relative_angle < 0)
+        relative_angle = relative_angle + 2 * M_PI;
+
+    int closest_i = findClosest(angle_p, 256, relative_angle);     //TODO: Remove constant length
+
+    // DEBUG
+//    gzmsg << "Boat Yaw " << yaw <<
+//             " Total: " << relative_angle <<
+//             " A_matrix: " << angle_p[closest_i] <<
+//             " Area: " << area_p[closest_i] <<std::endl;
+    return area_p[closest_i];
+}
+
 gz::math::Vector3d speedToForce(gz::sim::EntityComponentManager &_ecm,
                                 gz::sim::Link link,
                                 float currentSpeed,
@@ -91,7 +118,7 @@ gz::math::Vector3d speedToForce(gz::sim::EntityComponentManager &_ecm,
     gz::math::Vector3d wcurrentLinearVel = createForceVector(currentSpeed, 90, direction);
     gz::math::Vector3d relativeVel = wcurrentLinearVel.operator-(linkLinearVel);
 
-    float surface = 1.0;
+    float surface = getSurface(link, _ecm, direction);
 
     gz::math::Vector3d wcurrentVector = 0.5 * fluidDensity * resCoefficient * relativeVel * surface;
 
@@ -217,26 +244,6 @@ void WaterCurrent::PreUpdate(const gz::sim::UpdateInfo &_info,
         gz::math::Vector3d current = speedToForce(_ecm, this->dataPtr->link, speed, azimuth);
         this->dataPtr->link.AddWorldForce(_ecm, current);
     }
-
-    auto q = this->dataPtr->link.WorldPose(_ecm)->Rot().Normalized();
-
-    double siny_cosp = 2 * (q.W() * q.Z() + q.X() * q.Y());
-    double cosy_cosp = 1 - 2 * (q.Y() * q.Y() + q.Z() * q.Z());
-    double yaw = std::atan2(siny_cosp, cosy_cosp);
-
-    if (yaw < 0) {
-        yaw = yaw + 2*M_PI;
-    }
-
-    float total_a = (azimuth * (M_PI/180)) - yaw;
-
-    if (total_a < 0) {
-        total_a = total_a + 2*M_PI;
-    }
-
-    int closest_i = findClosest(angle_p, 256, total_a);
-    gzmsg << "A_matrix: " << angle_p[closest_i] << " b_yaw" << yaw << " Total: " << total_a <<std::endl;
-
 
     gz::msgs::Float forceMsg;
     forceMsg.set_data(speed);
