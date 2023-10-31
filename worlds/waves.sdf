@@ -111,18 +111,36 @@
 
             <plugin filename="WaterCurrent" name="water_current::WaterCurrent">
                 <link_name>boat_body</link_name>
-                <speed>1</speed>
-                <speed_stddev>0.5</speed_stddev>
+                <current>
+                    <speed>
+                        <min>1</min>
+                        <max>2</max>
+                        <stddev>0.3</stddev>
+                    </speed>
+                    <direction>
+                        <min>30</min>
+                        <max>45</max>
+                        <stddev>2</stddev>
+                    </direction>
+                </current>
 
-                <azimuth>45</azimuth>
-                <azimuth_stddev>5</azimuth_stddev>
+<!--                <speed>1</speed>-->
+<!--                <speed_stddev>0.2</speed_stddev>-->
 
-                <res_coef>1.2</res_coef>
-                <density>1025</density>
-                <update_rate>10</update_rate>
+<!--                <azimuth>45</azimuth>-->
+<!--                <azimuth_stddev>5</azimuth_stddev>-->
+
+<!--                <res_coef>1.2</res_coef>-->
+<!--                <density>1025</density>-->
+<!--                <update_rate>10</update_rate>-->
 
             </plugin>
         </include>
+
+<!--        <include>-->
+<!--            <pose>0 0 0 0 0 0</pose>-->
+<!--            <uri>model://triangle_platform</uri>-->
+<!--        </include>-->
 
     </world>
 </sdf>

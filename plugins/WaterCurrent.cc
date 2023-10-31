@@ -10,8 +10,6 @@
 #include <gz/math/Vector3.hh>
 #include <cmath>
 #include <gz/common/Mesh.hh>
-#include <gz/common/MeshManager.hh>
-#include <gz/sim/components/Collision.hh>
 #include <gz/sim/components/Volume.hh>
 #include <gz/sim/components/World.hh>
 
@@ -41,15 +39,19 @@ public: IntegratedWhiteNoise azimuthDistr;
 
 public: IntegratedWhiteNoise speedDistr;
 
-public: float waterCurrentSpeed = 0;
+public: float waterCurrentMinSpeed = 0;
 
-public: float waterCurrentAzimuth = 0;
-
-public: float waterCurrentElevation = 90;
+public: float waterCurrentMaxSpeed = 0;
 
 public: float speedstddev = 0;
 
+public: float waterCurrentMaxAzimuth = 0;
+
+public: float waterCurrentMinAzimuth = 0;
+
 public: float azimuthstddev = 0;
+
+public: float waterCurrentElevation = 90;
 
 public: int updateRate = 10;
 };
@@ -159,24 +161,44 @@ void WaterCurrent::Configure(const gz::sim::Entity &_entity,
         return;
     }
 
-    if (_sdf->HasElement("speed")) {
-        this->dataPtr->waterCurrentSpeed = _sdf->Get<float>("speed");
-    }
+    if (_sdf->HasElement("current")) {
+        sdf::ElementPtr currentObjSDF = _sdf->GetElementImpl("current");
 
-    if (_sdf->HasElement("azimuth")) {
-        this->dataPtr->waterCurrentAzimuth = _sdf->Get<float>("azimuth");
-    }
+        gzmsg << "Water Current Parameters" << std::endl;
 
-    if (_sdf->HasElement("elevation")) {
-        this->dataPtr->waterCurrentElevation = _sdf->Get<float>("elevation");
-    }
+        if (currentObjSDF->HasElement("speed")) {
+            sdf::ElementPtr speedObjSDF = currentObjSDF->GetElementImpl("speed");
 
-    if (_sdf->HasElement("speed_stddev")) {
-        this->dataPtr->speedstddev = _sdf->Get<float>("speed_stddev");
-    }
+            if (speedObjSDF->HasElement("min")) {
+                this->dataPtr->waterCurrentMinSpeed = speedObjSDF->Get<float>("min");
+            }
+            if (speedObjSDF->HasElement("max")) {
+                this->dataPtr->waterCurrentMaxSpeed = speedObjSDF->Get<float>("max");
+            }
+            if (speedObjSDF->HasElement("stddev")) {
+                this->dataPtr->speedstddev = speedObjSDF->Get<float>("stddev");
+            }
+            gzmsg << "Speed: " << " Min " << this->dataPtr->waterCurrentMinSpeed
+                               << ", Max " << this->dataPtr->waterCurrentMaxSpeed
+                               << ", stddev " << this->dataPtr->speedstddev << std::endl;
+        }
 
-    if (_sdf->HasElement("azimuth_stddev")) {
-        this->dataPtr->azimuthstddev = _sdf->Get<float>("azimuth_stddev");
+        if (currentObjSDF->HasElement("direction")) {
+            sdf::ElementPtr directionObjSDF = currentObjSDF->GetElementImpl("direction");
+
+            if (directionObjSDF->HasElement("min")) {
+                this->dataPtr->waterCurrentMinAzimuth = directionObjSDF->Get<float>("min");
+            }
+            if (directionObjSDF->HasElement("max")) {
+                this->dataPtr->waterCurrentMaxAzimuth = directionObjSDF->Get<float>("max");
+            }
+            if (directionObjSDF->HasElement("stddev")) {
+                this->dataPtr->azimuthstddev = directionObjSDF->Get<float>("stddev");
+            }
+            gzmsg << "Direction: " << " Min " << this->dataPtr->waterCurrentMinAzimuth
+                                   << ", Max " << this->dataPtr->waterCurrentMaxAzimuth
+                                   << ", stddev " << this->dataPtr->azimuthstddev << std::endl;
+        }
     }
 
     if (_sdf->HasElement("res_coef")) {
@@ -203,9 +225,16 @@ void WaterCurrent::Configure(const gz::sim::Entity &_entity,
         this->dataPtr->node.Advertise<gz::msgs::Float>(this->dataPtr->azimuthTopic, opts);
 
     // Set up the noise distribution
-    this->dataPtr->speedDistr = IntegratedWhiteNoise(0, 0.5, 1, 2, 0.01);
-    this->dataPtr->azimuthDistr = IntegratedWhiteNoise(0, 1, 30, 45, 0.01);
-
+    this->dataPtr->speedDistr = IntegratedWhiteNoise(0,
+                                                     this->dataPtr->speedstddev,
+                                                     this->dataPtr->waterCurrentMinSpeed,
+                                                     this->dataPtr->waterCurrentMaxSpeed,
+                                                     0.01);
+    this->dataPtr->azimuthDistr = IntegratedWhiteNoise(0,
+                                                       this->dataPtr->azimuthstddev,
+                                                       this->dataPtr->waterCurrentMinAzimuth,
+                                                       this->dataPtr->waterCurrentMaxAzimuth,
+                                                       0.01);
 
     // Compute surface area of application
     readAreaFile(angle_p, area_p);
