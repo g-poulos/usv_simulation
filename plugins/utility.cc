@@ -21,6 +21,39 @@ double GaussianNoise::getNoise() {
     return this->distribution(gen);
 }
 
+IntegratedWhiteNoise::IntegratedWhiteNoise() {
+    this->distribution = std::normal_distribution<double> (0, 1);
+    this->minValue = 1;
+    this->maxValue = 2;
+    this->dt = 0.01;
+    this->prevValue = 0.5 * (this->minValue + this->maxValue);
+
+}
+
+IntegratedWhiteNoise::IntegratedWhiteNoise(double mean, double stddev,
+                                           double minValue, double maxValue,
+                                           double dt) {
+    this->distribution = std::normal_distribution<double> (mean, stddev);
+    this->minValue = minValue;
+    this->maxValue = maxValue;
+    this->dt = dt;
+    this->prevValue = 0.5 * (maxValue + minValue);
+}
+
+double IntegratedWhiteNoise::getValue() {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    double whiteNoise = this->distribution(gen);
+    double nextValue = prevValue + this->dt * whiteNoise;
+
+    if (nextValue > this->maxValue || nextValue < this->minValue) {
+        nextValue = nextValue - this->dt * whiteNoise;
+    }
+
+    this->prevValue = nextValue;
+    return nextValue;
+}
+
 int getClosest(float val1, float val2, float target)
 {
     if (target - val1 >= val2 - target)

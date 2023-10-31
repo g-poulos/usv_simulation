@@ -21,7 +21,7 @@
 
 using namespace water_current;
 using namespace std;
-using namespace gz;
+using namespace gz;             //TODO: Clean up gz namespace stuff
 
 class water_current::WaterCurrent::Implementation
 {
@@ -37,9 +37,9 @@ public: std::string magnitudeTopic = "/waterCurrent/speed";
 
 public: std::string azimuthTopic = "/waterCurrent/azimuth";
 
-public: GaussianNoise speedDistr;
+public: IntegratedWhiteNoise azimuthDistr;
 
-public: GaussianNoise azimuthDistr;
+public: IntegratedWhiteNoise speedDistr;
 
 public: float waterCurrentSpeed = 0;
 
@@ -205,26 +205,11 @@ void WaterCurrent::Configure(const gz::sim::Entity &_entity,
         this->dataPtr->node.Advertise<gz::msgs::Float>(this->dataPtr->azimuthTopic, opts);
 
     // Set up the noise distribution
-    this->dataPtr->speedDistr = GaussianNoise(0, this->dataPtr->speedstddev);
-    this->dataPtr->azimuthDistr = GaussianNoise(0, this->dataPtr->azimuthstddev);
+    this->dataPtr->speedDistr = IntegratedWhiteNoise(0, 0.5, 1, 2, 0.01);
+    this->dataPtr->azimuthDistr = IntegratedWhiteNoise(0, 1, 30, 45, 0.01);
 
 
     // Compute surface area of application
-    gz::sim::Entity collision = _ecm.EntityByComponents(gz::sim::components::Collision());
-    const gz::sim::components::CollisionElement *coll =
-        _ecm.Component<gz::sim::components::CollisionElement>(collision);
-    if (!coll)
-    {
-        gzerr << "Invalid collision pointer. This shouldn't happen\n";
-    }
-    gzmsg << "[WaterCurrent]: Mesh URI " << coll->Data().Geom()->MeshShape()->Uri() << std::endl;
-
-    std::string file = gz::sim::asFullPath(
-        coll->Data().Geom()->MeshShape()->Uri(),
-        coll->Data().Geom()->MeshShape()->FilePath());
-    const gz::common::Mesh *mesh = gz::common::MeshManager::Instance()->Load(file);
-
-
     readAreaFile(angle_p, area_p);
 }
 
@@ -236,9 +221,11 @@ void WaterCurrent::PreUpdate(const gz::sim::UpdateInfo &_info,
         return;
     }
 
-    double speed = this->dataPtr->waterCurrentSpeed + this->dataPtr->speedDistr.getNoise();
-    double azimuth = this->dataPtr->waterCurrentAzimuth + this->dataPtr->azimuthDistr.getNoise();
-    double elevation = this->dataPtr->waterCurrentElevation + this->dataPtr->speedDistr.getNoise();
+    double speed = this->dataPtr->speedDistr.getValue();
+    double azimuth = this->dataPtr->azimuthDistr.getValue();
+
+    // TODO: Remove elevation
+//    double elevation = this->dataPtr->waterCurrentElevation + this->dataPtr->speedDistr.getNoise();
 
     if (this->dataPtr->link.WorldPose(_ecm)->Z() < 1) {
         gz::math::Vector3d current = speedToForce(_ecm, this->dataPtr->link, speed, azimuth);
