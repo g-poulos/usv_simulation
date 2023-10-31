@@ -52,8 +52,6 @@ public: float speedstddev = 0;
 public: float azimuthstddev = 0;
 
 public: int updateRate = 10;
-
-public: float volumeRatio;
 };
 
 float resCoefficient = 1;
