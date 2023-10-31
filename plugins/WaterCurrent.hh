@@ -5,25 +5,27 @@
 #include <gz/utils/ImplPtr.hh>
 #include <sdf/sdf.hh>
 
+using namespace gz;
+
 namespace water_current
 {
     class WaterCurrent
-        : public gz::sim::System,
-          public gz::sim::ISystemConfigure,
-          public gz::sim::ISystemPreUpdate
+        : public sim::System,
+          public sim::ISystemConfigure,
+          public sim::ISystemPreUpdate
     {
     public: WaterCurrent();
     public: ~WaterCurrent() override = default;
 
         // Documentation inherited.
-    public: void Configure(const gz::sim::Entity &_entity,
+    public: void Configure(const sim::Entity &_entity,
                            const std::shared_ptr<const sdf::Element> &_sdf,
-                           gz::sim::EntityComponentManager &_ecm,
-                           gz::sim::EventManager &_eventMgr) override;
+                           sim::EntityComponentManager &_ecm,
+                           sim::EventManager &_eventMgr) override;
 
         // Documentation inherited.
-    public: void PreUpdate(const gz::sim::UpdateInfo &_info,
-                           gz::sim::EntityComponentManager &_ecm) override;
+    public: void PreUpdate(const sim::UpdateInfo &_info,
+                           sim::EntityComponentManager &_ecm) override;
         GZ_UTILS_UNIQUE_IMPL_PTR(dataPtr)
     };
 }

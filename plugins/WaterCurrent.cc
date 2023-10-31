@@ -19,17 +19,16 @@
 
 using namespace water_current;
 using namespace std;
-using namespace gz;             //TODO: Clean up gz namespace stuff
 
 class water_current::WaterCurrent::Implementation
 {
-public: gz::sim::Link link{gz::sim::kNullEntity};
+public: sim::Link link{sim::kNullEntity};
 
-public: gz::transport::Node node;
+public: transport::Node node;
 
-public: gz::transport::Node::Publisher currentSpeedPub;
+public: transport::Node::Publisher currentSpeedPub;
 
-public: gz::transport::Node::Publisher azimuthPub;
+public: transport::Node::Publisher azimuthPub;
 
 public: std::string magnitudeTopic = "/waterCurrent/speed";
 
@@ -65,8 +64,8 @@ float *area_p;
 float *angle_p;
 
 
-gz::math::Vector3d createForceVector(double magnitude, double elevation, double azimuth) {
-    gz::math::Vector3d result;
+math::Vector3d createForceVector(double magnitude, double elevation, double azimuth) {
+    math::Vector3d result;
 
     // Convert degrees to radians
     elevation = elevation * M_PI / 180.0;
@@ -79,8 +78,8 @@ gz::math::Vector3d createForceVector(double magnitude, double elevation, double 
     return result;
 }
 
-gz::math::Vector3d toGZVec(std::optional<gz::math::Vector3<double>> vec) {
-    return gz::math::Vector3d(vec->X(), vec->Y(), vec->Z());
+math::Vector3d toGZVec(std::optional<math::Vector3<double>> vec) {
+    return math::Vector3d(vec->X(), vec->Y(), vec->Z());
 }
 
 float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimuth) {
@@ -109,18 +108,18 @@ float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimut
     return area_p[closest_i];
 }
 
-gz::math::Vector3d speedToForce(gz::sim::EntityComponentManager &_ecm,
-                                gz::sim::Link link,
+math::Vector3d speedToForce(sim::EntityComponentManager &_ecm,
+                                sim::Link link,
                                 float currentSpeed,
                                 float direction) {
 
-    gz::math::Vector3d linkLinearVel = toGZVec(link.WorldLinearVelocity(_ecm));
-    gz::math::Vector3d wcurrentLinearVel = createForceVector(currentSpeed, 90, direction);
-    gz::math::Vector3d relativeVel = wcurrentLinearVel.operator-(linkLinearVel);
+    math::Vector3d linkLinearVel = toGZVec(link.WorldLinearVelocity(_ecm));
+    math::Vector3d wcurrentLinearVel = createForceVector(currentSpeed, 90, direction);
+    math::Vector3d relativeVel = wcurrentLinearVel.operator-(linkLinearVel);
 
     float surface = getSurface(link, _ecm, direction);
 
-    gz::math::Vector3d wcurrentVector = 0.5 * fluidDensity * resCoefficient * relativeVel * surface;
+    math::Vector3d wcurrentVector = 0.5 * fluidDensity * resCoefficient * relativeVel * surface;
 
     //DEBUG
 //    float relativeVelMagnitude = sqrt(relativeVel.Dot(relativeVel));
@@ -137,23 +136,23 @@ gz::math::Vector3d speedToForce(gz::sim::EntityComponentManager &_ecm,
 
 
 WaterCurrent::WaterCurrent()
-    : System(), dataPtr(gz::utils::MakeUniqueImpl<Implementation>())
+    : System(), dataPtr(utils::MakeUniqueImpl<Implementation>())
 {
 }
 
-void WaterCurrent::Configure(const gz::sim::Entity &_entity,
+void WaterCurrent::Configure(const sim::Entity &_entity,
                           const std::shared_ptr<const sdf::Element> &_sdf,
-                          gz::sim::EntityComponentManager &_ecm,
-                          gz::sim::EventManager &_eventMgr)
+                          sim::EntityComponentManager &_ecm,
+                          sim::EventManager &_eventMgr)
 {
     // Parse required elements.
     if (!_sdf->HasElement("link_name")) {
         gzerr << "No <link_name> specified" << std::endl;
         return;
     }
-    gz::sim::Model model(_entity);
+    sim::Model model(_entity);
     std::string linkName = _sdf->Get<std::string>("link_name");
-    this->dataPtr->link = gz::sim::Link(model.LinkByName(_ecm, linkName));
+    this->dataPtr->link = sim::Link(model.LinkByName(_ecm, linkName));
 
     if (!this->dataPtr->link.Valid(_ecm)) {
         gzerr << "Could not find link named [" << linkName
@@ -215,14 +214,14 @@ void WaterCurrent::Configure(const gz::sim::Entity &_entity,
 
     // Set up the publisher
     double updateRate = this->dataPtr->updateRate;
-    gz::transport::AdvertiseMessageOptions opts;
+    transport::AdvertiseMessageOptions opts;
     opts.SetMsgsPerSec(updateRate);
 
     this->dataPtr->currentSpeedPub =
-        this->dataPtr->node.Advertise<gz::msgs::Float>(this->dataPtr->magnitudeTopic, opts);
+        this->dataPtr->node.Advertise<msgs::Float>(this->dataPtr->magnitudeTopic, opts);
 
     this->dataPtr->azimuthPub =
-        this->dataPtr->node.Advertise<gz::msgs::Float>(this->dataPtr->azimuthTopic, opts);
+        this->dataPtr->node.Advertise<msgs::Float>(this->dataPtr->azimuthTopic, opts);
 
     // Set up the noise distribution
     this->dataPtr->speedDistr = IntegratedWhiteNoise(0,
@@ -240,8 +239,8 @@ void WaterCurrent::Configure(const gz::sim::Entity &_entity,
     readAreaFile(angle_p, area_p);
 }
 
-void WaterCurrent::PreUpdate(const gz::sim::UpdateInfo &_info,
-                          gz::sim::EntityComponentManager &_ecm)
+void WaterCurrent::PreUpdate(const sim::UpdateInfo &_info,
+                             sim::EntityComponentManager &_ecm)
 {
     // Don't add force if the simulation is paused
     if (_info.paused) {
@@ -255,15 +254,15 @@ void WaterCurrent::PreUpdate(const gz::sim::UpdateInfo &_info,
 //    double elevation = this->dataPtr->waterCurrentElevation + this->dataPtr->speedDistr.getNoise();
 
     if (this->dataPtr->link.WorldPose(_ecm)->Z() < 1) {
-        gz::math::Vector3d current = speedToForce(_ecm, this->dataPtr->link, speed, azimuth);
+        math::Vector3d current = speedToForce(_ecm, this->dataPtr->link, speed, azimuth);
         this->dataPtr->link.AddWorldForce(_ecm, current);
     }
 
-    gz::msgs::Float forceMsg;
+    msgs::Float forceMsg;
     forceMsg.set_data(speed);
     this->dataPtr->currentSpeedPub.Publish(forceMsg);
 
-    gz::msgs::Float azimuthMsg;
+    msgs::Float azimuthMsg;
     azimuthMsg.set_data(azimuth);
     this->dataPtr->azimuthPub.Publish(azimuthMsg);
 }
