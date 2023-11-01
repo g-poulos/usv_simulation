@@ -84,11 +84,11 @@ int findClosest(float arr[], int n, float target) {
     return mid;
 }
 
-void readAreaFile(float* &angle_table_ptr, float* &area_table_ptr) {
+void readAreaFile(std::string filename, float* &angle_table_ptr, float* &area_table_ptr) {
     std::filesystem::path cwd = std::filesystem::current_path();
     cout << "DIRECTORY: " << cwd << std::endl;
     string myText;
-    ifstream MyReadFile("angles.txt");
+    ifstream MyReadFile(filename);
     getline(MyReadFile, myText);
     int arraySize = std::stoi(myText);
 

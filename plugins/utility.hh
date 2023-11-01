@@ -22,5 +22,5 @@ public:
 
 int findClosest(float arr[], int n, float target);
 
-void readAreaFile(float* &angle_table_ptr, float* &area_table_ptr);
+void readAreaFile(std::string filename, float* &angle_table_ptr, float* &area_table_ptr);
 #endif

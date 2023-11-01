@@ -236,7 +236,7 @@ void WaterCurrent::Configure(const sim::Entity &_entity,
                                                        0.01);
 
     // Compute surface area of application
-    readAreaFile(angle_p, area_p);
+    readAreaFile("current_surface.txt",angle_p, area_p);
 }
 
 void WaterCurrent::PreUpdate(const sim::UpdateInfo &_info,
