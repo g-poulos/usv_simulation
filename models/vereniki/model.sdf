@@ -1,0 +1,79 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+    <model name='vereniki'>
+        <enable_wind>true</enable_wind>
+
+        <link name='platform_body'>
+            <inertial>
+                <pose>1.64184509e-02 6.63016256e-07 2.80050266e-01 0 0 0</pose>
+                <mass>425.4534</mass>
+                <inertia>
+                    <ixx>2.45465499e+02</ixx>
+                    <ixy>1.31516290e-04</ixy>
+                    <ixz>-5.39157565e-01</ixz>
+                    <iyy>4.47848929e+02</iyy>
+                    <iyz>-2.78063767e-05</iyz>
+                    <izz>6.65171708e+02</izz>
+                </inertia>
+            </inertial>
+
+<!--            Position of the center of gravity (COG) = -->
+<!--            [1.64184509e-02 6.63016256e-07 2.80050266e-01]-->
+
+<!--            Inertia matrix at expressed at the COG  = -->
+<!--            [ 2.45465499e+00  1.31516290e-06 -5.39157565e-03]-->
+<!--            [ 1.31516290e-06  4.47848929e+00 -2.78063767e-07]-->
+<!--            [-5.39157565e-03 -2.78063767e-07  6.65171708e+00]-->
+
+            <visual name='platform_visual'>
+                <pose>0 0 0 0 0 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://vereniki/meshes/vereniki_scaled.obj</uri>
+                    </mesh>
+                </geometry>
+                <material>
+                    <diffuse>0.1 0.1 0.2 1</diffuse>
+                </material>
+
+            </visual>
+            <collision name='platform_collision'>
+                <pose>0 0 0 0 0 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://vereniki/meshes/vereniki_scaled.stl</uri>
+                    </mesh>
+                </geometry>
+            </collision>
+        </link>
+
+        <!-- Hydrodynamics plugin -->
+        <plugin
+                filename="gz-waves1-hydrodynamics-system"
+                name="gz::sim::systems::Hydrodynamics">
+
+            <enable>vereniki::platform_body</enable>
+
+            <hydrodynamics>
+                <damping_on>1</damping_on>
+                <viscous_drag_on>1</viscous_drag_on>
+                <pressure_drag_on>1</pressure_drag_on>
+
+                <!-- Linear and Angular Damping -->
+                <cDampL1>1.0E-6</cDampL1>
+                <cDampL2>1.0E-6</cDampL2>
+                <cDampR1>1.0E-6</cDampR1>
+                <cDampR2>1.0E-6</cDampR2>
+
+                <!-- 'Pressure' Drag -->
+                <cPDrag1>1.0E+2</cPDrag1>
+                <cPDrag2>1.0E+2</cPDrag2>
+                <fPDrag>0.4</fPDrag>
+                <cSDrag1>1.0E+2</cSDrag1>
+                <cSDrag2>1.0E+2</cSDrag2>
+                <fSDrag>0.4</fSDrag>
+                <vRDrag>1.0</vRDrag>
+            </hydrodynamics>
+        </plugin>
+    </model>
+</sdf>
