@@ -83,20 +83,22 @@ def create_angle_table(num_of_angles, plot=False):
 
 if __name__ == '__main__':
 
-    poly = pv.read('models/boat/meshes/boat3.stl')
-    # poly = pv.read('models/triangle_platform/meshes/triangle_platform.stl')
+    # poly = pv.read('models/boat/meshes/boat3.stl')
+    poly = pv.read('models/vereniki/meshes/vereniki_scaled2.stl')
 
-    model_height = 1.5
-    water_current_surface = True
+    model_height = 0.95
+    # draft = compute_draft(425, 1025, 4.5, 3.5)
+    draft = 0.56
 
-    draft = compute_draft(800, 1025, 4.28, 2)
+    water_current_surface = False
+
     clipped = poly.clip('z', value=-(model_height/2)+draft, invert=water_current_surface)
     angle_list, area_list = create_angle_table(256, plot=False)
 
     if water_current_surface:
-        filename = "current_surface.txt"
+        filename = "models/vereniki/meshes/current_surface.txt"
     else:
-        filename = "wind_surface.txt"
+        filename = "models/vereniki/meshes/wind_surface.txt"
 
     write_file(filename, angle_list, area_list)
 
