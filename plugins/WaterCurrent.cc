@@ -67,24 +67,6 @@ float *area_p;
 float *angle_p;
 
 
-math::Vector3d createForceVector(double magnitude, double elevation, double azimuth) {
-    math::Vector3d result;
-
-    // Convert degrees to radians
-    elevation = elevation * M_PI / 180.0;
-    azimuth = azimuth * M_PI / 180.0;
-
-    // Calculate the components
-    result.X(magnitude * sin(elevation) * cos(azimuth));
-    result.Y(magnitude * sin(elevation) * sin(azimuth));
-    result.Z(magnitude * cos(elevation));
-    return result;
-}
-
-math::Vector3d toGZVec(std::optional<math::Vector3<double>> vec) {
-    return math::Vector3d(vec->X(), vec->Y(), vec->Z());
-}
-
 float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimuth) {
     auto q = link.WorldPose(_ecm)->Rot().Normalized();
 
@@ -117,7 +99,7 @@ math::Vector3d speedToForce(sim::EntityComponentManager &_ecm,
                                 float direction) {
 
     math::Vector3d linkLinearVel = toGZVec(link.WorldLinearVelocity(_ecm));
-    math::Vector3d wcurrentLinearVel = createForceVector(currentSpeed, 90, direction);
+    math::Vector3d wcurrentLinearVel = sphericalToVector(currentSpeed, 90, direction);
     math::Vector3d relativeVel = wcurrentLinearVel.operator-(linkLinearVel);
 
     float surface = getSurface(link, _ecm, direction);
@@ -136,27 +118,6 @@ math::Vector3d speedToForce(sim::EntityComponentManager &_ecm,
 
     return wcurrentVector;
 }
-
-std::string getModelFile(sim::EntityComponentManager &_ecm, std::string fileName) {
-    sim::Entity collision = _ecm.EntityByComponents(gz::sim::components::Collision());
-    const sim::components::CollisionElement *coll =
-        _ecm.Component<gz::sim::components::CollisionElement>(collision);
-
-    std::string file = std::filesystem::path(coll->Data().Geom()->MeshShape()->Uri()).filename();
-    std::string filePath = findFileFromHome(file);
-    std::string parentPath = std::filesystem::path(filePath).parent_path();
-
-    // DEBUG
-    gzmsg << "[WaterCurrent]: Mesh URI:    " << coll->Data().Geom()->MeshShape()->Uri() << std::endl;
-    gzmsg << "[WaterCurrent]: Mesh File:   " << file << std::endl;
-    gzmsg << "[WaterCurrent]: Mesh Path:   " << filePath << std::endl;
-    gzmsg << "[WaterCurrent]: Parent Path: " << parentPath << std::endl;
-    gzmsg << "[WaterCurrent]: Reading area file: " << parentPath + "/" + fileName << std::endl;
-
-    return parentPath + "/" + fileName;
-}
-
-
 
 WaterCurrent::WaterCurrent()
     : System(), dataPtr(utils::MakeUniqueImpl<Implementation>())

@@ -2,7 +2,11 @@
 #define UTILITY_H
 
 #include <random>
+#include <gz/math/Vector3.hh>
+#include <optional>
+#include "gz/sim/Model.hh"
 
+using namespace gz;
 
 class IntegratedWhiteNoise {
 private:
@@ -25,4 +29,10 @@ int findClosest(float arr[], int n, float target);
 void readAreaFile(std::string filename, float* &angle_table_ptr, float* &area_table_ptr);
 
 std::string findFileFromHome(const std::string& filename);
+
+math::Vector3d sphericalToVector(double magnitude, double elevation, double azimuth);
+
+math::Vector3d toGZVec(std::optional<math::Vector3<double>> vec);
+
+std::string getModelFile(sim::EntityComponentManager &_ecm, std::string fileName);
 #endif

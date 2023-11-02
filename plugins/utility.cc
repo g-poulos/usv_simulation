@@ -4,7 +4,8 @@
 #include <fstream>
 #include <filesystem>
 #include <string.h>
-#include <filesystem>
+#include <sdf/sdf.hh>
+#include <gz/sim/components/Collision.hh>
 
 namespace fs = std::filesystem;
 using namespace std;
@@ -129,4 +130,41 @@ std::string findFileFromHome(const std::string& filename) {
         }
     }
     return ""; // Empty string indicates file not found
+}
+
+math::Vector3d sphericalToVector(double magnitude, double elevation, double azimuth) {
+    math::Vector3d result;
+
+    // Convert degrees to radians
+    elevation = elevation * M_PI / 180.0;
+    azimuth = azimuth * M_PI / 180.0;
+
+    // Calculate the components
+    result.X(magnitude * sin(elevation) * cos(azimuth));
+    result.Y(magnitude * sin(elevation) * sin(azimuth));
+    result.Z(magnitude * cos(elevation));
+    return result;
+}
+
+math::Vector3d toGZVec(std::optional<math::Vector3<double>> vec) {
+    return math::Vector3d(vec->X(), vec->Y(), vec->Z());
+}
+
+std::string getModelFile(sim::EntityComponentManager &_ecm, std::string fileName) {
+    sim::Entity collision = _ecm.EntityByComponents(gz::sim::components::Collision());
+    const sim::components::CollisionElement *coll =
+        _ecm.Component<gz::sim::components::CollisionElement>(collision);
+
+    std::string file = std::filesystem::path(coll->Data().Geom()->MeshShape()->Uri()).filename();
+    std::string filePath = findFileFromHome(file);
+    std::string parentPath = std::filesystem::path(filePath).parent_path();
+
+    // DEBUG
+    gzmsg << "Mesh URI:    " << coll->Data().Geom()->MeshShape()->Uri() << std::endl;
+    gzmsg << "Mesh File:   " << file << std::endl;
+    gzmsg << "Mesh Path:   " << filePath << std::endl;
+    gzmsg << "Parent Path: " << parentPath << std::endl;
+    gzmsg << "Reading area file: " << parentPath + "/" + fileName << std::endl;
+
+    return parentPath + "/" + fileName;
 }
