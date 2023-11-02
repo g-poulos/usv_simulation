@@ -4,7 +4,9 @@
 #include <fstream>
 #include <filesystem>
 #include <string.h>
+#include <filesystem>
 
+namespace fs = std::filesystem;
 using namespace std;
 
 
@@ -116,4 +118,15 @@ void readAreaFile(std::string filename, float* &angle_table_ptr, float* &area_ta
         i++;
     }
     MyReadFile.close();
+}
+
+std::string findFileFromHome(const std::string& filename) {
+    fs::path homeDir = fs::path(getenv("HOME")); // Get the home directory
+
+    for (const auto& entry : fs::recursive_directory_iterator(homeDir)) {
+        if (entry.is_regular_file() && entry.path().filename() == filename) {
+            return entry.path();
+        }
+    }
+    return ""; // Empty string indicates file not found
 }

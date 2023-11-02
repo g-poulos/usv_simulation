@@ -12,6 +12,9 @@
 #include <gz/common/Mesh.hh>
 #include <gz/sim/components/Volume.hh>
 #include <gz/sim/components/World.hh>
+#include <gz/sim/components/Collision.hh>
+#include <gz/common/MeshManager.hh>
+#include <filesystem>
 
 
 #include "WaterCurrent.hh"
@@ -134,6 +137,26 @@ math::Vector3d speedToForce(sim::EntityComponentManager &_ecm,
     return wcurrentVector;
 }
 
+std::string getModelFile(sim::EntityComponentManager &_ecm, std::string fileName) {
+    sim::Entity collision = _ecm.EntityByComponents(gz::sim::components::Collision());
+    const sim::components::CollisionElement *coll =
+        _ecm.Component<gz::sim::components::CollisionElement>(collision);
+
+    std::string file = std::filesystem::path(coll->Data().Geom()->MeshShape()->Uri()).filename();
+    std::string filePath = findFileFromHome(file);
+    std::string parentPath = std::filesystem::path(filePath).parent_path();
+
+    // DEBUG
+    gzmsg << "[WaterCurrent]: Mesh URI:    " << coll->Data().Geom()->MeshShape()->Uri() << std::endl;
+    gzmsg << "[WaterCurrent]: Mesh File:   " << file << std::endl;
+    gzmsg << "[WaterCurrent]: Mesh Path:   " << filePath << std::endl;
+    gzmsg << "[WaterCurrent]: Parent Path: " << parentPath << std::endl;
+    gzmsg << "[WaterCurrent]: Reading area file: " << parentPath + "/" + fileName << std::endl;
+
+    return parentPath + "/" + fileName;
+}
+
+
 
 WaterCurrent::WaterCurrent()
     : System(), dataPtr(utils::MakeUniqueImpl<Implementation>())
@@ -236,7 +259,9 @@ void WaterCurrent::Configure(const sim::Entity &_entity,
                                                        0.01);
 
     // Compute surface area of application
-    readAreaFile("current_surface.txt",angle_p, area_p);
+    std::string currentSurfaceArea = getModelFile(_ecm, "current_surface.txt");
+
+    readAreaFile(currentSurfaceArea, angle_p, area_p);
 }
 
 void WaterCurrent::PreUpdate(const sim::UpdateInfo &_info,

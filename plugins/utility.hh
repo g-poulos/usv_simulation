@@ -23,4 +23,6 @@ public:
 int findClosest(float arr[], int n, float target);
 
 void readAreaFile(std::string filename, float* &angle_table_ptr, float* &area_table_ptr);
+
+std::string findFileFromHome(const std::string& filename);
 #endif
