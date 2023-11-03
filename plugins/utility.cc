@@ -54,7 +54,6 @@ int getClosest(float val1, float val2, float target)
         return 0;
 }
 
-
 // Returns index to element closest to target in arr[]
 int findClosest(float arr[], int n, float target) {
     // Corner cases
@@ -88,12 +87,10 @@ int findClosest(float arr[], int n, float target) {
 }
 
 surfaceData* readAreaFile(std::string filename) {
-    std::filesystem::path cwd = std::filesystem::current_path();
-    cout << "DIRECTORY: " << cwd << std::endl;
-    string myText;
-    ifstream MyReadFile(filename);
-    getline(MyReadFile, myText);
-    int arraySize = std::stoi(myText);
+    string line;
+    ifstream readFile(filename);
+    getline(readFile, line);
+    int arraySize = std::stoi(line);
 
     surfaceData* _surfaceData = new surfaceData;
     _surfaceData->size = arraySize;
@@ -104,14 +101,14 @@ surfaceData* readAreaFile(std::string filename) {
     int i = 0;
     const char * c2 = "#";
 
-    while (getline (MyReadFile, myText)) {
-        char *c = myText.data();
+    while (getline (readFile, line)) {
+        char *c = line.data();
         float value;
         if (strcmp(c, c2) == 0) {
             foundSymb = true;
             i = 0;
         } else {
-            value = std::stof(myText);
+            value = std::stof(line);
             if (foundSymb) {
                 _surfaceData->area_p[i] = value;
             } else {
@@ -120,7 +117,7 @@ surfaceData* readAreaFile(std::string filename) {
         }
         i++;
     }
-    MyReadFile.close();
+    readFile.close();
     return _surfaceData;
 }
 
@@ -163,11 +160,11 @@ std::string getModelFile(sim::EntityComponentManager &_ecm, std::string fileName
     std::string parentPath = std::filesystem::path(filePath).parent_path();
 
     // DEBUG
-    gzmsg << "Mesh URI:    " << coll->Data().Geom()->MeshShape()->Uri() << std::endl;
-    gzmsg << "Mesh File:   " << file << std::endl;
-    gzmsg << "Mesh Path:   " << filePath << std::endl;
-    gzmsg << "Parent Path: " << parentPath << std::endl;
-    gzmsg << "Reading area file: " << parentPath + "/" + fileName << std::endl;
+//    gzmsg << "Mesh URI:    " << coll->Data().Geom()->MeshShape()->Uri() << std::endl;
+//    gzmsg << "Mesh File:   " << file << std::endl;
+//    gzmsg << "Mesh Path:   " << filePath << std::endl;
+//    gzmsg << "Parent Path: " << parentPath << std::endl;
+//    gzmsg << "Reading area file: " << parentPath + "/" + fileName << std::endl;
 
     return parentPath + "/" + fileName;
 }
@@ -198,12 +195,12 @@ float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimut
     return surfaceData->area_p[closest_i];
 }
 
-math::Vector3d speedToForce(sim::EntityComponentManager &_ecm,
-                            sim::Link link,
-                            float currentSpeed,
-                            float direction,
-                            surfaceData* surfaceData,
-                            float fluidDensity) {
+math::Vector3d calculateForce(sim::EntityComponentManager &_ecm,
+                              sim::Link link,
+                              float currentSpeed,
+                              float direction,
+                              surfaceData* surfaceData,
+                              float fluidDensity) {
 
     math::Vector3d linkLinearVel = toGZVec(link.WorldLinearVelocity(_ecm));
     math::Vector3d wcurrentLinearVel = sphericalToVector(currentSpeed, 90, direction);

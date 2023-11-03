@@ -1,19 +1,14 @@
 #include <string>
 #include <gz/common/Profiler.hh>
 #include <gz/plugin/Register.hh>
-#include <sdf/sdf.hh>
-#include "gz/sim/Util.hh"
 #include "gz/sim/Model.hh"
 #include "gz/sim/Link.hh"
 #include <gz/transport/Node.hh>
 #include <gz/msgs/float.pb.h>
 #include <gz/math/Vector3.hh>
-#include <cmath>
 #include <gz/common/Mesh.hh>
 #include <gz/sim/components/Volume.hh>
 #include <gz/sim/components/World.hh>
-#include <gz/sim/components/Collision.hh>
-#include <gz/common/MeshManager.hh>
 #include <filesystem>
 
 
@@ -183,7 +178,8 @@ void WaterCurrent::PreUpdate(const sim::UpdateInfo &_info,
 //    double elevation = this->dataPtr->waterCurrentElevation + this->dataPtr->speedDistr.getNoise();
 
     if (this->dataPtr->link.WorldPose(_ecm)->Z() < 1) {
-        math::Vector3d current = speedToForce(_ecm, this->dataPtr->link, speed, azimuth, currentSurfaceData, fluidDensity);
+        math::Vector3d current = calculateForce(_ecm, this->dataPtr->link, speed, azimuth, currentSurfaceData,
+                                                fluidDensity);
         this->dataPtr->link.AddWorldForce(_ecm, current);
     }
 

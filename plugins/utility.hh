@@ -49,10 +49,10 @@ std::string getModelFile(sim::EntityComponentManager &_ecm, std::string fileName
 
 float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimuth, surfaceData* surfaceData);
 
-math::Vector3d speedToForce(sim::EntityComponentManager &_ecm,
-                            sim::Link link,
-                            float currentSpeed,
-                            float direction,
-                            surfaceData* surfaceData,
-                            float fluidDensity);
+math::Vector3d calculateForce(sim::EntityComponentManager &_ecm,
+                              sim::Link link,
+                              float currentSpeed,
+                              float direction,
+                              surfaceData* surfaceData,
+                              float fluidDensity);
 #endif
