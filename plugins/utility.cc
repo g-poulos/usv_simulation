@@ -171,3 +171,58 @@ std::string getModelFile(sim::EntityComponentManager &_ecm, std::string fileName
 
     return parentPath + "/" + fileName;
 }
+
+float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimuth, surfaceData* surfaceData) {
+    auto q = link.WorldPose(_ecm)->Rot().Normalized();
+
+    // Convert quaternion to yaw
+    double siny_cosp = 2 * (q.W() * q.Z() + q.X() * q.Y());
+    double cosy_cosp = 1 - 2 * (q.Y() * q.Y() + q.Z() * q.Z());
+    double yaw = std::atan2(siny_cosp, cosy_cosp);
+
+    if (yaw < 0)
+        yaw = yaw + 2*M_PI;
+
+    float relative_angle = (azimuth * (M_PI / 180)) - yaw;
+
+    if (relative_angle < 0)
+        relative_angle = relative_angle + 2 * M_PI;
+
+    int closest_i = findClosest(surfaceData->angle_p, surfaceData->size, relative_angle);
+
+    // DEBUG
+//    gzmsg << "Boat Yaw " << yaw <<
+//             " Total: " << relative_angle <<
+//             " A_matrix: " << angle_p[closest_i] <<
+//             " Area: " << area_p[closest_i] <<std::endl;
+    return surfaceData->area_p[closest_i];
+}
+
+math::Vector3d speedToForce(sim::EntityComponentManager &_ecm,
+                            sim::Link link,
+                            float currentSpeed,
+                            float direction,
+                            surfaceData* surfaceData,
+                            float fluidDensity) {
+
+    math::Vector3d linkLinearVel = toGZVec(link.WorldLinearVelocity(_ecm));
+    math::Vector3d wcurrentLinearVel = sphericalToVector(currentSpeed, 90, direction);
+    math::Vector3d relativeVel = wcurrentLinearVel.operator-(linkLinearVel);
+
+    float surface = getSurface(link, _ecm, direction, surfaceData);
+    float resCoefficient = 1.2;
+
+    math::Vector3d wcurrentVector = 0.5 * fluidDensity * resCoefficient * relativeVel * surface;
+
+    //DEBUG
+//    float relativeVelMagnitude = sqrt(relativeVel.Dot(relativeVel));
+//    gzmsg << "|WATER_CURRENT|_________________________________________\n";
+//    gzmsg << "linkLinearVel     : " << linkLinearVel << std::endl;
+//    gzmsg << "wcurrentLinearVel : " << wcurrentLinearVel << std::endl;
+//    gzmsg << "relativeVel       : " << relativeVel << std::endl;
+//    gzmsg << "Relative Vel Speed: " << relativeVelMagnitude << " m/s" << std::endl;
+//    gzmsg << "Current Magnitude : " << sqrt(wcurrentVector.Dot(wcurrentVector)) << " N"<<std::endl;
+//    gzmsg << "Current           : " << wcurrentVector << std::endl;
+
+    return wcurrentVector;
+}

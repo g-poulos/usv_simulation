@@ -5,6 +5,7 @@
 #include <gz/math/Vector3.hh>
 #include <optional>
 #include "gz/sim/Model.hh"
+#include "gz/sim/Link.hh"
 
 using namespace gz;
 
@@ -45,4 +46,13 @@ math::Vector3d sphericalToVector(double magnitude, double elevation, double azim
 math::Vector3d toGZVec(std::optional<math::Vector3<double>> vec);
 
 std::string getModelFile(sim::EntityComponentManager &_ecm, std::string fileName);
+
+float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimuth, surfaceData* surfaceData);
+
+math::Vector3d speedToForce(sim::EntityComponentManager &_ecm,
+                            sim::Link link,
+                            float currentSpeed,
+                            float direction,
+                            surfaceData* surfaceData,
+                            float fluidDensity);
 #endif
