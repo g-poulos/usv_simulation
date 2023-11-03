@@ -12,43 +12,43 @@
 #include <filesystem>
 
 
-#include "WaterCurrent.hh"
+#include "Wind.hh"
 #include "utility.hh"
 
-using namespace water_current;
+using namespace wind;
 using namespace std;
 
-class water_current::WaterCurrent::Implementation
+class wind::Wind::Implementation
 {
 public: sim::Link link{sim::kNullEntity};
 
 public: transport::Node node;
 
-public: transport::Node::Publisher currentSpeedPub;
+public: transport::Node::Publisher windSpeedPub;
 
 public: transport::Node::Publisher azimuthPub;
 
-public: std::string magnitudeTopic = "/waterCurrent/speed";
+public: std::string magnitudeTopic = "/wind/speed";
 
-public: std::string azimuthTopic = "/waterCurrent/azimuth";
+public: std::string azimuthTopic = "/wind/azimuth";
 
 public: IntegratedWhiteNoise azimuthDistr;
 
 public: IntegratedWhiteNoise speedDistr;
 
-public: float waterCurrentMinSpeed = 0;
+public: float minSpeed = 0;
 
-public: float waterCurrentMaxSpeed = 0;
+public: float maxSpeed = 0;
 
 public: float speedstddev = 0;
 
-public: float waterCurrentMaxAzimuth = 0;
+public: float minAzimuth = 0;
 
-public: float waterCurrentMinAzimuth = 0;
+public: float maxAzimuth = 0;
 
 public: float azimuthstddev = 0;
 
-public: float waterCurrentElevation = 90;
+public: float elevation = 90;
 
 public: int updateRate = 10;
 };
@@ -58,15 +58,15 @@ float fluidDensity = 1000;
 surfaceData *currentSurfaceData;
 
 
-WaterCurrent::WaterCurrent()
+Wind::Wind()
     : System(), dataPtr(utils::MakeUniqueImpl<Implementation>())
 {
 }
 
-void WaterCurrent::Configure(const sim::Entity &_entity,
-                          const std::shared_ptr<const sdf::Element> &_sdf,
-                          sim::EntityComponentManager &_ecm,
-                          sim::EventManager &_eventMgr)
+void Wind::Configure(const sim::Entity &_entity,
+                             const std::shared_ptr<const sdf::Element> &_sdf,
+                             sim::EntityComponentManager &_ecm,
+                             sim::EventManager &_eventMgr)
 {
     // Parse required elements.
     if (!_sdf->HasElement("link_name")) {
@@ -83,8 +83,8 @@ void WaterCurrent::Configure(const sim::Entity &_entity,
         return;
     }
 
-    if (_sdf->HasElement("current")) {
-        sdf::ElementPtr currentObjSDF = _sdf->GetElementImpl("current");
+    if (_sdf->HasElement("wind")) {
+        sdf::ElementPtr currentObjSDF = _sdf->GetElementImpl("wind");
 
         gzmsg << "Water Current Parameters" << std::endl;
 
@@ -92,34 +92,34 @@ void WaterCurrent::Configure(const sim::Entity &_entity,
             sdf::ElementPtr speedObjSDF = currentObjSDF->GetElementImpl("speed");
 
             if (speedObjSDF->HasElement("min")) {
-                this->dataPtr->waterCurrentMinSpeed = speedObjSDF->Get<float>("min");
+                this->dataPtr->minSpeed = speedObjSDF->Get<float>("min");
             }
             if (speedObjSDF->HasElement("max")) {
-                this->dataPtr->waterCurrentMaxSpeed = speedObjSDF->Get<float>("max");
+                this->dataPtr->maxSpeed = speedObjSDF->Get<float>("max");
             }
             if (speedObjSDF->HasElement("stddev")) {
                 this->dataPtr->speedstddev = speedObjSDF->Get<float>("stddev");
             }
-            gzmsg << "Speed: " << " Min " << this->dataPtr->waterCurrentMinSpeed
-                               << ", Max " << this->dataPtr->waterCurrentMaxSpeed
-                               << ", stddev " << this->dataPtr->speedstddev << std::endl;
+            gzmsg << "Speed: " << " Min " << this->dataPtr->minSpeed
+                  << ", Max " << this->dataPtr->maxSpeed
+                  << ", stddev " << this->dataPtr->speedstddev << std::endl;
         }
 
         if (currentObjSDF->HasElement("direction")) {
             sdf::ElementPtr directionObjSDF = currentObjSDF->GetElementImpl("direction");
 
             if (directionObjSDF->HasElement("min")) {
-                this->dataPtr->waterCurrentMinAzimuth = directionObjSDF->Get<float>("min");
+                this->dataPtr->minAzimuth = directionObjSDF->Get<float>("min");
             }
             if (directionObjSDF->HasElement("max")) {
-                this->dataPtr->waterCurrentMaxAzimuth = directionObjSDF->Get<float>("max");
+                this->dataPtr->maxAzimuth = directionObjSDF->Get<float>("max");
             }
             if (directionObjSDF->HasElement("stddev")) {
                 this->dataPtr->azimuthstddev = directionObjSDF->Get<float>("stddev");
             }
-            gzmsg << "Direction: " << " Min " << this->dataPtr->waterCurrentMinAzimuth
-                                   << ", Max " << this->dataPtr->waterCurrentMaxAzimuth
-                                   << ", stddev " << this->dataPtr->azimuthstddev << std::endl;
+            gzmsg << "Direction: " << " Min " << this->dataPtr->minAzimuth
+                  << ", Max " << this->dataPtr->maxAzimuth
+                  << ", stddev " << this->dataPtr->azimuthstddev << std::endl;
         }
     }
 
@@ -136,7 +136,7 @@ void WaterCurrent::Configure(const sim::Entity &_entity,
     transport::AdvertiseMessageOptions opts;
     opts.SetMsgsPerSec(updateRate);
 
-    this->dataPtr->currentSpeedPub =
+    this->dataPtr->windSpeedPub =
         this->dataPtr->node.Advertise<msgs::Float>(this->dataPtr->magnitudeTopic, opts);
 
     this->dataPtr->azimuthPub =
@@ -145,17 +145,17 @@ void WaterCurrent::Configure(const sim::Entity &_entity,
     // Set up the noise distribution
     this->dataPtr->speedDistr = IntegratedWhiteNoise(0,
                                                      this->dataPtr->speedstddev,
-                                                     this->dataPtr->waterCurrentMinSpeed,
-                                                     this->dataPtr->waterCurrentMaxSpeed,
+                                                     this->dataPtr->minSpeed,
+                                                     this->dataPtr->maxSpeed,
                                                      0.01);
     this->dataPtr->azimuthDistr = IntegratedWhiteNoise(0,
                                                        this->dataPtr->azimuthstddev,
-                                                       this->dataPtr->waterCurrentMinAzimuth,
-                                                       this->dataPtr->waterCurrentMaxAzimuth,
+                                                       this->dataPtr->minAzimuth,
+                                                       this->dataPtr->maxAzimuth,
                                                        0.01);
 
     // Compute surface area of application
-    std::string currentSurfaceAreaFile = getModelFile(_ecm, "current_surface.txt");
+    std::string currentSurfaceAreaFile = getModelFile(_ecm, "wind_surface.txt");
 
     currentSurfaceData = readAreaFile(currentSurfaceAreaFile);
     for (int i =0; i<256; i++){
@@ -163,7 +163,7 @@ void WaterCurrent::Configure(const sim::Entity &_entity,
     }
 }
 
-void WaterCurrent::PreUpdate(const sim::UpdateInfo &_info,
+void Wind::PreUpdate(const sim::UpdateInfo &_info,
                              sim::EntityComponentManager &_ecm)
 {
     // Don't add force if the simulation is paused
@@ -177,27 +177,24 @@ void WaterCurrent::PreUpdate(const sim::UpdateInfo &_info,
     // TODO: Remove elevation
 //    double elevation = this->dataPtr->elevation + this->dataPtr->speedDistr.getNoise();
 
-    if (this->dataPtr->link.WorldPose(_ecm)->Z() < 1) {
-        math::Vector3d current = calculateForce(_ecm, this->dataPtr->link, speed, azimuth, currentSurfaceData,
-                                                fluidDensity);
-        this->dataPtr->link.AddWorldForce(_ecm, current);
-    }
+    math::Vector3d windForce = calculateForce(_ecm, this->dataPtr->link,
+                                              speed,
+                                              azimuth,
+                                              currentSurfaceData,
+                                              fluidDensity);
+    this->dataPtr->link.AddWorldForce(_ecm, windForce);
+
 
     msgs::Float forceMsg;
     forceMsg.set_data(speed);
-    this->dataPtr->currentSpeedPub.Publish(forceMsg);
+    this->dataPtr->windSpeedPub.Publish(forceMsg);
 
     msgs::Float azimuthMsg;
     azimuthMsg.set_data(azimuth);
     this->dataPtr->azimuthPub.Publish(azimuthMsg);
 }
 
-GZ_ADD_PLUGIN(water_current::WaterCurrent,
-              sim::System,
-              WaterCurrent::ISystemConfigure,
-              WaterCurrent::ISystemPreUpdate)
-
-
-
-
-
+GZ_ADD_PLUGIN(wind::Wind,
+    sim::System,
+    Wind::ISystemConfigure,
+    Wind::ISystemPreUpdate)

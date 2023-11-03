@@ -12,10 +12,16 @@ set(GZ_SIM_VER ${gz-sim7_VERSION_MAJOR})
 
 
 # Water Current
-add_library(WaterCurrent SHARED WaterCurrent.cc
-        utility.cc)
+add_library(WaterCurrent SHARED WaterCurrent.cc utility.cc)
 set_property(TARGET WaterCurrent PROPERTY CXX_STANDARD 17)
 target_link_libraries(WaterCurrent
+        PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
+        PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
+
+# Wind
+add_library(Wind SHARED Wind.cc utility.cc)
+set_property(TARGET Wind PROPERTY CXX_STANDARD 17)
+target_link_libraries(Wind
         PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
         PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
 
