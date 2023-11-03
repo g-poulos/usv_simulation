@@ -53,7 +53,7 @@ public: float elevation = 90;
 public: int updateRate = 10;
 };
 
-float fluidDensity = 1000;
+float fluidDensity = 1.225;
 
 surfaceData *currentSurfaceData;
 

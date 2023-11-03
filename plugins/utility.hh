@@ -51,7 +51,7 @@ float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimut
 
 math::Vector3d calculateForce(sim::EntityComponentManager &_ecm,
                               sim::Link link,
-                              float currentSpeed,
+                              float speed,
                               float direction,
                               surfaceData* surfaceData,
                               float fluidDensity);

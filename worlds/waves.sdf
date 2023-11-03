@@ -96,51 +96,63 @@
         </include>
 
 <!--        <include>-->
-<!--            <pose>0 0 5 0 0 0</pose>-->
-<!--            <uri>models/wind_model.sdf</uri>-->
-<!--        </include>-->
+<!--            <pose>0 0 4 0 0 0</pose>-->
+<!--            <uri>model://boat</uri>-->
+<!--            <plugin filename="WaterCurrent" name="water_current::WaterCurrent">-->
+<!--                <link_name>boat_body</link_name>-->
+<!--                <current>-->
+<!--                    <speed>-->
+<!--                        <min>1</min>-->
+<!--                        <max>2</max>-->
+<!--                        <stddev>0.3</stddev>-->
+<!--                    </speed>-->
+<!--                    <direction>-->
+<!--                        <min>30</min>-->
+<!--                        <max>45</max>-->
+<!--                        <stddev>2</stddev>-->
+<!--                    </direction>-->
+<!--                </current>-->
 
-<!--        <include>-->
-<!--            <pose>5 5 0 0 0 0</pose>-->
-<!--            <uri>../models/box.sdf</uri>-->
+
+<!--            </plugin>-->
 <!--        </include>-->
 
         <include>
-            <pose>0 0 4 0 0 0</pose>
-            <uri>model://boat</uri>
+            <pose>0 0 0 0 0 0</pose>
+            <uri>model://vereniki</uri>
 
             <plugin filename="WaterCurrent" name="water_current::WaterCurrent">
-                <link_name>boat_body</link_name>
-                <current>
+            <link_name>platform_body</link_name>
+            <current>
+                <speed>
+                    <min>0.2</min>
+                    <max>1</max>
+                    <stddev>0.3</stddev>
+                </speed>
+                <direction>
+                    <min>100</min>
+                    <max>135</max>
+                    <stddev>2</stddev>
+                </direction>
+            </current>
+            </plugin>
+
+            <plugin filename="Wind" name="wind::Wind">
+                <link_name>platform_body</link_name>
+                <wind>
                     <speed>
-                        <min>1</min>
-                        <max>2</max>
-                        <stddev>0.3</stddev>
+                        <min>0.2</min>
+                        <max>0.6</max>
+                        <stddev>0.1</stddev>
                     </speed>
                     <direction>
                         <min>30</min>
                         <max>45</max>
                         <stddev>2</stddev>
                     </direction>
-                </current>
-
-<!--                <speed>1</speed>-->
-<!--                <speed_stddev>0.2</speed_stddev>-->
-
-<!--                <azimuth>45</azimuth>-->
-<!--                <azimuth_stddev>5</azimuth_stddev>-->
-
-<!--                <res_coef>1.2</res_coef>-->
-<!--                <density>1025</density>-->
-<!--                <update_rate>10</update_rate>-->
-
+                </wind>
             </plugin>
         </include>
-
-<!--        <include>-->
-<!--            <pose>0 0 0 0 0 0</pose>-->
-<!--            <uri>model://triangle_platform</uri>-->
-<!--        </include>-->
 
     </world>
 </sdf>

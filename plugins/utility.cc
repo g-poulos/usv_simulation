@@ -178,7 +178,7 @@ float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimut
     double yaw = std::atan2(siny_cosp, cosy_cosp);
 
     if (yaw < 0)
-        yaw = yaw + 2*M_PI;
+        yaw = yaw + 2 * M_PI;
 
     float relative_angle = (azimuth * (M_PI / 180)) - yaw;
 
@@ -197,14 +197,14 @@ float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimut
 
 math::Vector3d calculateForce(sim::EntityComponentManager &_ecm,
                               sim::Link link,
-                              float currentSpeed,
+                              float speed,
                               float direction,
                               surfaceData* surfaceData,
                               float fluidDensity) {
 
     math::Vector3d linkLinearVel = toGZVec(link.WorldLinearVelocity(_ecm));
-    math::Vector3d wcurrentLinearVel = sphericalToVector(currentSpeed, 90, direction);
-    math::Vector3d relativeVel = wcurrentLinearVel.operator-(linkLinearVel);
+    math::Vector3d forceLinearVel = sphericalToVector(speed, 90, direction);
+    math::Vector3d relativeVel = forceLinearVel.operator-(linkLinearVel);
 
     float surface = getSurface(link, _ecm, direction, surfaceData);
     float resCoefficient = 1.2;
@@ -213,13 +213,12 @@ math::Vector3d calculateForce(sim::EntityComponentManager &_ecm,
 
     //DEBUG
 //    float relativeVelMagnitude = sqrt(relativeVel.Dot(relativeVel));
-//    gzmsg << "|WATER_CURRENT|_________________________________________\n";
 //    gzmsg << "linkLinearVel     : " << linkLinearVel << std::endl;
-//    gzmsg << "wcurrentLinearVel : " << wcurrentLinearVel << std::endl;
+//    gzmsg << "forceLinearVel : " << forceLinearVel << std::endl;
 //    gzmsg << "relativeVel       : " << relativeVel << std::endl;
 //    gzmsg << "Relative Vel Speed: " << relativeVelMagnitude << " m/s" << std::endl;
-//    gzmsg << "Current Magnitude : " << sqrt(wcurrentVector.Dot(wcurrentVector)) << " N"<<std::endl;
-//    gzmsg << "Current           : " << wcurrentVector << std::endl;
+//    gzmsg << "Magnitude : " << sqrt(wcurrentVector.Dot(wcurrentVector)) << " N"<<std::endl;
+//    gzmsg << "Force           : " << wcurrentVector << std::endl;
 
     return wcurrentVector;
 }
