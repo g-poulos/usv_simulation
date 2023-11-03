@@ -6,7 +6,7 @@
         <link name='boat_body'>
             <inertial>
                 <pose>0.999251 0.000005 -1.223034 0 0 0</pose>
-                <mass>1610</mass>
+                <mass>800</mass>
                 <inertia>
                     <ixx>1.325642e+2</ixx>
                     <ixy>-0.000002e+2</ixy>
