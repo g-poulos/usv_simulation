@@ -62,12 +62,10 @@ float resCoefficient = 1;
 
 float fluidDensity = 1000;
 
-float *area_p;
-
-float *angle_p;
+surfaceData *currentSurfaceData;
 
 
-float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimuth) {
+float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimuth, surfaceData* surfaceData) {
     auto q = link.WorldPose(_ecm)->Rot().Normalized();
 
     // Convert quaternion to yaw
@@ -83,26 +81,27 @@ float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimut
     if (relative_angle < 0)
         relative_angle = relative_angle + 2 * M_PI;
 
-    int closest_i = findClosest(angle_p, 256, relative_angle);     //TODO: Remove constant length
+    int closest_i = findClosest(surfaceData->angle_p, surfaceData->size, relative_angle);
 
     // DEBUG
 //    gzmsg << "Boat Yaw " << yaw <<
 //             " Total: " << relative_angle <<
 //             " A_matrix: " << angle_p[closest_i] <<
 //             " Area: " << area_p[closest_i] <<std::endl;
-    return area_p[closest_i];
+    return surfaceData->area_p[closest_i];
 }
 
 math::Vector3d speedToForce(sim::EntityComponentManager &_ecm,
-                                sim::Link link,
-                                float currentSpeed,
-                                float direction) {
+                            sim::Link link,
+                            float currentSpeed,
+                            float direction,
+                            surfaceData* surfaceData) {
 
     math::Vector3d linkLinearVel = toGZVec(link.WorldLinearVelocity(_ecm));
     math::Vector3d wcurrentLinearVel = sphericalToVector(currentSpeed, 90, direction);
     math::Vector3d relativeVel = wcurrentLinearVel.operator-(linkLinearVel);
 
-    float surface = getSurface(link, _ecm, direction);
+    float surface = getSurface(link, _ecm, direction, surfaceData);
 
     math::Vector3d wcurrentVector = 0.5 * fluidDensity * resCoefficient * relativeVel * surface;
 
@@ -220,9 +219,12 @@ void WaterCurrent::Configure(const sim::Entity &_entity,
                                                        0.01);
 
     // Compute surface area of application
-    std::string currentSurfaceArea = getModelFile(_ecm, "current_surface.txt");
+    std::string currentSurfaceAreaFile = getModelFile(_ecm, "current_surface.txt");
 
-    readAreaFile(currentSurfaceArea, angle_p, area_p);
+    currentSurfaceData = readAreaFile(currentSurfaceAreaFile);
+    for (int i =0; i<256; i++){
+        gzmsg << currentSurfaceData->angle_p[i] << std::endl;
+    }
 }
 
 void WaterCurrent::PreUpdate(const sim::UpdateInfo &_info,
@@ -240,7 +242,7 @@ void WaterCurrent::PreUpdate(const sim::UpdateInfo &_info,
 //    double elevation = this->dataPtr->waterCurrentElevation + this->dataPtr->speedDistr.getNoise();
 
     if (this->dataPtr->link.WorldPose(_ecm)->Z() < 1) {
-        math::Vector3d current = speedToForce(_ecm, this->dataPtr->link, speed, azimuth);
+        math::Vector3d current = speedToForce(_ecm, this->dataPtr->link, speed, azimuth, currentSurfaceData);
         this->dataPtr->link.AddWorldForce(_ecm, current);
     }
 

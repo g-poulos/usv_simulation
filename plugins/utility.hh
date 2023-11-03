@@ -8,6 +8,16 @@
 
 using namespace gz;
 
+struct surfaceDataStruct{
+    int size;
+    float *area_p;
+    float *angle_p;
+};
+
+
+typedef struct surfaceDataStruct surfaceData;
+
+
 class IntegratedWhiteNoise {
 private:
     std::normal_distribution<double> distribution;
@@ -26,7 +36,7 @@ public:
 
 int findClosest(float arr[], int n, float target);
 
-void readAreaFile(std::string filename, float* &angle_table_ptr, float* &area_table_ptr);
+surfaceData* readAreaFile(std::string filename);
 
 std::string findFileFromHome(const std::string& filename);
 

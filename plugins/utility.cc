@@ -87,7 +87,7 @@ int findClosest(float arr[], int n, float target) {
     return mid;
 }
 
-void readAreaFile(std::string filename, float* &angle_table_ptr, float* &area_table_ptr) {
+surfaceData* readAreaFile(std::string filename) {
     std::filesystem::path cwd = std::filesystem::current_path();
     cout << "DIRECTORY: " << cwd << std::endl;
     string myText;
@@ -95,8 +95,10 @@ void readAreaFile(std::string filename, float* &angle_table_ptr, float* &area_ta
     getline(MyReadFile, myText);
     int arraySize = std::stoi(myText);
 
-    angle_table_ptr = new float[arraySize];
-    area_table_ptr = new float[arraySize];
+    surfaceData* _surfaceData = new surfaceData;
+    _surfaceData->size = arraySize;
+    _surfaceData->angle_p = new float[arraySize];
+    _surfaceData->area_p = new float[arraySize];
 
     bool foundSymb = false;
     int i = 0;
@@ -111,14 +113,15 @@ void readAreaFile(std::string filename, float* &angle_table_ptr, float* &area_ta
         } else {
             value = std::stof(myText);
             if (foundSymb) {
-                area_table_ptr[i] = value;
+                _surfaceData->area_p[i] = value;
             } else {
-                angle_table_ptr[i] = value;
+                _surfaceData->angle_p[i] = value;
             }
         }
         i++;
     }
     MyReadFile.close();
+    return _surfaceData;
 }
 
 std::string findFileFromHome(const std::string& filename) {
