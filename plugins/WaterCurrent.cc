@@ -61,7 +61,7 @@ public: float minAzimuth = 0;
     /// \brief Standard deviation for the current's azimuth
 public: float azimuthstddev = 0;
 
-    /// \brief Water current's elevation (not used)
+    /// \brief Water current elevation (not used)
 public: float elevation = 90;
 
     /// \brief Update rate buffer for current speed and direction

@@ -1,8 +1,8 @@
 #include <string>
 #include <gz/common/Profiler.hh>
 #include <gz/plugin/Register.hh>
-#include "gz/sim/Model.hh"
-#include "gz/sim/Link.hh"
+#include <gz/sim/Model.hh>
+#include <gz/sim/Link.hh>
 #include <gz/transport/Node.hh>
 #include <gz/msgs/float.pb.h>
 #include <gz/math/Vector3.hh>
@@ -10,7 +10,6 @@
 #include <gz/sim/components/Volume.hh>
 #include <gz/sim/components/World.hh>
 #include <filesystem>
-
 
 #include "Wind.hh"
 #include "utility.hh"
@@ -20,49 +19,71 @@ using namespace std;
 
 class wind::Wind::Implementation
 {
+    /// \brief the link affected by the wind
 public: sim::Link link{sim::kNullEntity};
 
+    /// \brief Transport node
 public: transport::Node node;
 
+    /// \brief Transport node publisher for the wind speed
 public: transport::Node::Publisher windSpeedPub;
 
+    /// \brief Transport node publisher for the wind azimuth
 public: transport::Node::Publisher azimuthPub;
 
+    /// \brief Topic where the wind speed is published
 public: std::string magnitudeTopic = "/wind/speed";
 
+    /// \brief Topic where the wind azimuth is published
 public: std::string azimuthTopic = "/wind/azimuth";
 
+    /// \brief Integrated white noise distribution to generate the wind's azimuth
 public: IntegratedWhiteNoise azimuthDistr;
 
+    /// \brief Integrated white noise distribution to generate the wind's speed
 public: IntegratedWhiteNoise speedDistr;
 
+    /// \brief Wind minimum speed
 public: float minSpeed = 0;
 
+    /// \brief Wind maximum speed
 public: float maxSpeed = 0;
 
+    /// \brief Standard deviation for the wind's speed
 public: float speedstddev = 0;
 
+    /// \brief Wind minimum azimuth
 public: float minAzimuth = 0;
 
+    /// \brief Wind maximum azimuth
 public: float maxAzimuth = 0;
 
+    /// \brief Standard deviation for the wind's azimuth
 public: float azimuthstddev = 0;
 
+    /// \brief WInd elevation (not used)
 public: float elevation = 90;
 
+    /// \brief Update rate buffer for wind speed and direction
 public: int updateRate = 10;
+
+    /// \brief Air density
+public: float airDensity = 1.225;
+
+    /// \brief Structure with the surface area information
+public: surfaceData *windSurfaceData;
+
+    /// \brief Name of file the with the surface area information
+public: std::string surfaceAreaFile = "wind_surface.txt";
 };
 
-float fluidDensity = 1.225;
-
-surfaceData *currentSurfaceData;
-
-
+//////////////////////////////////////////////////
 Wind::Wind()
     : System(), dataPtr(utils::MakeUniqueImpl<Implementation>())
 {
 }
 
+//////////////////////////////////////////////////
 void Wind::Configure(const sim::Entity &_entity,
                              const std::shared_ptr<const sdf::Element> &_sdf,
                              sim::EntityComponentManager &_ecm,
@@ -76,6 +97,7 @@ void Wind::Configure(const sim::Entity &_entity,
     sim::Model model(_entity);
     std::string linkName = _sdf->Get<std::string>("link_name");
     this->dataPtr->link = sim::Link(model.LinkByName(_ecm, linkName));
+    this->dataPtr->link.EnableVelocityChecks(_ecm, true);
 
     if (!this->dataPtr->link.Valid(_ecm)) {
         gzerr << "Could not find link named [" << linkName
@@ -84,12 +106,10 @@ void Wind::Configure(const sim::Entity &_entity,
     }
 
     if (_sdf->HasElement("wind")) {
-        sdf::ElementPtr currentObjSDF = _sdf->GetElementImpl("wind");
+        sdf::ElementPtr windObjSDF = _sdf->GetElementImpl("wind");
 
-        gzmsg << "Water Current Parameters" << std::endl;
-
-        if (currentObjSDF->HasElement("speed")) {
-            sdf::ElementPtr speedObjSDF = currentObjSDF->GetElementImpl("speed");
+        if (windObjSDF->HasElement("speed")) {
+            sdf::ElementPtr speedObjSDF = windObjSDF->GetElementImpl("speed");
 
             if (speedObjSDF->HasElement("min")) {
                 this->dataPtr->minSpeed = speedObjSDF->Get<float>("min");
@@ -100,13 +120,13 @@ void Wind::Configure(const sim::Entity &_entity,
             if (speedObjSDF->HasElement("stddev")) {
                 this->dataPtr->speedstddev = speedObjSDF->Get<float>("stddev");
             }
-            gzmsg << "Speed: " << " Min " << this->dataPtr->minSpeed
-                  << ", Max " << this->dataPtr->maxSpeed
-                  << ", stddev " << this->dataPtr->speedstddev << std::endl;
+            gzmsg << "[Wind] Speed: " << " Min " << this->dataPtr->minSpeed
+                                      << ", Max " << this->dataPtr->maxSpeed
+                                      << ", stddev " << this->dataPtr->speedstddev << std::endl;
         }
 
-        if (currentObjSDF->HasElement("direction")) {
-            sdf::ElementPtr directionObjSDF = currentObjSDF->GetElementImpl("direction");
+        if (windObjSDF->HasElement("direction")) {
+            sdf::ElementPtr directionObjSDF = windObjSDF->GetElementImpl("direction");
 
             if (directionObjSDF->HasElement("min")) {
                 this->dataPtr->minAzimuth = directionObjSDF->Get<float>("min");
@@ -117,21 +137,25 @@ void Wind::Configure(const sim::Entity &_entity,
             if (directionObjSDF->HasElement("stddev")) {
                 this->dataPtr->azimuthstddev = directionObjSDF->Get<float>("stddev");
             }
-            gzmsg << "Direction: " << " Min " << this->dataPtr->minAzimuth
-                  << ", Max " << this->dataPtr->maxAzimuth
-                  << ", stddev " << this->dataPtr->azimuthstddev << std::endl;
+            gzmsg << "[Wind] Direction: " << " Min " << this->dataPtr->minAzimuth
+                                     << ", Max " << this->dataPtr->maxAzimuth
+                                     << ", stddev " << this->dataPtr->azimuthstddev << std::endl;
         }
     }
 
-    if (_sdf->HasElement("density")) {
-        fluidDensity = _sdf->Get<float>("density");
-    }
+    if (_sdf->HasElement("density"))
+        this->dataPtr->airDensity = _sdf->Get<float>("density");
+    gzmsg << "[Wind] Density: " << this->dataPtr->airDensity << std::endl;
 
-    if (_sdf->HasElement("update_rate")) {
+    if (_sdf->HasElement("update_rate"))
         this->dataPtr->updateRate = _sdf->Get<float>("update_rate");
-    }
+    gzmsg << "[Wind] Update rate: " << this->dataPtr->updateRate << std::endl;
 
-    // Set up the publisher
+    if (_sdf->HasElement("surface_area_file"))
+        this->dataPtr->surfaceAreaFile = _sdf->Get<std::string>("surface_area_file");
+    gzmsg << "[Wind] Surface Area File: " << this->dataPtr->surfaceAreaFile << std::endl;
+
+    // Set up the publishers
     double updateRate = this->dataPtr->updateRate;
     transport::AdvertiseMessageOptions opts;
     opts.SetMsgsPerSec(updateRate);
@@ -142,7 +166,7 @@ void Wind::Configure(const sim::Entity &_entity,
     this->dataPtr->azimuthPub =
         this->dataPtr->node.Advertise<msgs::Float>(this->dataPtr->azimuthTopic, opts);
 
-    // Set up the noise distribution
+    // Set up the noise distributions
     this->dataPtr->speedDistr = IntegratedWhiteNoise(0,
                                                      this->dataPtr->speedstddev,
                                                      this->dataPtr->minSpeed,
@@ -154,15 +178,12 @@ void Wind::Configure(const sim::Entity &_entity,
                                                        this->dataPtr->maxAzimuth,
                                                        0.01);
 
-    // Compute surface area of application
-    std::string currentSurfaceAreaFile = getModelFile(_ecm, "wind_surface.txt");
-
-    currentSurfaceData = readAreaFile(currentSurfaceAreaFile);
-    for (int i =0; i<256; i++){
-        gzmsg << currentSurfaceData->angle_p[i] << std::endl;
-    }
+    // Read file with area of application
+    std::string windSurfaceAreaFile = getModelFile(_ecm, this->dataPtr->surfaceAreaFile);
+    this->dataPtr->windSurfaceData = readAreaFile(windSurfaceAreaFile);
 }
 
+//////////////////////////////////////////////////
 void Wind::PreUpdate(const sim::UpdateInfo &_info,
                              sim::EntityComponentManager &_ecm)
 {
@@ -171,20 +192,19 @@ void Wind::PreUpdate(const sim::UpdateInfo &_info,
         return;
     }
 
+    // Get values for speed and direction
     double speed = this->dataPtr->speedDistr.getValue();
     double azimuth = this->dataPtr->azimuthDistr.getValue();
 
-    // TODO: Remove elevation
-//    double elevation = this->dataPtr->elevation + this->dataPtr->speedDistr.getNoise();
-
-    math::Vector3d windForce = calculateForce(_ecm, this->dataPtr->link,
+    math::Vector3d windForce = calculateForce(_ecm,
+                                              this->dataPtr->link,
                                               speed,
                                               azimuth,
-                                              currentSurfaceData,
-                                              fluidDensity);
+                                              this->dataPtr->windSurfaceData,
+                                              this->dataPtr->airDensity);
     this->dataPtr->link.AddWorldForce(_ecm, windForce);
 
-
+    // Publish the messages
     msgs::Float forceMsg;
     forceMsg.set_data(speed);
     this->dataPtr->windSpeedPub.Publish(forceMsg);
@@ -198,3 +218,6 @@ GZ_ADD_PLUGIN(wind::Wind,
     sim::System,
     Wind::ISystemConfigure,
     Wind::ISystemPreUpdate)
+
+GZ_ADD_PLUGIN_ALIAS(wind::Wind,
+                    "wind::Wind")
