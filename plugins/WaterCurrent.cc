@@ -72,6 +72,12 @@ public: float fluidDensity = 1000;
 
     /// \brief Structure with the surface area information
 public: surfaceData *currentSurfaceData;
+
+    /// \brief Name of file the with the surface area information
+public: std::string surfaceAreaFile = "current_surface.txt";
+
+    /// \brief Level of the water surface below which the current applies
+public: float surfaceLevel = 1.0;
 };
 
 //////////////////////////////////////////////////
@@ -148,6 +154,14 @@ void WaterCurrent::Configure(const sim::Entity &_entity,
         this->dataPtr->updateRate = _sdf->Get<float>("update_rate");
     gzmsg << "[Water Current] Update Rate: " << this->dataPtr->updateRate << std::endl;
 
+    if (_sdf->HasElement("surface_area_file"))
+        this->dataPtr->surfaceAreaFile = _sdf->Get<std::string>("surface_area_file");
+    gzmsg << "[WaterCurrent] Surface Area File: " << this->dataPtr->surfaceAreaFile << std::endl;
+
+    if (_sdf->HasElement("surfaceLevel"))
+        this->dataPtr->surfaceLevel = _sdf->Get<float>("surfaceLevel");
+    gzmsg << "[WaterCurrent] Surface Level: " << this->dataPtr->surfaceLevel << std::endl;
+
     // Set up the publishers
     double updateRate = this->dataPtr->updateRate;
     transport::AdvertiseMessageOptions opts;
@@ -189,7 +203,7 @@ void WaterCurrent::PreUpdate(const sim::UpdateInfo &_info,
     double speed = this->dataPtr->speedDistr.getValue();
     double azimuth = this->dataPtr->azimuthDistr.getValue();
 
-    if (this->dataPtr->link.WorldPose(_ecm)->Z() < 1) {
+    if (this->dataPtr->link.WorldPose(_ecm)->Z() < this->dataPtr->surfaceLevel) {
         math::Vector3d current = calculateForce(_ecm,
                                                 this->dataPtr->link,
                                                 speed,
