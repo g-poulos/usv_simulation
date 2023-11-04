@@ -35,17 +35,17 @@ public:
 
 };
 
-int findClosest(float arr[], int n, float target);
+int findClosestMatchingValue(float arr[], int n, float target);
 
 surfaceData* readAreaFile(std::string filename);
 
 std::string findFileFromHome(const std::string& filename);
 
+std::string getModelFile(sim::EntityComponentManager &_ecm, std::string fileName);
+
 math::Vector3d sphericalToVector(double magnitude, double elevation, double azimuth);
 
 math::Vector3d toGZVec(std::optional<math::Vector3<double>> vec);
-
-std::string getModelFile(sim::EntityComponentManager &_ecm, std::string fileName);
 
 float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimuth, surfaceData* surfaceData);
 

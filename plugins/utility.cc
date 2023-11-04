@@ -10,7 +10,7 @@
 namespace fs = std::filesystem;
 using namespace std;
 
-
+//////////////////////////////////////////////////
 IntegratedWhiteNoise::IntegratedWhiteNoise() {
     this->distribution = std::normal_distribution<double> (0, 1);
     this->minValue = 1;
@@ -20,6 +20,7 @@ IntegratedWhiteNoise::IntegratedWhiteNoise() {
 
 }
 
+//////////////////////////////////////////////////
 IntegratedWhiteNoise::IntegratedWhiteNoise(double mean, double stddev,
                                            double minValue, double maxValue,
                                            double dt) {
@@ -30,6 +31,7 @@ IntegratedWhiteNoise::IntegratedWhiteNoise(double mean, double stddev,
     this->prevValue = 0.5 * (maxValue + minValue);
 }
 
+//////////////////////////////////////////////////
 double IntegratedWhiteNoise::getValue() {
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -44,6 +46,7 @@ double IntegratedWhiteNoise::getValue() {
     return nextValue;
 }
 
+//////////////////////////////////////////////////
 int getClosest(float val1, float val2, float target)
 {
     if (target - val1 >= val2 - target)
@@ -54,8 +57,9 @@ int getClosest(float val1, float val2, float target)
         return 0;
 }
 
-// Returns index to element closest to target in arr[]
-int findClosest(float arr[], int n, float target) {
+//////////////////////////////////////////////////
+/// \brief Returns index to element closest to target in arr[]
+int findClosestMatchingValue(float arr[], int n, float target) {
     // Corner cases
     if (target <= arr[0])
         return 0;
@@ -74,10 +78,7 @@ int findClosest(float arr[], int n, float target) {
             if (mid > 0 && target > arr[mid - 1])
                 return mid - 1 + getClosest(arr[mid], arr[mid] + 1, target);
             j = mid;
-        }
-            /* Repeat for left half */
-
-        else {
+        } else {
             if (mid < n - 1 && target < arr[mid + 1])
                 return mid + getClosest(arr[mid], arr[mid] + 1, target);
             i = mid + 1;
@@ -86,6 +87,7 @@ int findClosest(float arr[], int n, float target) {
     return mid;
 }
 
+//////////////////////////////////////////////////
 surfaceData* readAreaFile(std::string filename) {
     string line;
     ifstream readFile(filename);
@@ -121,35 +123,19 @@ surfaceData* readAreaFile(std::string filename) {
     return _surfaceData;
 }
 
+//////////////////////////////////////////////////
 std::string findFileFromHome(const std::string& filename) {
-    fs::path homeDir = fs::path(getenv("HOME")); // Get the home directory
+    fs::path homeDir = fs::path(getenv("HOME"));
 
     for (const auto& entry : fs::recursive_directory_iterator(homeDir)) {
         if (entry.is_regular_file() && entry.path().filename() == filename) {
             return entry.path();
         }
     }
-    return ""; // Empty string indicates file not found
+    return ""; // File not found
 }
 
-math::Vector3d sphericalToVector(double magnitude, double elevation, double azimuth) {
-    math::Vector3d result;
-
-    // Convert degrees to radians
-    elevation = elevation * M_PI / 180.0;
-    azimuth = azimuth * M_PI / 180.0;
-
-    // Calculate the components
-    result.X(magnitude * sin(elevation) * cos(azimuth));
-    result.Y(magnitude * sin(elevation) * sin(azimuth));
-    result.Z(magnitude * cos(elevation));
-    return result;
-}
-
-math::Vector3d toGZVec(std::optional<math::Vector3<double>> vec) {
-    return math::Vector3d(vec->X(), vec->Y(), vec->Z());
-}
-
+//////////////////////////////////////////////////
 std::string getModelFile(sim::EntityComponentManager &_ecm, std::string fileName) {
     sim::Entity collision = _ecm.EntityByComponents(gz::sim::components::Collision());
     const sim::components::CollisionElement *coll =
@@ -169,6 +155,27 @@ std::string getModelFile(sim::EntityComponentManager &_ecm, std::string fileName
     return parentPath + "/" + fileName;
 }
 
+//////////////////////////////////////////////////
+math::Vector3d sphericalToVector(double magnitude, double elevation, double azimuth) {
+    math::Vector3d result;
+
+    // Convert degrees to radians
+    elevation = elevation * M_PI / 180.0;
+    azimuth = azimuth * M_PI / 180.0;
+
+    // Calculate the components
+    result.X(magnitude * sin(elevation) * cos(azimuth));
+    result.Y(magnitude * sin(elevation) * sin(azimuth));
+    result.Z(magnitude * cos(elevation));
+    return result;
+}
+
+//////////////////////////////////////////////////
+math::Vector3d toGZVec(std::optional<math::Vector3<double>> vec) {
+    return math::Vector3d(vec->X(), vec->Y(), vec->Z());
+}
+
+//////////////////////////////////////////////////
 float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimuth, surfaceData* surfaceData) {
     auto q = link.WorldPose(_ecm)->Rot().Normalized();
 
@@ -177,15 +184,18 @@ float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimut
     double cosy_cosp = 1 - 2 * (q.Y() * q.Y() + q.Z() * q.Z());
     double yaw = std::atan2(siny_cosp, cosy_cosp);
 
+    // Convert negative radians to positive
     if (yaw < 0)
         yaw = yaw + 2 * M_PI;
 
+    // Find angle of the force relative to the model
     float relative_angle = (azimuth * (M_PI / 180)) - yaw;
 
+    // Convert negative radians to positive
     if (relative_angle < 0)
         relative_angle = relative_angle + 2 * M_PI;
 
-    int closest_i = findClosest(surfaceData->angle_p, surfaceData->size, relative_angle);
+    int closest_i = findClosestMatchingValue(surfaceData->angle_p, surfaceData->size, relative_angle);
 
     // DEBUG
 //    gzmsg << "Boat Yaw " << yaw <<
@@ -195,6 +205,7 @@ float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimut
     return surfaceData->area_p[closest_i];
 }
 
+//////////////////////////////////////////////////
 math::Vector3d calculateForce(sim::EntityComponentManager &_ecm,
                               sim::Link link,
                               float speed,
