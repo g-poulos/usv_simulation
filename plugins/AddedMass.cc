@@ -38,28 +38,10 @@ public: std::string forceTopic = "/added_mass/force";
 public: Eigen::VectorXd prevState;
 
 public: Eigen::MatrixXd Ma;
+    
+public: float coefficient;
 
 };
-
-/////////////////////////////////////////////////
-void AddAngularVelocityComponent(
-    const gz::sim::Entity &_entity,
-    gz::sim::EntityComponentManager &_ecm)
-{
-    if (!_ecm.Component<gz::sim::components::AngularVelocity>(_entity))
-    {
-        _ecm.CreateComponent(_entity,
-                             gz::sim::components::AngularVelocity());
-    }
-
-    // Create an angular velocity component if one is not present.
-    if (!_ecm.Component<gz::sim::components::WorldAngularVelocity>(
-        _entity))
-    {
-        _ecm.CreateComponent(_entity,
-                             gz::sim::components::WorldAngularVelocity());
-    }
-}
 
 /////////////////////////////////////////////////
 void AddWorldPose(
@@ -85,6 +67,7 @@ void AddWorldLinearVelocity(
     }
 }
 
+/////////////////////////////////////////////////
 math::Vector3d toGZVec(std::optional<math::Vector3<double>> vec) {
     return math::Vector3d(vec->X(), vec->Y(), vec->Z());
 }
@@ -104,6 +87,11 @@ void AddedMass::Configure(const gz::sim::Entity &_entity, const std::shared_ptr<
     this->dataPtr->link = sim::Link(model.LinkByName(_ecm, linkName));
     this->dataPtr->link.EnableAccelerationChecks(_ecm, true);
 
+    if (_sdf->HasElement("coef"))
+        this->dataPtr->coefficient = _sdf->Get<float>("coef");
+    gzmsg << "[AddedMass]: Coefficient: " << this->dataPtr->coefficient << std::endl;
+
+    // Set up publisher
     transport::AdvertiseMessageOptions opts;
     opts.SetMsgsPerSec(30);
 
@@ -147,7 +135,7 @@ void AddedMass::PreUpdate(const gz::sim::UpdateInfo &_info, gz::sim::EntityCompo
     this->dataPtr->prevState = state;
 
 //    const Eigen::VectorXd force = this->dataPtr->Ma * stateDot * 0.8;
-    const Eigen::VectorXd force = fluidMass * stateDot * 0.8;
+    const Eigen::VectorXd force = fluidMass * stateDot * this->dataPtr->coefficient;
     math::Vector3d totalForce(-force(0),  -force(1), 0);
 
     float mag = sqrt(pow(totalForce.X(), 2) + pow(totalForce.Y(), 2));
@@ -155,11 +143,11 @@ void AddedMass::PreUpdate(const gz::sim::UpdateInfo &_info, gz::sim::EntityCompo
     gzmsg << "Acceleration: " << stateDot << std::endl;
     gzmsg << "Mag: " << mag << std::endl;
     gzmsg << totalForce << std::endl;
-    if (mag < 100000) {
+    if (mag < 100000) {     // TODO: Remove constant
         this->dataPtr->link.AddWorldForce(_ecm, pose->Rot() * totalForce);
     }
 
-    math::Vector3d acc(stateDot(0), stateDot(1), stateDot(2));
+//    math::Vector3d acc(stateDot(0), stateDot(1), stateDot(2));
     msgs::Vector3d forceMsg;
     forceMsg.set_x(totalForce.X());
     forceMsg.set_y(totalForce.Y());
