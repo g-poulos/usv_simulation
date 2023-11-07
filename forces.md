@@ -11,7 +11,7 @@ to its center of mass.
 ### **1. Buoyancy** : hydrostatic force acting on a small planar surface $dS$
 $$d \overrightarrow{F} = \rho g z dS \overrightarrow{n}$$
 
-Where $\rho$ is the density of the water, $z$ the depth in the water and $\overrightarrow{n}$
+Where $\rho$ is the density of water, $z$ the depth in the water and $\overrightarrow{n}$
 the normal to the surface
 
 ### **2. Damping Forces**
@@ -24,7 +24,7 @@ $$\overrightarrow{F}_{vi} = \frac{1}{2} \rho C_F(R_n) S_i v_{fi} \overrightarrow
 
 Where:
 
-  + $\rho$                    : density of the water
+  + $\rho$                    : density of water
   + $C_F(R_n)$                : Viscous Drag Coefficient and $R_n$ Reynolds Number 
   + $S_i$                     : Area of application
   + $\overrightarrow{v}_{fi}$ : relative velocity of the flow 
@@ -146,18 +146,59 @@ cgal::Vector3 torque = omega * cR;
 this->data->force  += force;
 this->data->torque += torque;
 ```
-## Water Current
+## Water Current / Wind 
 
 For the force acting on the floating body due to water current we use the drag 
-equation asuming that $V$ is the relative speed between the body and the water: 
+equation assuming that $V$ is the relative speed between the body and the water: 
 
-$$F_{drag} = \frac{1}{2} \rho C S V_{rel}^2$$
+$$F_{current} = \frac{1}{2} \rho_w C S V_{rel}^2$$
 
 Where: 
 
-+ $\rho$ : the density of the water
-+ $C$ : the drag coefficient
-+ $S$ : a reference surface area where the resistance applies
-+ $V$ : the speed of the body
++ $\rho_w$ : the density of water
++ $C$      : the drag coefficient
++ $S$      : a reference surface area where the resistance applies
++ $V_rel$      : the relative speed between the body and the water
+
+The same formula is used for the wind force acting on the body.
+
+$$F_{wind} = \frac{1}{2} \rho_a C S V_{rel}^2$$
+
+Where: 
+
++ $\rho_a$ : the density of air 
++ $C$      : the drag coefficient
++ $S$      : a reference surface area where the resistance applies
++ $V$      : the relative speed between the body and the wind
+
+## Added Mass 
+
+The added mass force is calculated using Newton's second law of motion:
+
+$$\overrightarrow{F} = m_a \overrightarrow{a}$$
+
+Where:
+
++ $m_a$ : the total mass of the displaced fluid
++ $a$   : the acceleration of the body
 
 
+
+## Engine Thrust
+
+After the thrust message is published a PID controller is used to apply wrenches directly to the
+propeller link. The angular velocity of the blades is calculated by the equations described in
+Fossen's "Guidance and Control of Ocean Vehicles" in page 246. 
+
+
+$$\omega = \sqrt{\frac{T}{\rho C_T d^4}}$$
+
+Where: 
+
++ $T$    : thrust 
++ $\rho$ : the desnity of water
++ $C_T$  : thurst coefficient which relates the angular velocity to actual thrust
++ $d$    : propeller diameter
+
+More about the Thruster Gazebo Plugin [here](https://gazebosim.org/api/sim/7/classgz_1_1sim_1_1systems_1_1Thruster.html) 
+ 
