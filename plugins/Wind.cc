@@ -70,6 +70,9 @@ public: int updateRate = 10;
     /// \brief Air density
 public: float airDensity = 1.225;
 
+    /// \brief Resistance coefficient of the surface
+public: float resCoefficient = 1;
+
     /// \brief Structure with the surface area information
 public: surfaceData *windSurfaceData;
 
@@ -147,6 +150,10 @@ void Wind::Configure(const sim::Entity &_entity,
         this->dataPtr->airDensity = _sdf->Get<float>("density");
     gzmsg << "[Wind] Density: " << this->dataPtr->airDensity << std::endl;
 
+    if (_sdf->HasElement("res_coef"))
+        this->dataPtr->resCoefficient = _sdf->Get<float>("res_coef");
+    gzmsg << "[Wind] Resistance Coefficient: " << this->dataPtr->resCoefficient << std::endl;
+
     if (_sdf->HasElement("update_rate"))
         this->dataPtr->updateRate = _sdf->Get<float>("update_rate");
     gzmsg << "[Wind] Update rate: " << this->dataPtr->updateRate << std::endl;
@@ -201,7 +208,8 @@ void Wind::PreUpdate(const sim::UpdateInfo &_info,
                                               speed,
                                               azimuth,
                                               this->dataPtr->windSurfaceData,
-                                              this->dataPtr->airDensity);
+                                              this->dataPtr->airDensity,
+                                              this->dataPtr->resCoefficient);
     this->dataPtr->link.AddWorldForce(_ecm, windForce);
 
     // Publish the messages

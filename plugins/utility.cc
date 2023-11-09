@@ -206,21 +206,16 @@ float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimut
 }
 
 //////////////////////////////////////////////////
-math::Vector3d calculateForce(sim::EntityComponentManager &_ecm,
-                              sim::Link link,
-                              float speed,
-                              float direction,
-                              surfaceData* surfaceData,
-                              float fluidDensity) {
+math::Vector3d calculateForce(sim::EntityComponentManager &_ecm, sim::Link link, float speed, float direction,
+                              surfaceData *surfaceData, float fluidDensity, float resCoefficient) {
 
     math::Vector3d linkLinearVel = toGZVec(link.WorldLinearVelocity(_ecm));
     math::Vector3d forceLinearVel = sphericalToVector(speed, 90, direction);
     math::Vector3d relativeVel = forceLinearVel.operator-(linkLinearVel);
 
     float surface = getSurface(link, _ecm, direction, surfaceData);
-    float resCoefficient = 1.2;
 
-    math::Vector3d wcurrentVector = 0.5 * fluidDensity * resCoefficient * relativeVel * surface;
+    math::Vector3d currentVector = 0.5 * fluidDensity * resCoefficient * relativeVel * surface;
 
     //DEBUG
 //    float relativeVelMagnitude = sqrt(relativeVel.Dot(relativeVel));
@@ -228,8 +223,8 @@ math::Vector3d calculateForce(sim::EntityComponentManager &_ecm,
 //    gzmsg << "forceLinearVel : " << forceLinearVel << std::endl;
 //    gzmsg << "relativeVel       : " << relativeVel << std::endl;
 //    gzmsg << "Relative Vel Speed: " << relativeVelMagnitude << " m/s" << std::endl;
-//    gzmsg << "Magnitude : " << sqrt(wcurrentVector.Dot(wcurrentVector)) << " N"<<std::endl;
-//    gzmsg << "Force           : " << wcurrentVector << std::endl;
+//    gzmsg << "Magnitude : " << sqrt(currentVector.Dot(currentVector)) << " N"<<std::endl;
+//    gzmsg << "Force           : " << currentVector << std::endl;
 
-    return wcurrentVector;
+    return currentVector;
 }

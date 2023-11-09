@@ -70,6 +70,9 @@ public: int updateRate = 10;
     /// \brief The density of the fluid
 public: float fluidDensity = 1000;
 
+    /// \brief Resistance coefficient of the surface
+public: float resCoefficient = 1;
+
     /// \brief Structure with the surface area information
 public: surfaceData *currentSurfaceData;
 
@@ -150,6 +153,10 @@ void WaterCurrent::Configure(const sim::Entity &_entity,
         this->dataPtr->fluidDensity = _sdf->Get<float>("density");
     gzmsg << "[Water Current] Density: " << this->dataPtr->fluidDensity << std::endl;
 
+    if (_sdf->HasElement("res_coef"))
+        this->dataPtr->resCoefficient = _sdf->Get<float>("res_coef");
+    gzmsg << "[Water Current] Resistance Coefficient: " << this->dataPtr->resCoefficient << std::endl;
+
     if (_sdf->HasElement("update_rate"))
         this->dataPtr->updateRate = _sdf->Get<float>("update_rate");
     gzmsg << "[Water Current] Update Rate: " << this->dataPtr->updateRate << std::endl;
@@ -209,7 +216,8 @@ void WaterCurrent::PreUpdate(const sim::UpdateInfo &_info,
                                                 speed,
                                                 azimuth,
                                                 this->dataPtr->currentSurfaceData,
-                                                this->dataPtr->fluidDensity);
+                                                this->dataPtr->fluidDensity,
+                                                this->dataPtr->resCoefficient);
         this->dataPtr->link.AddWorldForce(_ecm, current);
     }
 
