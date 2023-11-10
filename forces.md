@@ -118,7 +118,7 @@ $$\overrightarrow{F}_{slamming} = \frac{2 \sum A_{j}^{submerged}cos\theta_j}{S^{
 Where: 
 
 + $A_{j}^{submerged}cos\theta_j$ : is the surface area of the submerged part of a triangle 
-  projected onto a plane perpedicular to the velocity $\overrightarrow{v}$
+  projected onto a plane perpendicular to the velocity $\overrightarrow{v}$
 + $S_{total}$ : the total surface area of the boat
 + $\overrightarrow{v}$ : the velocity of the boat
 + $m$ : the boat's mass 
@@ -151,7 +151,7 @@ this->data->torque += torque;
 For the force acting on the floating body due to water current we use the drag 
 equation assuming that $V$ is the relative speed between the body and the water: 
 
-$$F_{current} = \frac{1}{2} \rho_w C S V_{rel}^2$$
+$$\overrightarrow{F}_{current} = \frac{1}{2} \rho_w C S \overrightarrow{V_{rel}^2}$$
 
 Where: 
 
@@ -162,7 +162,7 @@ Where:
 
 The same formula is used for the wind force acting on the body.
 
-$$F_{wind} = \frac{1}{2} \rho_a C S V_{rel}^2$$
+$$\overrightarrow{F}_{wind} = \frac{1}{2} \rho_a C S \overrightarrow{V_{rel}^2}$$
 
 Where: 
 
@@ -170,6 +170,27 @@ Where:
 + $C$      : the drag coefficient
 + $S$      : a reference surface area where the resistance applies
 + $V$      : the relative speed between the body and the wind
+
+
+#### Implementation 
+
+```cpp
+math::Vector3d linkLinearVel = toGZVec(link.WorldLinearVelocity(_ecm));
+math::Vector3d forceLinearVel = sphericalToVector(speed, 90, direction);
+math::Vector3d relativeVel = forceLinearVel.operator-(linkLinearVel);
+
+float surface = getSurface(link, _ecm, direction, surfaceData);
+
+math::Vector3d forceVector = 
+      0.5 * fluidDensity * resCoefficient * relativeVel * surface;
+```
+
+<br>
+<br>
+<br>
+<br>
+<br>
+
 
 ## Added Mass 
 
@@ -179,15 +200,17 @@ $$\overrightarrow{F} = m_a \overrightarrow{a}$$
 
 Where:
 
-+ $m_a$ : the total mass of the displaced fluid
++ $m_a$ : the mass of the displaced fluid
 + $a$   : the acceleration of the body
 
-
+Since the volume of the submerged body is known, the mass of the displaced fluid can be calculated by
+multiplying this volume with the water density. We only consider the planar motion of the body for 
+the added mass force, so the $z$ component of the force is always zero.
 
 ## Engine Thrust
 
-After the thrust message is published a PID controller is used to apply wrenches directly to the
-propeller link. The angular velocity of the blades is calculated by the equations described in
+For the engine thrust after the thrust message is published a PID controller is used to apply wrenches 
+directly to the propeller link. The angular velocity of the blades is calculated by the equations described in
 Fossen's "Guidance and Control of Ocean Vehicles" in page 246. 
 
 
@@ -196,7 +219,7 @@ $$\omega = \sqrt{\frac{T}{\rho C_T d^4}}$$
 Where: 
 
 + $T$    : thrust 
-+ $\rho$ : the desnity of water
++ $\rho$ : the density of water
 + $C_T$  : thurst coefficient which relates the angular velocity to actual thrust
 + $d$    : propeller diameter
 
