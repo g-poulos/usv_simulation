@@ -68,6 +68,26 @@ void AddWorldLinearVelocity(
 }
 
 /////////////////////////////////////////////////
+void AddAngularVelocityComponent(
+    const gz::sim::Entity &_entity,
+    gz::sim::EntityComponentManager &_ecm)
+{
+    if (!_ecm.Component<gz::sim::components::AngularVelocity>(_entity))
+    {
+        _ecm.CreateComponent(_entity,
+                             gz::sim::components::AngularVelocity());
+    }
+
+    // Create an angular velocity component if one is not present.
+    if (!_ecm.Component<gz::sim::components::WorldAngularVelocity>(
+        _entity))
+    {
+        _ecm.CreateComponent(_entity,
+                             gz::sim::components::WorldAngularVelocity());
+    }
+}
+
+/////////////////////////////////////////////////
 math::Vector3d toGZVec(std::optional<math::Vector3<double>> vec) {
     return math::Vector3d(vec->X(), vec->Y(), vec->Z());
 }
@@ -98,15 +118,11 @@ void AddedMass::Configure(const gz::sim::Entity &_entity, const std::shared_ptr<
     this->dataPtr->publisher =
         this->dataPtr->node.Advertise<msgs::Vector3d>(this->dataPtr->forceTopic, opts);
 
-    this->dataPtr->prevState = Eigen::VectorXd::Zero(3);
-    this->dataPtr->Ma = Eigen::MatrixXd::Zero(3, 3);
-    this->dataPtr->Ma << 532, 0, 0,
-                         0, 532, 0,
-                         0, 0, 1917;
-
+    this->dataPtr->prevState = Eigen::VectorXd::Zero(6);
 
     AddWorldPose(this->dataPtr->linkEntity, _ecm);
     AddWorldLinearVelocity(this->dataPtr->linkEntity, _ecm);
+    AddAngularVelocityComponent(this->dataPtr->linkEntity, _ecm);
 }
 
 void AddedMass::PreUpdate(const gz::sim::UpdateInfo &_info, gz::sim::EntityComponentManager &_ecm) {
@@ -114,21 +130,28 @@ void AddedMass::PreUpdate(const gz::sim::UpdateInfo &_info, gz::sim::EntityCompo
         return;
 
 //    float volume = 2.1549607138964606 * 0.4;
-    float volume = 0.43;
+    float volume = 0.39;
     float fluidMass = volume * 1025;
-//    auto acceleration = this->dataPtr->link.WorldLinearAcceleration(_ecm);
 
     auto dt = static_cast<double>(_info.dt.count())/1e9;
-    Eigen::VectorXd stateDot = Eigen::VectorXd(3);
-    Eigen::VectorXd state    = Eigen::VectorXd(3);
+    Eigen::VectorXd stateDot = Eigen::VectorXd(6);
+    Eigen::VectorXd state    = Eigen::VectorXd(6);
 
     auto linearVelocity = _ecm.Component<components::WorldLinearVelocity>(this->dataPtr->linkEntity);
+    auto rotationalVelocity = _ecm.Component<components::WorldAngularVelocity>(this->dataPtr->linkEntity);
+
+    // Transform world vectors to local vectors using model rotation
     auto pose = this->dataPtr->link.WorldPose(_ecm);
     auto localLinearVelocity = pose->Rot().Inverse() * linearVelocity->Data();
+    auto localRotationalVelocity = pose->Rot().Inverse() * rotationalVelocity->Data();
 
     state(0) = localLinearVelocity.X();
     state(1) = localLinearVelocity.Y();
     state(2) = localLinearVelocity.Z();
+
+    state(3) = localRotationalVelocity.X();
+    state(4) = localRotationalVelocity.Y();
+    state(5) = localRotationalVelocity.Z();
 
 
     stateDot = ((state - this->dataPtr->prevState)/dt);
@@ -137,22 +160,32 @@ void AddedMass::PreUpdate(const gz::sim::UpdateInfo &_info, gz::sim::EntityCompo
 //    const Eigen::VectorXd force = this->dataPtr->Ma * stateDot * 0.8;
     const Eigen::VectorXd force = fluidMass * stateDot * this->dataPtr->coefficient;
     math::Vector3d totalForce(-force(0),  -force(1), 0);
+    math::Vector3d totalTorque(0,  0, -force(5));
 
-    float mag = sqrt(pow(totalForce.X(), 2) + pow(totalForce.Y(), 2));
-
-    gzmsg << "Acceleration: " << stateDot << std::endl;
-    gzmsg << "Mag: " << mag << std::endl;
-    gzmsg << totalForce << std::endl;
-    if (mag < 100000) {     // TODO: Remove constant
+    if (totalForce.IsFinite()) {
         this->dataPtr->link.AddWorldForce(_ecm, pose->Rot() * totalForce);
+        this->dataPtr->link.AddWorldWrench(_ecm,
+                                           math::Vector3d (0, 0, 0),
+                                           pose->Rot() * totalTorque);
+//        this->dataPtr->link.AddWorldWrench(_ecm,
+//                                           pose->Rot() * totalForce,
+//                                           pose->Rot() * totalTorque);
     }
 
-//    math::Vector3d acc(stateDot(0), stateDot(1), stateDot(2));
     msgs::Vector3d forceMsg;
     forceMsg.set_x(totalForce.X());
     forceMsg.set_y(totalForce.Y());
     forceMsg.set_z(totalForce.Z());
     this->dataPtr->publisher.Publish(forceMsg);
+
+    // DEBUG
+    gzmsg << "Linear Acceleration: " << stateDot(0) << " " <<
+                                        stateDot(1) << " " <<
+                                        stateDot(2) << " " << std::endl;
+    gzmsg << "Angular Acceleration: " << stateDot(3) << " " <<
+                                         stateDot(4) << " " <<
+                                         stateDot(5) << " " << std::endl;
+//    gzmsg << totalForce << std::endl;
 
 }
 
