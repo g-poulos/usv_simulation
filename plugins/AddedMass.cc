@@ -31,9 +31,13 @@ public: Entity linkEntity;
 
 public: transport::Node node;
 
-public: transport::Node::Publisher publisher;
+public: transport::Node::Publisher forcePublisher;
 
 public: std::string forceTopic = "/added_mass/force";
+
+public: transport::Node::Publisher torquePublisher;
+
+public: std::string torqueTopic = "/added_mass/torque";
 
 public: Eigen::VectorXd prevState;
     
@@ -121,12 +125,15 @@ void AddedMass::Configure(const gz::sim::Entity &_entity, const std::shared_ptr<
         this->dataPtr->volume = _sdf->Get<float>("sub_volume");
     gzmsg << "[AddedMass]: Submerged Volume " << this->dataPtr->volume << std::endl;
 
-    // Set up publisher
+    // Set up publishers
     transport::AdvertiseMessageOptions opts;
     opts.SetMsgsPerSec(30);
 
-    this->dataPtr->publisher =
+    this->dataPtr->forcePublisher =
         this->dataPtr->node.Advertise<msgs::Vector3d>(this->dataPtr->forceTopic, opts);
+
+    this->dataPtr->torquePublisher =
+        this->dataPtr->node.Advertise<msgs::Vector3d>(this->dataPtr->torqueTopic, opts);
 
     this->dataPtr->prevState = Eigen::VectorXd::Zero(6);
 
@@ -173,20 +180,26 @@ void AddedMass::PreUpdate(const gz::sim::UpdateInfo &_info, gz::sim::EntityCompo
 
     // We focus on the planar motion of the body so forces acting
     // along the z axis and about the x and y axis are zero (Heave, Pitch, Roll)
-    math::Vector3d totalForce(-wrench(0), -wrench(1), 0);
-    math::Vector3d totalTorque(0,  0, -wrench(5));
+    math::Vector3d force(-wrench(0), -wrench(1), 0);
+    math::Vector3d torque(0, 0, -wrench(5));
 
-    if (totalForce.IsFinite()) {
+    if (force.IsFinite()) {
         this->dataPtr->link.AddWorldWrench(_ecm,
-                                           pose->Rot() * totalForce,
-                                           pose->Rot() * totalTorque);
+                                           pose->Rot() * force,
+                                           pose->Rot() * torque);
     }
 
     msgs::Vector3d forceMsg;
-    forceMsg.set_x(totalForce.X());
-    forceMsg.set_y(totalForce.Y());
-    forceMsg.set_z(totalForce.Z());
-    this->dataPtr->publisher.Publish(forceMsg);
+    forceMsg.set_x(force.X());
+    forceMsg.set_y(force.Y());
+    forceMsg.set_z(force.Z());
+    this->dataPtr->forcePublisher.Publish(forceMsg);
+
+    msgs::Vector3d torqueMsg;
+    torqueMsg.set_x(torque.X());
+    torqueMsg.set_y(torque.Y());
+    torqueMsg.set_z(torque.Z());
+    this->dataPtr->torquePublisher.Publish(torqueMsg);
 
     // DEBUG
 //    gzmsg << "Linear Acceleration: " << stateDot(0) << " " <<
@@ -195,7 +208,8 @@ void AddedMass::PreUpdate(const gz::sim::UpdateInfo &_info, gz::sim::EntityCompo
 //    gzmsg << "Angular Acceleration: " << stateDot(3) << " " <<
 //                                         stateDot(4) << " " <<
 //                                         stateDot(5) << " " << std::endl;
-//    gzmsg << totalForce << std::endl;
+//    gzmsg << force << std::endl;
+//    gzmsg << torque << std::endl;
 
 }
 
