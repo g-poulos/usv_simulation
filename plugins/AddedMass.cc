@@ -36,10 +36,12 @@ public: transport::Node::Publisher publisher;
 public: std::string forceTopic = "/added_mass/force";
 
 public: Eigen::VectorXd prevState;
-
-public: Eigen::MatrixXd Ma;
     
 public: float coefficient;
+
+public: float density;
+
+public: float volume;
 
 };
 
@@ -109,7 +111,15 @@ void AddedMass::Configure(const gz::sim::Entity &_entity, const std::shared_ptr<
 
     if (_sdf->HasElement("coef"))
         this->dataPtr->coefficient = _sdf->Get<float>("coef");
-    gzmsg << "[AddedMass]: Coefficient: " << this->dataPtr->coefficient << std::endl;
+    gzmsg << "[AddedMass]: Coefficient " << this->dataPtr->coefficient << std::endl;
+
+    if (_sdf->HasElement("density"))
+        this->dataPtr->density = _sdf->Get<float>("density");
+    gzmsg << "[AddedMass]: Density " << this->dataPtr->density << std::endl;
+
+    if (_sdf->HasElement("sub_volume"))
+        this->dataPtr->volume = _sdf->Get<float>("sub_volume");
+    gzmsg << "[AddedMass]: Submerged Volume " << this->dataPtr->volume << std::endl;
 
     // Set up publisher
     transport::AdvertiseMessageOptions opts;
@@ -129,16 +139,17 @@ void AddedMass::PreUpdate(const gz::sim::UpdateInfo &_info, gz::sim::EntityCompo
     if (_info.paused)
         return;
 
-//    float volume = 2.1549607138964606 * 0.4;
-    float volume = 0.39;
-    float fluidMass = volume * 1025;
+    // Compute displaced fluid mass
+    float fluidMass = this->dataPtr->volume * this->dataPtr->density;
 
     auto dt = static_cast<double>(_info.dt.count())/1e9;
     Eigen::VectorXd stateDot = Eigen::VectorXd(6);
     Eigen::VectorXd state    = Eigen::VectorXd(6);
 
-    auto linearVelocity = _ecm.Component<components::WorldLinearVelocity>(this->dataPtr->linkEntity);
-    auto rotationalVelocity = _ecm.Component<components::WorldAngularVelocity>(this->dataPtr->linkEntity);
+    auto linearVelocity =
+        _ecm.Component<components::WorldLinearVelocity>(this->dataPtr->linkEntity);
+    auto rotationalVelocity =
+        _ecm.Component<components::WorldAngularVelocity>(this->dataPtr->linkEntity);
 
     // Transform world vectors to local vectors using model rotation
     auto pose = this->dataPtr->link.WorldPose(_ecm);
@@ -153,23 +164,22 @@ void AddedMass::PreUpdate(const gz::sim::UpdateInfo &_info, gz::sim::EntityCompo
     state(4) = localRotationalVelocity.Y();
     state(5) = localRotationalVelocity.Z();
 
-
+    // Compute the linear and angular acceleration
     stateDot = ((state - this->dataPtr->prevState)/dt);
     this->dataPtr->prevState = state;
 
-//    const Eigen::VectorXd force = this->dataPtr->Ma * stateDot * 0.8;
-    const Eigen::VectorXd force = fluidMass * stateDot * this->dataPtr->coefficient;
-    math::Vector3d totalForce(-force(0),  -force(1), 0);
-    math::Vector3d totalTorque(0,  0, -force(5));
+    // Added Mass wrench
+    const Eigen::VectorXd wrench = fluidMass * stateDot * this->dataPtr->coefficient;
+
+    // We focus on the planar motion of the body so forces acting
+    // along the z axis and about the x and y axis are zero (Heave, Pitch, Roll)
+    math::Vector3d totalForce(-wrench(0), -wrench(1), 0);
+    math::Vector3d totalTorque(0,  0, -wrench(5));
 
     if (totalForce.IsFinite()) {
-        this->dataPtr->link.AddWorldForce(_ecm, pose->Rot() * totalForce);
         this->dataPtr->link.AddWorldWrench(_ecm,
-                                           math::Vector3d (0, 0, 0),
+                                           pose->Rot() * totalForce,
                                            pose->Rot() * totalTorque);
-//        this->dataPtr->link.AddWorldWrench(_ecm,
-//                                           pose->Rot() * totalForce,
-//                                           pose->Rot() * totalTorque);
     }
 
     msgs::Vector3d forceMsg;
@@ -179,12 +189,12 @@ void AddedMass::PreUpdate(const gz::sim::UpdateInfo &_info, gz::sim::EntityCompo
     this->dataPtr->publisher.Publish(forceMsg);
 
     // DEBUG
-    gzmsg << "Linear Acceleration: " << stateDot(0) << " " <<
-                                        stateDot(1) << " " <<
-                                        stateDot(2) << " " << std::endl;
-    gzmsg << "Angular Acceleration: " << stateDot(3) << " " <<
-                                         stateDot(4) << " " <<
-                                         stateDot(5) << " " << std::endl;
+//    gzmsg << "Linear Acceleration: " << stateDot(0) << " " <<
+//                                        stateDot(1) << " " <<
+//                                        stateDot(2) << " " << std::endl;
+//    gzmsg << "Angular Acceleration: " << stateDot(3) << " " <<
+//                                         stateDot(4) << " " <<
+//                                         stateDot(5) << " " << std::endl;
 //    gzmsg << totalForce << std::endl;
 
 }
