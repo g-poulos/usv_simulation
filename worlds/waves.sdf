@@ -96,55 +96,67 @@
         </include>
 
 <!--        <include>-->
-<!--            <pose>0 0 4 0 0 0</pose>-->
+<!--            <pose>0 0 2 0 0 0</pose>-->
 <!--            <uri>model://boat</uri>-->
 <!--            <plugin filename="AddedMass" name="added_mass::AddedMass">-->
 <!--                <link_name>boat_body</link_name>-->
-
 <!--            </plugin>-->
 <!--        </include>-->
 
         <include>
-            <pose>0 0 0 0 0 0</pose>
+            <pose>0 0 1 0 0 0</pose>
             <uri>model://vereniki</uri>
 
-<!--            <plugin filename="WaterCurrent" name="water_current::WaterCurrent">-->
-<!--                <link_name>platform_body</link_name>-->
-<!--                <current>-->
-<!--                    <speed>-->
-<!--                        <min>0.0</min>-->
-<!--                        <max>0.5</max>-->
-<!--                        <stddev>0.05</stddev>-->
-<!--                    </speed>-->
-<!--                    <direction>-->
-<!--                        <min>100</min>-->
-<!--                        <max>135</max>-->
-<!--                        <stddev>2</stddev>-->
-<!--                    </direction>-->
-<!--                </current>-->
-<!--                <density>1025</density>-->
-<!--                <update_rate>30</update_rate>-->
-<!--                <surface_area_file>current_surface.txt</surface_area_file>-->
-<!--                <surface_level>1.0</surface_level>-->
-<!--            </plugin>-->
+            <plugin filename="WaterCurrent" name="water_current::WaterCurrent">
+                <link_name>platform_body</link_name>
+                <current>
+                    <speed>
+                        <min>0.0</min>
+                        <max>0.51</max>
+                        <init>0.2</init>
+                        <stddev>0.01</stddev>
+                    </speed>
+                    <direction>
+                        <min>0</min>
+                        <max>360</max>
+                        <init>100</init>
+                        <stddev>1</stddev>
+                    </direction>
+                </current>
+                <density>1025</density>
+                <res_coef>1</res_coef>
+                <update_rate>30</update_rate>
+                <surface_area_file>current_surface.txt</surface_area_file>
+                <surface_level>1.0</surface_level>
+            </plugin>
 
             <plugin filename="Wind" name="wind::Wind">
                 <link_name>platform_body</link_name>
                 <wind>
                     <speed>
-                        <min>1</min>
-                        <max>6</max>
-                        <stddev>0.1</stddev>
+                        <min>0</min>
+                        <max>10</max>
+                        <init>3</init>
+                        <stddev>0.4</stddev>
                     </speed>
                     <direction>
-                        <min>30</min>
-                        <max>45</max>
-                        <stddev>2</stddev>
+                        <min>0</min>
+                        <max>360</max>
+                        <init>200</init>
+                        <stddev>1</stddev>
                     </direction>
                 </wind>
                 <density>1.225</density>
+                <res_coef>1</res_coef>
                 <update_rate>30</update_rate>
                 <surface_area_file>wind_surface.txt</surface_area_file>
+            </plugin>
+
+            <plugin filename="AddedMass" name="added_mass::AddedMass">
+                <link_name>platform_body</link_name>
+                <coef>1.0</coef>
+                <density>1025</density>
+                <sub_volume>0.39</sub_volume>
             </plugin>
         </include>
 

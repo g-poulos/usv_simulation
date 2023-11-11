@@ -30,7 +30,7 @@ public:
     IntegratedWhiteNoise();
     IntegratedWhiteNoise(double mean, double stddev,
                          double minValue, double maxValue,
-                         double dt);
+                         double initValue, double dt);
     double getValue();
 
 };

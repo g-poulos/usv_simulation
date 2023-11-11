@@ -23,12 +23,12 @@ IntegratedWhiteNoise::IntegratedWhiteNoise() {
 //////////////////////////////////////////////////
 IntegratedWhiteNoise::IntegratedWhiteNoise(double mean, double stddev,
                                            double minValue, double maxValue,
-                                           double dt) {
+                                           double initValue, double dt) {
     this->distribution = std::normal_distribution<double> (mean, stddev);
     this->minValue = minValue;
     this->maxValue = maxValue;
     this->dt = dt;
-    this->prevValue = 0.5 * (maxValue + minValue);
+    this->prevValue = initValue;
 }
 
 //////////////////////////////////////////////////

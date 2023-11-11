@@ -49,6 +49,9 @@ public: float minSpeed = 0;
     /// \brief Wind maximum speed
 public: float maxSpeed = 0;
 
+    /// \brief Wind initial speed
+public: float initSpeed = 0;
+
     /// \brief Standard deviation for the wind's speed
 public: float speedstddev = 0;
 
@@ -57,6 +60,9 @@ public: float minAzimuth = 0;
 
     /// \brief Wind maximum azimuth
 public: float maxAzimuth = 0;
+
+    /// \brief Wind initial azimuth
+public: float initAzimuth = 0;
 
     /// \brief Standard deviation for the wind's azimuth
 public: float azimuthstddev = 0;
@@ -123,11 +129,15 @@ void Wind::Configure(const sim::Entity &_entity,
             if (speedObjSDF->HasElement("max")) {
                 this->dataPtr->maxSpeed = speedObjSDF->Get<float>("max");
             }
+            if (speedObjSDF->HasElement("init")) {
+                this->dataPtr->initSpeed = speedObjSDF->Get<float>("init");
+            }
             if (speedObjSDF->HasElement("stddev")) {
                 this->dataPtr->speedstddev = speedObjSDF->Get<float>("stddev");
             }
             gzmsg << "[Wind] Speed: " << " Min " << this->dataPtr->minSpeed
                                       << ", Max " << this->dataPtr->maxSpeed
+                                      << ", Initial " << this->dataPtr->initSpeed
                                       << ", stddev " << this->dataPtr->speedstddev << std::endl;
         }
 
@@ -140,11 +150,15 @@ void Wind::Configure(const sim::Entity &_entity,
             if (directionObjSDF->HasElement("max")) {
                 this->dataPtr->maxAzimuth = directionObjSDF->Get<float>("max");
             }
+            if (directionObjSDF->HasElement("init")) {
+                this->dataPtr->initAzimuth = directionObjSDF->Get<float>("init");
+            }
             if (directionObjSDF->HasElement("stddev")) {
                 this->dataPtr->azimuthstddev = directionObjSDF->Get<float>("stddev");
             }
             gzmsg << "[Wind] Direction: " << " Min " << this->dataPtr->minAzimuth
                                      << ", Max " << this->dataPtr->maxAzimuth
+                                     << ", Initial " << this->dataPtr->initAzimuth
                                      << ", stddev " << this->dataPtr->azimuthstddev << std::endl;
         }
     }
@@ -181,11 +195,13 @@ void Wind::Configure(const sim::Entity &_entity,
                                                      this->dataPtr->speedstddev,
                                                      this->dataPtr->minSpeed,
                                                      this->dataPtr->maxSpeed,
+                                                     this->dataPtr->initSpeed,
                                                      this->dataPtr->dt);
     this->dataPtr->azimuthDistr = IntegratedWhiteNoise(0,
                                                        this->dataPtr->azimuthstddev,
                                                        this->dataPtr->minAzimuth,
                                                        this->dataPtr->maxAzimuth,
+                                                       this->dataPtr->initAzimuth,
                                                        this->dataPtr->dt);
 
     // Read file with area of application
