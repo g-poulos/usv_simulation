@@ -25,7 +25,7 @@
                     </mesh>
                 </geometry>
                 <material>
-                    <diffuse>0.1 0.1 0.2 1</diffuse>
+                    <diffuse>1 1 1 1</diffuse>
                 </material>
 
             </visual>
@@ -39,8 +39,8 @@
             </collision>
         </link>
 
-        <link name="engine_link">
-            <pose>0 0 0 0 0 0</pose>
+        <link name="engine_linkA">
+            <pose>2.76029 0 -0.2 0 0 0</pose>
             <visual name="visual">
                 <geometry>
                     <mesh>
@@ -75,9 +75,9 @@
                 </inertia>
             </inertial>
         </link>
-        <joint name="engine_joint" type="revolute">
+        <joint name="engine_jointA" type="revolute">
             <parent>platform_body</parent>
-            <child>engine_link</child>
+            <child>engine_linkA</child>
             <axis>
                 <xyz>0 0 1</xyz>
                 <limit>
@@ -94,8 +94,8 @@
             </axis>
         </joint>
 
-        <link name="propeller_link">
-            <pose relative_to="propeller_joint">0 0 0 0 0 0</pose>
+        <link name="propeller_linkA">
+            <pose relative_to="propeller_jointA">0 0 0 0 0 0</pose>
             <visual name="visual">
                 <geometry>
                     <mesh>
@@ -123,10 +123,212 @@
                 </inertia>
             </inertial>
         </link>
-        <joint name="propeller_joint" type="revolute">
-            <pose relative_to="engine_link">-0.278156 0 -0.509371 0 0 0</pose>
-            <parent>engine_link</parent>
-            <child>propeller_link</child>
+        <joint name="propeller_jointA" type="revolute">
+            <pose relative_to="engine_linkA">-0.278156 0 -0.509371 0 0 0</pose>
+            <parent>engine_linkA</parent>
+            <child>propeller_linkA</child>
+            <axis>
+                <xyz>1 0 0</xyz>
+                <dynamics>
+                    <damping>0.01</damping>
+                </dynamics>
+                <limit>
+                    <lower>-1e+16</lower>
+                    <upper>1e+16</upper>
+                </limit>
+            </axis>
+        </joint>
+
+
+        <link name="engine_linkB">
+            <pose>-1.38549 1.75 -0.2 0 0 0</pose>
+            <visual name="visual">
+                <geometry>
+                    <mesh>
+                        <uri>model://wam-v/meshes/engine.dae</uri>
+                    </mesh>
+                </geometry>
+            </visual>
+            <collision name="engine_vertical_axis_collision">
+                <pose>-0.16 0 -0.215 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.2 0.1 0.83</size>
+                    </box>
+                </geometry>
+            </collision>
+            <collision name="engine_rear_end_collision">
+                <pose>-0.34 0 0.12 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.12 0.15 0.12</size>
+                    </box>
+                </geometry>
+            </collision>
+            <inertial>
+                <mass>15</mass>
+                <inertia>
+                    <ixx>0.88924</ixx>
+                    <ixy>0</ixy>
+                    <iyy>0.911125</iyy>
+                    <iyz>0</iyz>
+                    <izz>0.078125</izz>
+                </inertia>
+            </inertial>
+        </link>
+        <joint name="engine_jointB" type="revolute">
+            <parent>platform_body</parent>
+            <child>engine_linkB</child>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <lower>-1.57</lower>
+                    <upper>1.57</upper>
+                    <stifness>10</stifness>
+                </limit>
+                <dynamics>
+                    <damping>30</damping>
+                    <spring_stiffness>100.0</spring_stiffness>
+                    <spring_reference>0</spring_reference>
+                    <friction>1.0</friction>
+                </dynamics>
+            </axis>
+        </joint>
+
+        <link name="propeller_linkB">
+            <pose relative_to="propeller_jointB">0 0 0 0 0 0</pose>
+            <visual name="visual">
+                <geometry>
+                    <mesh>
+                        <uri>model://wam-v/meshes/propeller.dae</uri>
+                    </mesh>
+                </geometry>
+            </visual>
+            <collision name="collision">
+                <pose>-0.11 0 0 0 1.570796 0</pose>
+                <geometry>
+                    <cylinder>
+                        <length>0.08</length>
+                        <radius>0.24</radius>
+                    </cylinder>
+                </geometry>
+            </collision>
+            <inertial>
+                <mass>0.5</mass>
+                <inertia>
+                    <ixx>0.008545</ixx>
+                    <ixy>0</ixy>
+                    <iyy>0.008545</iyy>
+                    <iyz>0</iyz>
+                    <izz>0.0144</izz>
+                </inertia>
+            </inertial>
+        </link>
+        <joint name="propeller_jointB" type="revolute">
+            <pose relative_to="engine_linkB">-0.278156 0 -0.509371 0 0 0</pose>
+            <parent>engine_linkB</parent>
+            <child>propeller_linkB</child>
+            <axis>
+                <xyz>1 0 0</xyz>
+                <dynamics>
+                    <damping>0.01</damping>
+                </dynamics>
+                <limit>
+                    <lower>-1e+16</lower>
+                    <upper>1e+16</upper>
+                </limit>
+            </axis>
+        </joint>
+
+
+        <link name="engine_linkC">
+            <pose>-1.38549 -1.75 -0.2 0 0 0</pose>
+            <visual name="visual">
+                <geometry>
+                    <mesh>
+                        <uri>model://wam-v/meshes/engine.dae</uri>
+                    </mesh>
+                </geometry>
+            </visual>
+            <collision name="engine_vertical_axis_collision">
+                <pose>-0.16 0 -0.215 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.2 0.1 0.83</size>
+                    </box>
+                </geometry>
+            </collision>
+            <collision name="engine_rear_end_collision">
+                <pose>-0.34 0 0.12 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.12 0.15 0.12</size>
+                    </box>
+                </geometry>
+            </collision>
+            <inertial>
+                <mass>15</mass>
+                <inertia>
+                    <ixx>0.88924</ixx>
+                    <ixy>0</ixy>
+                    <iyy>0.911125</iyy>
+                    <iyz>0</iyz>
+                    <izz>0.078125</izz>
+                </inertia>
+            </inertial>
+        </link>
+        <joint name="engine_jointC" type="revolute">
+            <parent>platform_body</parent>
+            <child>engine_linkC</child>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <lower>-1.57</lower>
+                    <upper>1.57</upper>
+                    <stifness>10</stifness>
+                </limit>
+                <dynamics>
+                    <damping>30</damping>
+                    <spring_stiffness>100.0</spring_stiffness>
+                    <spring_reference>0</spring_reference>
+                    <friction>1.0</friction>
+                </dynamics>
+            </axis>
+        </joint>
+
+        <link name="propeller_linkC">
+            <pose relative_to="propeller_jointC">0 0 0 0 0 0</pose>
+            <visual name="visual">
+                <geometry>
+                    <mesh>
+                        <uri>model://wam-v/meshes/propeller.dae</uri>
+                    </mesh>
+                </geometry>
+            </visual>
+            <collision name="collision">
+                <pose>-0.11 0 0 0 1.570796 0</pose>
+                <geometry>
+                    <cylinder>
+                        <length>0.08</length>
+                        <radius>0.24</radius>
+                    </cylinder>
+                </geometry>
+            </collision>
+            <inertial>
+                <mass>0.5</mass>
+                <inertia>
+                    <ixx>0.008545</ixx>
+                    <ixy>0</ixy>
+                    <iyy>0.008545</iyy>
+                    <iyz>0</iyz>
+                    <izz>0.0144</izz>
+                </inertia>
+            </inertial>
+        </link>
+        <joint name="propeller_jointC" type="revolute">
+            <pose relative_to="engine_linkC">-0.278156 0 -0.509371 0 0 0</pose>
+            <parent>engine_linkC</parent>
+            <child>propeller_linkC</child>
             <axis>
                 <xyz>1 0 0</xyz>
                 <dynamics>
@@ -144,14 +346,66 @@
                 filename="gz-sim-thruster-system"
                 name="gz::sim::systems::Thruster">
             <namespace>vereniki</namespace>
-            <joint_name>propeller_joint</joint_name>
+            <joint_name>propeller_jointA</joint_name>
             <fluid_density>1025</fluid_density>
             <propeller_diameter>0.48</propeller_diameter>
             <thrust_coefficient>0.01</thrust_coefficient>
             <p_gain>1</p_gain>
 
-            <max_thrust_cmd>10000.0</max_thrust_cmd>
-            <min_thrust_cmd>-10000.0</min_thrust_cmd>
+            <max_thrust_cmd>2000.0</max_thrust_cmd>
+            <min_thrust_cmd>-2000.0</min_thrust_cmd>
+        </plugin>
+
+        <plugin
+                filename="gz-sim-thruster-system"
+                name="gz::sim::systems::Thruster">
+            <namespace>vereniki</namespace>
+            <joint_name>propeller_jointB</joint_name>
+            <fluid_density>1025</fluid_density>
+            <propeller_diameter>0.48</propeller_diameter>
+            <thrust_coefficient>0.01</thrust_coefficient>
+            <p_gain>1</p_gain>
+
+            <max_thrust_cmd>2000.0</max_thrust_cmd>
+            <min_thrust_cmd>-2000.0</min_thrust_cmd>
+        </plugin>
+
+        <plugin
+                filename="gz-sim-thruster-system"
+                name="gz::sim::systems::Thruster">
+            <namespace>vereniki</namespace>
+            <joint_name>propeller_jointC</joint_name>
+            <fluid_density>1025</fluid_density>
+            <propeller_diameter>0.48</propeller_diameter>
+            <thrust_coefficient>0.01</thrust_coefficient>
+            <p_gain>1</p_gain>
+
+            <max_thrust_cmd>2000.0</max_thrust_cmd>
+            <min_thrust_cmd>-2000.0</min_thrust_cmd>
+        </plugin>
+
+        <plugin
+                filename="gz-sim-joint-position-controller-system"
+                name="gz::sim::systems::JointPositionController">
+            <joint_name>engine_jointA</joint_name>
+            <p_gain>1</p_gain>
+            <topic>/model/vereniki/joint/engine_jointA/cmd_steer</topic>
+        </plugin>
+
+        <plugin
+                filename="gz-sim-joint-position-controller-system"
+                name="gz::sim::systems::JointPositionController">
+            <joint_name>engine_jointB</joint_name>
+            <p_gain>1</p_gain>
+            <topic>/model/vereniki/joint/engine_jointB/cmd_steer</topic>
+        </plugin>
+
+        <plugin
+                filename="gz-sim-joint-position-controller-system"
+                name="gz::sim::systems::JointPositionController">
+            <joint_name>engine_jointC</joint_name>
+            <p_gain>1</p_gain>
+            <topic>/model/vereniki/joint/engine_jointC/cmd_steer</topic>
         </plugin>
 
 
