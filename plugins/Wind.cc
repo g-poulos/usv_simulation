@@ -61,6 +61,9 @@ public: float maxAzimuth = 0;
     /// \brief Standard deviation for the wind's azimuth
 public: float azimuthstddev = 0;
 
+    /// \brief Time passed between iterations (overwritten in preUpdate)
+public: double dt = 0.01;
+
     /// \brief WInd elevation (not used)
 public: float elevation = 90;
 
@@ -178,12 +181,12 @@ void Wind::Configure(const sim::Entity &_entity,
                                                      this->dataPtr->speedstddev,
                                                      this->dataPtr->minSpeed,
                                                      this->dataPtr->maxSpeed,
-                                                     0.01);
+                                                     this->dataPtr->dt);
     this->dataPtr->azimuthDistr = IntegratedWhiteNoise(0,
                                                        this->dataPtr->azimuthstddev,
                                                        this->dataPtr->minAzimuth,
                                                        this->dataPtr->maxAzimuth,
-                                                       0.01);
+                                                       this->dataPtr->dt);
 
     // Read file with area of application
     std::string windSurfaceAreaFile = getModelFile(_ecm, this->dataPtr->surfaceAreaFile);
@@ -198,6 +201,10 @@ void Wind::PreUpdate(const sim::UpdateInfo &_info,
     if (_info.paused) {
         return;
     }
+
+    // Set dt / Convert nanoseconds to seconds
+    auto dt = static_cast<double>(_info.dt.count())/1e9;
+    this->dataPtr->dt = dt;
 
     // Get values for speed and direction
     double speed = this->dataPtr->speedDistr.getValue();
