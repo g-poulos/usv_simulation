@@ -1,18 +1,12 @@
 #include <gz/plugin/Register.hh>
 #include "gz/sim/components/AngularVelocity.hh"
 #include "gz/sim/components/World.hh"
-#include "gz/sim/components/AngularVelocity.hh"
-#include "gz/sim/components/Environment.hh"
 #include "gz/sim/components/LinearVelocity.hh"
 #include "gz/sim/components/Pose.hh"
-#include "gz/sim/components/World.hh"
 #include "gz/sim/Link.hh"
 #include "gz/sim/Model.hh"
 #include "gz/sim/System.hh"
-#include "gz/sim/Util.hh"
 #include "gz/transport/Node.hh"
-#include <gz/msgs/float.pb.h>
-#include <math.h>
 #include <Eigen/Eigen>
 #include <gz/msgs/details/vector3d.pb.h>
 
@@ -20,39 +14,46 @@
 
 using namespace added_mass;
 using namespace gz;
-using namespace sim;
-using namespace systems;
 
 class added_mass::AddedMass::Implementation {
 
+    /// \brief The link affected by the added mass force
 public: sim::Link link{sim::kNullEntity};
 
-public: Entity linkEntity;
+    /// \brief The link entity affected by the added mass force
+public: sim::Entity linkEntity;
 
+    /// \brief Transport node
 public: transport::Node node;
 
+    /// \brief Transport node publisher for the force
 public: transport::Node::Publisher forcePublisher;
 
+    /// \brief Topic where the force is published
 public: std::string forceTopic = "/added_mass/force";
 
+    /// \brief Transport node publisher for the torque
 public: transport::Node::Publisher torquePublisher;
 
+    /// \brief Topic where the torque is published
 public: std::string torqueTopic = "/added_mass/torque";
 
+    /// \brief Vector of the previous iteration's acceleration
 public: Eigen::VectorXd prevState;
-    
+
+    /// \brief Added Mass Coefficient
 public: float coefficient;
 
+    /// \brief Water density
 public: float density;
 
+    /// \brief Submerged volume
 public: float volume;
 
 };
 
 /////////////////////////////////////////////////
-void AddWorldPose(
-    const gz::sim::Entity &_entity,
-    gz::sim::EntityComponentManager &_ecm)
+void AddWorldPose(const sim::Entity &_entity, sim::EntityComponentManager &_ecm)
 {
     if (!_ecm.Component<gz::sim::components::WorldPose>(_entity))
     {
@@ -61,35 +62,26 @@ void AddWorldPose(
 }
 
 /////////////////////////////////////////////////
-void AddWorldLinearVelocity(
-    const gz::sim::Entity &_entity,
-    gz::sim::EntityComponentManager &_ecm)
+void AddWorldLinearVelocity(const sim::Entity &_entity, sim::EntityComponentManager &_ecm)
 {
-    if (!_ecm.Component<gz::sim::components::WorldLinearVelocity>(
-        _entity))
+    if (!_ecm.Component<sim::components::WorldLinearVelocity>(_entity))
     {
-        _ecm.CreateComponent(_entity,
-                             gz::sim::components::WorldLinearVelocity());
+        _ecm.CreateComponent(_entity,sim::components::WorldLinearVelocity());
     }
 }
 
 /////////////////////////////////////////////////
-void AddAngularVelocityComponent(
-    const gz::sim::Entity &_entity,
-    gz::sim::EntityComponentManager &_ecm)
+void AddAngularVelocityComponent(const sim::Entity &_entity, sim::EntityComponentManager &_ecm)
 {
-    if (!_ecm.Component<gz::sim::components::AngularVelocity>(_entity))
+    if (!_ecm.Component<sim::components::AngularVelocity>(_entity))
     {
-        _ecm.CreateComponent(_entity,
-                             gz::sim::components::AngularVelocity());
+        _ecm.CreateComponent(_entity,sim::components::AngularVelocity());
     }
-
     // Create an angular velocity component if one is not present.
-    if (!_ecm.Component<gz::sim::components::WorldAngularVelocity>(
+    if (!_ecm.Component<sim::components::WorldAngularVelocity>(
         _entity))
     {
-        _ecm.CreateComponent(_entity,
-                             gz::sim::components::WorldAngularVelocity());
+        _ecm.CreateComponent(_entity,sim::components::WorldAngularVelocity());
     }
 }
 
@@ -103,10 +95,15 @@ AddedMass::AddedMass()
 {
 }
 
+/////////////////////////////////////////////////
+void AddedMass::Configure(const sim::Entity &_entity, const std::shared_ptr<const sdf::Element> &_sdf,
+                          sim::EntityComponentManager &_ecm, sim::EventManager &_eventMgr) {
 
-void AddedMass::Configure(const gz::sim::Entity &_entity, const std::shared_ptr<const sdf::Element> &_sdf,
-                          gz::sim::EntityComponentManager &_ecm, gz::sim::EventManager &_eventMgr) {
-
+    // Parse required elements
+    if (!_sdf->HasElement("link_name")) {
+        gzerr << "No <link_name> specified" << std::endl;
+        return;
+    }
     sim::Model model(_entity);
     std::string linkName = _sdf->Get<std::string>("link_name");
     this->dataPtr->linkEntity = model.LinkByName(_ecm, linkName);
@@ -142,21 +139,24 @@ void AddedMass::Configure(const gz::sim::Entity &_entity, const std::shared_ptr<
     AddAngularVelocityComponent(this->dataPtr->linkEntity, _ecm);
 }
 
-void AddedMass::PreUpdate(const gz::sim::UpdateInfo &_info, gz::sim::EntityComponentManager &_ecm) {
+/////////////////////////////////////////////////
+void AddedMass::PreUpdate(const sim::UpdateInfo &_info, sim::EntityComponentManager &_ecm) {
     if (_info.paused)
         return;
 
     // Compute displaced fluid mass
     float fluidMass = this->dataPtr->volume * this->dataPtr->density;
 
+    // Initialize acceleration vector and dt
     auto dt = static_cast<double>(_info.dt.count())/1e9;
     Eigen::VectorXd stateDot = Eigen::VectorXd(6);
     Eigen::VectorXd state    = Eigen::VectorXd(6);
 
+    // Get linear and rotational velocities
     auto linearVelocity =
-        _ecm.Component<components::WorldLinearVelocity>(this->dataPtr->linkEntity);
+        _ecm.Component<sim::components::WorldLinearVelocity>(this->dataPtr->linkEntity);
     auto rotationalVelocity =
-        _ecm.Component<components::WorldAngularVelocity>(this->dataPtr->linkEntity);
+        _ecm.Component<sim::components::WorldAngularVelocity>(this->dataPtr->linkEntity);
 
     // Transform world vectors to local vectors using model rotation
     auto pose = this->dataPtr->link.WorldPose(_ecm);
@@ -189,12 +189,14 @@ void AddedMass::PreUpdate(const gz::sim::UpdateInfo &_info, gz::sim::EntityCompo
                                            pose->Rot() * torque);
     }
 
+    // Publish force message
     msgs::Vector3d forceMsg;
     forceMsg.set_x(force.X());
     forceMsg.set_y(force.Y());
     forceMsg.set_z(force.Z());
     this->dataPtr->forcePublisher.Publish(forceMsg);
 
+    // Publish torque message
     msgs::Vector3d torqueMsg;
     torqueMsg.set_x(torque.X());
     torqueMsg.set_y(torque.Y());
