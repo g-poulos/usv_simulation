@@ -100,7 +100,7 @@ if __name__ == '__main__':
     # model_height = 1.5
     # draft = compute_draft(800, 1025, 4.28, 2)
 
-    poly = pv.read('models/vereniki/meshes/vereniki_scaled2.stl')
+    poly = pv.read('../models/vereniki/meshes/vereniki_scaled2.stl')
     model_height = 0.95
     draft = 0.44
 
@@ -110,9 +110,9 @@ if __name__ == '__main__':
     angle_list, area_list = create_angle_table(poly, clipped, 256, plot=False)
 
     if water_current_surface:
-        filename = "models/vereniki/meshes/current_surface.txt"
+        filename = "../models/vereniki/meshes/current_surface.txt"
     else:
-        filename = "models/vereniki/meshes/wind_surface.txt"
+        filename = "../models/vereniki/meshes/wind_surface.txt"
 
     write_file(filename, angle_list, area_list)
 
