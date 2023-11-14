@@ -55,23 +55,23 @@ def write_file(filename, angle_list, area_list):
     f.close()
 
 
-def create_angle_table(num_of_angles, plot=False):
+def create_angle_table(model, submerged_model, num_of_angles, plot=False):
     area_list = []
     angle_list = []
     i = 1
     step_size = 2*np.pi / num_of_angles
 
     for a in np.arange(0, 2 * np.pi, step_size):
-        projected = project_mesh_to_plane(clipped, normal=angle_to_vector(a))
+        projected = project_mesh_to_plane(submerged_model, normal=angle_to_vector(a))
 
         if plot:
             p = pv.Plotter()
             p.add_text(f"{i} out of {len(np.arange(0, 2 * np.pi, step_size))}\n"
                        f"Area: {projected.area:.3f} m^2")
-            p.add_mesh(poly, style='wireframe')
-            p.add_mesh(clipped)
+            p.add_mesh(model, style='wireframe')
+            p.add_mesh(submerged_model)
             p.add_mesh(projected, color="red")
-            p.add_points(np.array(poly.center), render_points_as_spheres=True, point_size=10, color='red')
+            p.add_points(np.array(model.center), render_points_as_spheres=True, point_size=10, color='red')
             p.add_points(np.array([0.0, 0.0, 0.0]), render_points_as_spheres=True, point_size=10, color='yellow')
             p.show()
             i = i + 1
@@ -81,19 +81,33 @@ def create_angle_table(num_of_angles, plot=False):
     return angle_list, area_list
 
 
+def compute_submerged_volume(model, submerged_model, plot=False):
+    print(submerged_model.volume)
+    print(model.volume)
+
+    if plot:
+        p = pv.Plotter()
+        p.add_mesh(model, style='wireframe')
+        p.add_mesh(submerged_model)
+        p.show()
+
+    return submerged_model.volume
+
+
 if __name__ == '__main__':
 
     # poly = pv.read('models/boat/meshes/boat3.stl')
-    poly = pv.read('models/vereniki/meshes/vereniki_scaled2.stl')
+    # model_height = 1.5
+    # draft = compute_draft(800, 1025, 4.28, 2)
 
+    poly = pv.read('models/vereniki/meshes/vereniki_scaled2.stl')
     model_height = 0.95
-    # draft = compute_draft(425, 1025, 4.5, 3.5)
-    draft = 0.56
+    draft = 0.44
 
     water_current_surface = False
 
     clipped = poly.clip('z', value=-(model_height/2)+draft, invert=water_current_surface)
-    angle_list, area_list = create_angle_table(256, plot=False)
+    angle_list, area_list = create_angle_table(poly, clipped, 256, plot=False)
 
     if water_current_surface:
         filename = "models/vereniki/meshes/current_surface.txt"
