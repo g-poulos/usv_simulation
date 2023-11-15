@@ -113,7 +113,7 @@
                     <speed>
                         <min>0.0</min>
                         <max>0.51</max>
-                        <init>0.2</init>
+                        <init>0.1</init>
                         <stddev>0.01</stddev>
                     </speed>
                     <direction>
@@ -122,7 +122,9 @@
                         <init>100</init>
                         <stddev>1</stddev>
                     </direction>
+                    <torque_vec>6.87510507e-01 -2.09003568e-04  1.75055482e-01</torque_vec>
                 </current>
+
                 <density>1025</density>
                 <res_coef>1</res_coef>
                 <update_rate>30</update_rate>
@@ -137,14 +139,15 @@
                         <min>0</min>
                         <max>10</max>
                         <init>3</init>
-                        <stddev>0.4</stddev>
+                        <stddev>1</stddev>
                     </speed>
                     <direction>
                         <min>0</min>
                         <max>360</max>
                         <init>200</init>
-                        <stddev>1</stddev>
+                        <stddev>15</stddev>
                     </direction>
+                    <torque_vec>6.80751024e-01 -3.31413294e-04 -1.25708798e-01</torque_vec>
                 </wind>
                 <density>1.225</density>
                 <res_coef>1</res_coef>
@@ -154,7 +157,7 @@
 
             <plugin filename="AddedMass" name="added_mass::AddedMass">
                 <link_name>platform_body</link_name>
-                <coef>1.0</coef>
+                <coef>0.8</coef>
                 <density>1025</density>
                 <sub_volume>0.39</sub_volume>
             </plugin>

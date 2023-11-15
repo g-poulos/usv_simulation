@@ -87,6 +87,9 @@ public: surfaceData *windSurfaceData;
 
     /// \brief Name of file the with the surface area information
 public: std::string surfaceAreaFile = "wind_surface.txt";
+
+    /// \brief Average distance of mesh points to CoM to compute torque
+public: math::Vector3d torqueVector;
 };
 
 //////////////////////////////////////////////////
@@ -161,6 +164,11 @@ void Wind::Configure(const sim::Entity &_entity,
                                      << ", Initial " << this->dataPtr->initAzimuth
                                      << ", stddev " << this->dataPtr->azimuthstddev << std::endl;
         }
+
+        if (windObjSDF->HasElement("torque_vec")) {
+            this->dataPtr->torqueVector = windObjSDF->Get<math::Vector3d>("torque_vec");
+        }
+        gzmsg << "[Wind] Torque Vector: " << this->dataPtr->torqueVector << std::endl;
     }
 
     if (_sdf->HasElement("density"))
@@ -226,14 +234,15 @@ void Wind::PreUpdate(const sim::UpdateInfo &_info,
     double speed = this->dataPtr->speedDistr.getValue();
     double azimuth = this->dataPtr->azimuthDistr.getValue();
 
-    math::Vector3d windForce = calculateForce(_ecm,
+    math::Vector3d force = calculateForce(_ecm,
                                               this->dataPtr->link,
                                               speed,
                                               azimuth,
                                               this->dataPtr->windSurfaceData,
                                               this->dataPtr->airDensity,
                                               this->dataPtr->resCoefficient);
-    this->dataPtr->link.AddWorldForce(_ecm, windForce);
+    auto torque = this->dataPtr->torqueVector.Cross(force);
+    this->dataPtr->link.AddWorldWrench(_ecm, force, torque);
 
     // Publish the messages
     msgs::Float forceMsg;

@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 from project_model import compute_draft
 
 
-def get_torque_dist(stl_model, height, draft, plot=False):
-    water_level_slice = stl_model.clip('z', value=-(height/2)+draft, invert=True)
+def get_torque_dist(stl_model, height, draft, submerged_part=True, plot=False):
+    water_level_slice = stl_model.clip('z', value=-(height/2)+draft, invert=submerged_part)
     center_of_mass = stl_model.center
     points = water_level_slice.points
 
@@ -38,7 +38,8 @@ if __name__ == '__main__':
     # model_height = 1.5
     # draft = compute_draft(800, 1025, 4.28, 2)
 
-    print(get_torque_dist(poly, model_height, draft, plot=False))
+    print(get_torque_dist(poly, model_height, draft, submerged_part=True, plot=True))
+    print(get_torque_dist(poly, model_height, draft, submerged_part=False, plot=True))
 
 
 
