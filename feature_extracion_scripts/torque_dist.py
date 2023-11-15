@@ -1,3 +1,4 @@
+import numpy as np
 import pyvista as pv
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
@@ -5,7 +6,7 @@ from project_model import compute_draft
 
 
 def get_torque_dist(stl_model, height, draft, plot=False):
-    water_level_slice = stl_model.clip('z', value=-(height/2)+draft, invert=False)
+    water_level_slice = stl_model.clip('z', value=-(height/2)+draft, invert=True)
     center_of_mass = stl_model.center
     points = water_level_slice.points
 
@@ -25,11 +26,8 @@ def get_torque_dist(stl_model, height, draft, plot=False):
                   [center_of_mass[2], points[0][2]], c='r')
         plt.show()
 
-    for point in points:
-        dist = center_of_mass - point
-    avg_dist = dist/len(points)
-
-    return avg_dist
+    distances = center_of_mass - np.array(points)
+    return np.mean(distances, axis=0)
 
 
 if __name__ == '__main__':
@@ -40,7 +38,7 @@ if __name__ == '__main__':
     # model_height = 1.5
     # draft = compute_draft(800, 1025, 4.28, 2)
 
-    print(get_torque_dist(poly, model_height, draft, plot=True))
+    print(get_torque_dist(poly, model_height, draft, plot=False))
 
 
 

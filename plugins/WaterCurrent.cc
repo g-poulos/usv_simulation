@@ -90,6 +90,9 @@ public: std::string surfaceAreaFile = "current_surface.txt";
 
     /// \brief Level of the water surface below which the current applies
 public: float surfaceLevel = 1.0;
+
+    /// \brief Average distance of mesh points to CoM to compute torque
+public: math::Vector3d torqueVector;
 };
 
 //////////////////////////////////////////////////
@@ -138,10 +141,10 @@ void WaterCurrent::Configure(const sim::Entity &_entity,
             if (speedObjSDF->HasElement("stddev")) {
                 this->dataPtr->speedstddev = speedObjSDF->Get<float>("stddev");
             }
-            gzmsg << "[Water Current] Speed: " << " Min " << this->dataPtr->minSpeed
-                                               << ", Max " << this->dataPtr->maxSpeed
-                                               << ", Initial " << this->dataPtr->initSpeed
-                                               << ", stddev " << this->dataPtr->speedstddev << std::endl;
+            gzmsg << "[WaterCurrent] Speed: " << " Min " << this->dataPtr->minSpeed
+                                              << ", Max " << this->dataPtr->maxSpeed
+                                              << ", Initial " << this->dataPtr->initSpeed
+                                              << ", stddev " << this->dataPtr->speedstddev << std::endl;
         }
 
         if (currentObjSDF->HasElement("direction")) {
@@ -159,11 +162,16 @@ void WaterCurrent::Configure(const sim::Entity &_entity,
             if (directionObjSDF->HasElement("stddev")) {
                 this->dataPtr->azimuthstddev = directionObjSDF->Get<float>("stddev");
             }
-            gzmsg << "[Water Current] Direction: " << " Min " << this->dataPtr->minAzimuth
-                                                   << ", Max " << this->dataPtr->maxAzimuth
-                                                   << ", Initial " << this->dataPtr->initAzimuth
-                                                   << ", stddev " << this->dataPtr->azimuthstddev << std::endl;
+            gzmsg << "[WaterCurrent] Direction: " << " Min " << this->dataPtr->minAzimuth
+                                                  << ", Max " << this->dataPtr->maxAzimuth
+                                                  << ", Initial " << this->dataPtr->initAzimuth
+                                                  << ", stddev " << this->dataPtr->azimuthstddev << std::endl;
         }
+
+        if (currentObjSDF->HasElement("torque_vec")) {
+            this->dataPtr->torqueVector = currentObjSDF->Get<math::Vector3d>("torque_vec");
+        }
+        gzmsg << "[WaterCurrent] Torque Vector: " << this->dataPtr->torqueVector << std::endl;
     }
 
     if (_sdf->HasElement("density"))
@@ -234,14 +242,16 @@ void WaterCurrent::PreUpdate(const sim::UpdateInfo &_info,
     double azimuth = this->dataPtr->azimuthDistr.getValue();
 
     if (this->dataPtr->link.WorldPose(_ecm)->Z() < this->dataPtr->surfaceLevel) {
-        math::Vector3d current = calculateForce(_ecm,
+        math::Vector3d force = calculateForce(_ecm,
                                                 this->dataPtr->link,
                                                 speed,
                                                 azimuth,
                                                 this->dataPtr->currentSurfaceData,
                                                 this->dataPtr->fluidDensity,
                                                 this->dataPtr->resCoefficient);
-        this->dataPtr->link.AddWorldForce(_ecm, current);
+
+        auto torque = this->dataPtr->torqueVector.Cross(force);
+        this->dataPtr->link.AddWorldWrench(_ecm, force, torque);
     }
 
     // Publish the messages
