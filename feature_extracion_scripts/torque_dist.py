@@ -2,15 +2,16 @@ import pyvista as pv
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
+from project_model import compute_draft
 
 
-def get_torque_dist(stl_model, height, draft, plot=False):
+def get_torque_dist(stl_model, height, draft, num_of_hulls, plot=False):
     water_level_slice = stl_model.slice(normal='z',
                                         origin=(0, 0, -(height / 2) + draft))
     center_of_mass = stl_model.center
     points_2d = water_level_slice.points[:, :2]
 
-    kmeans = KMeans(n_clusters=3, random_state=42)
+    kmeans = KMeans(n_clusters=num_of_hulls, random_state=42)
     kmeans.fit(points_2d)
     centers = kmeans.cluster_centers_
     predicted_labels = kmeans.labels_
@@ -27,9 +28,16 @@ def get_torque_dist(stl_model, height, draft, plot=False):
 
     average_distance = np.array([0, 0])
     center_of_mass_2d = center_of_mass[:2]
-    for cluster_center in centers:
-        average_distance = average_distance + cluster_center - center_of_mass_2d
-    average_distance = average_distance/len(centers)
+
+    if num_of_hulls == 1:
+        for point in points_2d:
+            average_distance = average_distance + (center_of_mass_2d - point)
+        average_distance = average_distance/len(points_2d)
+    else:
+        for cluster_center in centers:
+            average_distance = average_distance + (center_of_mass_2d - cluster_center)
+        average_distance = average_distance/len(centers)
+
     average_distance = np.append(average_distance, center_of_mass[2])
 
     return average_distance
@@ -39,8 +47,11 @@ if __name__ == '__main__':
     poly = pv.read('../models/vereniki/meshes/vereniki_scaled2.stl')
     model_height = 0.95
     draft = 0.44
+    # poly = pv.read('../models/boat/meshes/boat3.stl')
+    # model_height = 1.5
+    # draft = compute_draft(800, 1025, 4.28, 2)
 
-    print(get_torque_dist(poly, model_height, draft))
+    print(get_torque_dist(poly, model_height, draft, 1, plot=True))
 
 
 
