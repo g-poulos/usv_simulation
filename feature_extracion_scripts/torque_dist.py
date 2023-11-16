@@ -2,12 +2,12 @@ import numpy as np
 import pyvista as pv
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
-from project_model import compute_draft
 
 
 def get_torque_dist(stl_model, height, draft, submerged_part=True, plot=False):
-    water_level_slice = stl_model.clip('z', value=-(height/2)+draft, invert=submerged_part)
-    center_of_mass = stl_model.center
+    poly = pv.read(stl_model)
+    water_level_slice = poly.clip('z', value=-(height/2)+draft, invert=submerged_part)
+    center_of_mass = poly.center
     points = water_level_slice.points
 
     if plot:
@@ -31,15 +31,16 @@ def get_torque_dist(stl_model, height, draft, submerged_part=True, plot=False):
 
 
 if __name__ == '__main__':
-    poly = pv.read('../models/vereniki/meshes/vereniki_scaled2.stl')
-    model_height = 0.95
-    draft = 0.44
-    # poly = pv.read('../models/boat/meshes/boat3.stl')
+    # stl_file = "../models/boat/meshes/boat3.stl"
     # model_height = 1.5
     # draft = compute_draft(800, 1025, 4.28, 2)
 
-    print(get_torque_dist(poly, model_height, draft, submerged_part=True, plot=True))
-    print(get_torque_dist(poly, model_height, draft, submerged_part=False, plot=True))
+    stl_file = "../models/vereniki/meshes/vereniki_scaled2.stl"
+    model_height = 0.95
+    draft = 0.44
+
+    print(f"Torque Vector for submerged part: {get_torque_dist(stl_file, model_height, draft, submerged_part=True)}")
+    print(f"Torque Vector for surface part:   {get_torque_dist(stl_file, model_height, draft, submerged_part=False)}")
 
 
 

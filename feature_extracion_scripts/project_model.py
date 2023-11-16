@@ -1,9 +1,6 @@
 import numpy as np
 import pyvista as pv
-
-
-def compute_draft(weight, water_density, length, width):
-    return ((weight/water_density)/(length*width)) * 3
+import os
 
 
 def project_mesh_to_plane(mesh, normal):
@@ -81,41 +78,51 @@ def create_angle_table(model, submerged_model, num_of_angles, plot=False):
     return angle_list, area_list
 
 
-def compute_submerged_volume(model, submerged_model, plot=False):
-    print(submerged_model.volume)
-    print(model.volume)
+def compute_submerged_volume(stl_file, height, draft, plot=False):
+    poly = pv.read(stl_file)
+    clipped = poly.clip('z', value=-(height/2)+draft, invert=True)
 
     if plot:
         p = pv.Plotter()
-        p.add_mesh(model, style='wireframe')
-        p.add_mesh(submerged_model)
+        p.add_mesh(poly, style='wireframe')
+        p.add_mesh(clipped)
         p.show()
 
-    return submerged_model.volume
+    return clipped.volume
+
+
+def compute_draft(weight, water_density, length, width):
+    return ((weight/water_density)/(length*width)) * 3
+
+
+def create_surface_angle_file(stl_file, height, draft, submerged_surface=True):
+    poly = pv.read(stl_file)
+    parent_dir = os.path.dirname(stl_file) + "/"
+    clipped = poly.clip('z', value=-(height/2)+draft, invert=submerged_surface)
+    angle_list, area_list = create_angle_table(poly, clipped, 256, plot=False)
+
+    print("Writing file...")
+    if submerged_surface:
+        filename = parent_dir + "current_surface.txt"
+    else:
+        filename = parent_dir + "wind_surface.txt"
+
+    write_file(filename, angle_list, area_list)
+    print(f"Completed file: {filename}")
 
 
 if __name__ == '__main__':
 
-    # poly = pv.read('models/boat/meshes/boat3.stl')
+    # stl_file = "..models/boat/meshes/boat3.stl"
     # model_height = 1.5
     # draft = compute_draft(800, 1025, 4.28, 2)
 
-    poly = pv.read('../models/vereniki/meshes/vereniki_scaled2.stl')
+    stl_file = "../models/vereniki/meshes/vereniki_scaled2.stl"
     model_height = 0.95
     draft = 0.44
 
-    water_current_surface = False
-
-    clipped = poly.clip('z', value=-(model_height/2)+draft, invert=water_current_surface)
-    angle_list, area_list = create_angle_table(poly, clipped, 256, plot=False)
-
-    if water_current_surface:
-        filename = "../models/vereniki/meshes/current_surface.txt"
-    else:
-        filename = "../models/vereniki/meshes/wind_surface.txt"
-
-    write_file(filename, angle_list, area_list)
-
-
+    create_surface_angle_file(stl_file, model_height, draft, submerged_surface=True)
+    create_surface_angle_file(stl_file, model_height, draft, submerged_surface=False)
+    print(f"Submerged Volume: {compute_submerged_volume(stl_file, model_height, draft)} m^3")
 
 
