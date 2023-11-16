@@ -33,6 +33,6 @@ def compute_draft(stl_file, mass, water_density, plot=False):
 
 
 if __name__ == '__main__':
-    vereniki = "../models/vereniki/meshes/vereniki_scaled2.stl"
+    vereniki = "../models/vereniki/meshes/vereniki_scaled.stl"
     boat = "../models/boat/meshes/boat3.stl"
     print(compute_draft(vereniki, 425, 1025, plot=True))

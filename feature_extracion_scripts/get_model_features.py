@@ -4,7 +4,7 @@ from compute_draft import compute_draft
 
 
 def main():
-    stl_file = "../models/vereniki/meshes/vereniki_scaled2.stl"
+    stl_file = "../models/vereniki/meshes/vereniki_scaled.stl"
     mass = 425
     water_density = 1025
 

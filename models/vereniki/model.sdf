@@ -21,7 +21,7 @@
                 <pose>0 0 0 0 0 0</pose>
                 <geometry>
                     <mesh>
-                        <uri>model://vereniki/meshes/vereniki_scaled.obj</uri>
+                        <uri>model://vereniki/meshes/vereniki_scaled.dae</uri>
                     </mesh>
                 </geometry>
                 <material>
@@ -33,7 +33,7 @@
                 <pose>0 0 0 0 0 0</pose>
                 <geometry>
                     <mesh>
-                        <uri>model://vereniki/meshes/vereniki_scaled2.stl</uri>
+                        <uri>model://vereniki/meshes/vereniki_scaled.stl</uri>
                     </mesh>
                 </geometry>
             </collision>
