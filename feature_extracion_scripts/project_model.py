@@ -78,27 +78,9 @@ def create_angle_table(model, submerged_model, num_of_angles, plot=False):
     return angle_list, area_list
 
 
-def compute_submerged_volume(stl_file, draft, plot=False):
-    poly = pv.read(stl_file)
-    height = poly.bounds[5] - poly.bounds[4]
-    clipped = poly.clip('z', value=-(height/2)+draft, invert=True)
-
-    if plot:
-        p = pv.Plotter()
-        p.add_mesh(poly, style='wireframe')
-        p.add_mesh(clipped)
-        p.show()
-
-    return clipped.volume
-
-
-def compute_draft(weight, water_density, length, width):
-    return ((weight/water_density)/(length*width)) * 3
-
-
 def create_surface_angle_file(stl_file, draft, submerged_surface=True):
     poly = pv.read(stl_file)
-    height = poly.bounds[5] - poly.bounds[4]
+    height = abs(poly.bounds[5] - poly.bounds[4])
 
     clipped = poly.clip('z', value=-(height/2)+draft, invert=submerged_surface)
     angle_list, area_list = create_angle_table(poly, clipped, 256, plot=False)
@@ -115,7 +97,6 @@ def create_surface_angle_file(stl_file, draft, submerged_surface=True):
 
 
 if __name__ == '__main__':
-
     # stl_file = "..models/boat/meshes/boat3.stl"
     # model_height = 1.5
     # draft = compute_draft(800, 1025, 4.28, 2)
@@ -125,6 +106,6 @@ if __name__ == '__main__':
 
     create_surface_angle_file(stl_file, draft, submerged_surface=True)
     create_surface_angle_file(stl_file, draft, submerged_surface=False)
-    print(f"Submerged Volume: {compute_submerged_volume(stl_file, draft)} m^3")
+
 
 

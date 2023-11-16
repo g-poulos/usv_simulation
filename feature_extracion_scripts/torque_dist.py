@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 def get_torque_dist(stl_model, draft, submerged_part=True, plot=False):
     poly = pv.read(stl_model)
-    height = poly.bounds[5] - poly.bounds[4]
+    height = abs(poly.bounds[5] - poly.bounds[4])
 
     submerged_poly = poly.clip('z', value=-(height/2)+draft, invert=submerged_part)
     center_of_mass = poly.center
