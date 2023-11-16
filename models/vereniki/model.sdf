@@ -5,15 +5,15 @@
 
         <link name='platform_body'>
             <inertial>
-                <pose>0 0 0.2 0 0 0</pose>
+                <pose>0 0 0 0 0 0</pose>
                 <mass>425.4534</mass>
                 <inertia>
-                    <ixx>468.845</ixx>
+                    <ixx>555.133</ixx>
                     <ixy>0</ixy>
-                    <ixz>0</ixz>
-                    <iyy>854.233</iyy>
+                    <ixz>-2.118</ixz>
+                    <iyy>1007.443</iyy>
                     <iyz>-1.291</iyz>
-                    <izz>1267.66</izz>
+                    <izz>1488.504</izz>
                 </inertia>
             </inertial>
 
