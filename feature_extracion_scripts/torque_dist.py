@@ -4,16 +4,18 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
 
-def get_torque_dist(stl_model, height, draft, submerged_part=True, plot=False):
+def get_torque_dist(stl_model, draft, submerged_part=True, plot=False):
     poly = pv.read(stl_model)
-    water_level_slice = poly.clip('z', value=-(height/2)+draft, invert=submerged_part)
+    height = poly.bounds[5] - poly.bounds[4]
+
+    submerged_poly = poly.clip('z', value=-(height/2)+draft, invert=submerged_part)
     center_of_mass = poly.center
-    points = water_level_slice.points
+    points = submerged_poly.points
 
     if plot:
-        bounds = water_level_slice.bounds
+        bounds = submerged_poly.bounds
 
-        water_level_slice.plot(style='wireframe')
+        submerged_poly.plot(style='wireframe')
         ax = plt.axes(projection="3d")
         ax.set_xlim(bounds[0], bounds[1])
         ax.set_ylim(bounds[2], bounds[3])
@@ -36,11 +38,10 @@ if __name__ == '__main__':
     # draft = compute_draft(800, 1025, 4.28, 2)
 
     stl_file = "../models/vereniki/meshes/vereniki_scaled2.stl"
-    model_height = 0.95
     draft = 0.44
 
-    print(f"Torque Vector for submerged part: {get_torque_dist(stl_file, model_height, draft, submerged_part=True)}")
-    print(f"Torque Vector for surface part:   {get_torque_dist(stl_file, model_height, draft, submerged_part=False)}")
+    print(f"Torque Vector for submerged part: {get_torque_dist(stl_file, draft, submerged_part=True, plot=True)}")
+    print(f"Torque Vector for surface part:   {get_torque_dist(stl_file, draft, submerged_part=False, plot=True)}")
 
 
 
