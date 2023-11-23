@@ -1,12 +1,37 @@
 import numpy as np
 import pyvista as pv
 import os
+import vtk
 
 
-def project_mesh_to_plane(mesh, normal):
-    og = mesh.center
-    og[-1] -= mesh.length / 3.
-    return project_points_to_plane(mesh, origin=og, normal=normal)
+def get_projection_area(mesh, normal=(1, 0, 0), iterations=10, alpha=0.5, plot=False):
+    min_z = mesh.bounds[4]
+    max_z = mesh.bounds[5]
+    step = (max_z - min_z)/iterations
+    total_area = 0
+
+    pl = pv.Plotter()
+    pl.add_mesh(mesh, style='wireframe')
+
+    for i in range(iterations):
+        # Take mesh slice
+        clipped = mesh.clip('z', value=(i+1)*step, origin=(0, 0, min_z))
+        clipped = clipped.clip('z', value=i*step, origin=(0, 0, min_z), invert=False)
+
+        # Project slice to plane and remove duplicate points
+        projected_points = project_points_to_plane(clipped, normal=normal).points
+        projected_points = np.unique(projected_points, axis=0)
+
+        # Generate new surface from projected points and add its area
+        polydata = pv.PolyData(projected_points)
+        surface = polydata.delaunay_2d(alpha=alpha)
+        total_area = total_area + surface.area
+
+        if plot:
+            pl.add_mesh(surface, color='red', opacity=0.5)
+    if plot:
+        pl.show()
+    return total_area
 
 
 def angle_to_vector(angle):
@@ -18,7 +43,7 @@ def project_points_to_plane(mesh, origin=None, normal=(1, 0, 0), inplace=False):
     """Project points of this mesh to a plane"""
     if not isinstance(mesh, (pv.PolyData)):
         raise TypeError('Please use surface meshes only.')
-    import vtk
+
     if origin is None:
         origin = mesh.center
     if not inplace:
@@ -52,40 +77,28 @@ def write_file(filename, angle_list, area_list):
     f.close()
 
 
-def create_angle_table(model, submerged_model, num_of_angles, plot=False):
+def create_angle_table(model, num_of_angles, plot=False):
     area_list = []
     angle_list = []
-    i = 1
     step_size = 2*np.pi / num_of_angles
 
     for a in np.arange(0, 2 * np.pi, step_size):
-        projected = project_mesh_to_plane(submerged_model, normal=angle_to_vector(a))
-
-        if plot:
-            p = pv.Plotter()
-            p.add_text(f"{i} out of {len(np.arange(0, 2 * np.pi, step_size))}\n"
-                       f"Area: {projected.area:.3f} m^2")
-            p.add_mesh(model, style='wireframe')
-            p.add_mesh(submerged_model)
-            p.add_mesh(projected, color="red")
-            p.add_points(np.array(model.center), render_points_as_spheres=True, point_size=10, color='red')
-            p.add_points(np.array([0.0, 0.0, 0.0]), render_points_as_spheres=True, point_size=10, color='yellow')
-            p.show()
-            i = i + 1
-
+        area = get_projection_area(model, normal=angle_to_vector(a), plot=plot)
         angle_list.append(a)
-        area_list.append(projected.area)
+        area_list.append(area)
+
     return angle_list, area_list
 
 
-def create_surface_angle_file(stl_file, draft, submerged_surface=True):
+def create_surface_angle_file(stl_file, draft, num_of_angles=256, submerged_surface=True):
     poly = pv.read(stl_file)
     height = abs(poly.bounds[5] - poly.bounds[4])
 
     clipped = poly.clip('z', value=-(height/2)+draft, invert=submerged_surface)
-    angle_list, area_list = create_angle_table(poly, clipped, 256, plot=False)
 
     print("Writing file...")
+    angle_list, area_list = create_angle_table(clipped, num_of_angles, plot=False)
+
     parent_dir = os.path.dirname(stl_file) + "/"
     if submerged_surface:
         filename = parent_dir + "current_surface.txt"
@@ -101,7 +114,7 @@ if __name__ == '__main__':
     # model_height = 1.5
     # draft = compute_draft(800, 1025, 4.28, 2)
 
-    stl_file = "../models/vereniki/meshes/vereniki_scaled2.stl"
+    stl_file = "../models/vereniki/meshes/vereniki_scaled3.stl"
     draft = 0.44
 
     create_surface_angle_file(stl_file, draft, submerged_surface=True)
