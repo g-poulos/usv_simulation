@@ -1,6 +1,8 @@
 import numpy as np
-from project_model import project_mesh_to_plane
+from project_model import get_projection_area
 import pyvista as pv
+from scipy.spatial import Delaunay
+import matplotlib.pyplot as plt
 
 
 def h(h_uc, r_uc, m, r_lc, h_lc):
@@ -24,22 +26,18 @@ if __name__ == '__main__':
     print(f"Draft | {6.5 + 3 - h_original}  | {scaled_draft}")
     print(f"Mass  | {m_original}           | {m_scaled}")
 
-    vereniki = pv.read("../models/vereniki/meshes/vereniki_scaled.stl")
+    vereniki = pv.read("../models/vereniki/meshes/vereniki_scaled3.stl")
     vereniki_upper_part = vereniki.clip('z', value=-((0.65+0.3)/2)+scaled_draft, invert=False)
-    vereniki_lower_part = vereniki.clip('z', value=-((0.65+0.3)/2)+scaled_draft, invert=True)
+    vereniki_lower_part = vereniki.clip('z', value=-((0.65+0.3)/2)+0.3, invert=True)
 
-    A_t_c = project_mesh_to_plane(vereniki_lower_part, normal=(1, 0, 0)).area
-    A_l_c = project_mesh_to_plane(vereniki_lower_part, normal=(0, 1, 0)).area
-    # project_mesh_to_plane(vereniki_lower_part, normal=(1, 0, 0)).plot()
-    # project_mesh_to_plane(vereniki_lower_part, normal=(0, 1, 0)).plot()
+    A_t_c = get_projection_area(vereniki_lower_part, normal=(1, 0, 0), plot=False)
+    A_l_c = get_projection_area(vereniki_lower_part, normal=(0, 1, 0), plot=False)
+    print(f"Current Projection: At = {A_t_c},\n"
+          f"                    Al = {A_l_c}")
 
-    print(f"Current Projection: At = {A_t_c}, Al = {A_l_c}")
-
-    A_t_w = project_mesh_to_plane(vereniki_upper_part, normal=(1, 0, 0)).area
-    A_l_w = project_mesh_to_plane(vereniki_upper_part, normal=(0, 1, 0)).area
-    # project_mesh_to_plane(vereniki_upper_part, normal=(1, 0, 0)).plot()
-    # project_mesh_to_plane(vereniki_upper_part, normal=(0, 1, 0)).plot()
-
-    print(f"Wind Projection:    At = {A_t_w}, Al = {A_l_w}")
+    A_t_w = get_projection_area(vereniki_upper_part, normal=(1, 0, 0), plot=False)
+    A_l_w = get_projection_area(vereniki_upper_part, normal=(0, 1, 0), plot=False)
+    print(f"Wind Projection:    At = {A_t_w},\n"
+          f"                    Al = {A_l_w}")
 
 
