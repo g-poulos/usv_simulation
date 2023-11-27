@@ -18,6 +18,7 @@ def get_cluster_submeshes(mesh, labels, centers):
     points = mesh.points
     mesh.plot_normals(mag=0.1, faces=True, show_edges=True)
     sub_meshes = []
+    total_volume = 0
 
     for i in range(len(centers)):
         distances = np.linalg.norm(points[labels == i] - centers[i], axis=1)
@@ -31,6 +32,8 @@ def get_cluster_submeshes(mesh, labels, centers):
         _ = pl.add_mesh(result, color='lightblue')
         pl.show()
         sub_meshes.append(result)
+        total_volume = total_volume + result.volume
+    print(f"Script Volume: {total_volume}")
     return sub_meshes
 
 
@@ -64,8 +67,8 @@ if __name__ == '__main__':
     draft = 0.45
     vereniki = pv.read("../../../../gz_ws/src/usv_simulation/models/vereniki/meshes/vereniki_scaled3.stl")
 
-    # vereniki = pv.read("../../../../gz_ws/src/usv_simulation/models/boat/meshes/boat3.stl")
     # vereniki = pv.read("../../../../Desktop/Blends/catamaran.stl")
+    # vereniki = pv.read("../../../../Desktop/Blends/newboat.stl")
     vereniki.plot()
 
     vereniki_upper_part = vereniki.clip_closed_surface('z', origin=(0, 0, vereniki.bounds[4]+draft))
@@ -74,8 +77,9 @@ if __name__ == '__main__':
     print(vereniki_upper_part.is_manifold)
     input_mesh = vereniki_upper_part
     input_mesh.plot()
+    print(f"Total Volume: {input_mesh.volume}")
 
-    lbls, clstrs = run_kmeans(input_mesh, k=3, plot=True)
+    lbls, clstrs = run_kmeans(input_mesh, k=4, plot=True)
     sb_meshes = get_cluster_submeshes(input_mesh, lbls, clstrs)
 
     for msh in sb_meshes:
