@@ -11,21 +11,21 @@ def make_manifold(mesh):
     return pv.PolyData(mesh.mesh)
 
 
-def split_from_com(mesh, neg_offset, pos_offset):
+def get_part_from_com(mesh, offset):
     com = vereniki.center_of_mass()
+    side = 1
 
-    cut = mesh.clip_closed_surface(normal=(1, 0, 0), origin=[com[0]-neg_offset, 0, 0])
+    if offset < 0:
+        side = side * (-1)
+
+    cut = mesh.clip_closed_surface(normal=(side, 0, 0), origin=[com[0], 0, 0])
     cut = make_manifold(cut)
-    cut = cut.clip_closed_surface(normal=(-1, 0, 0), origin=[com[0]+pos_offset, 0, 0])
+    cut = cut.clip_closed_surface(normal=(-side, 0, 0), origin=[com[0]+offset, 0, 0])
     cut = make_manifold(cut)
 
-    if cut.n_points:
-        left_part = cut.clip_closed_surface(normal=(1, 0, 0), origin=(com[0], 0, 0))
-        right_part = cut.clip_closed_surface(normal=(-1, 0, 0), origin=(com[0], 0, 0))
-    else:
-        return None, None
-
-    return left_part, right_part
+    if not cut.n_points:
+        return None
+    return cut
 
 
 def torque_point(mesh):
@@ -73,14 +73,14 @@ def torque_point(mesh):
 if __name__ == '__main__':
     draft = 0.45
     vereniki = pv.read("../../../../gz_ws/src/usv_simulation/models/vereniki/meshes/vereniki_scaled3.stl")
-    vereniki = vereniki.clip_closed_surface(normal=(0, 0, 1), origin=(0, 0, vereniki.center_of_mass()[2]))
+    vereniki = vereniki.clip_closed_surface(normal=(0, 0, -1), origin=(0, 0, vereniki.center_of_mass()[2]))
 
     p = pv.Plotter()
     p.add_mesh(vereniki, style='wireframe')
     p.add_points(np.array([[-1, 0, 0], [0, 0, 0]], dtype=float))
     p.show()
 
-    torque_point(vereniki)
+    # torque_point(vereniki)
 
     # FOR DIFFERENT ANGLES
     # axes = pv.Axes(show_actor=True, actor_scale=2.0, line_width=5)
