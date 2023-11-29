@@ -38,8 +38,10 @@ def check_values(val1, val2, precision=2):
 
 def get_torque_value(mesh, offset):
     part = get_part_from_com(mesh, offset)
-    area = get_projection_area(part, normal=(0, 1, 0))
-    return part, area*abs(offset)
+    if part:
+        area = get_projection_area(part, normal=(0, 1, 0))
+        return part, area*abs(offset)
+    return None, 0
 
 
 def torque_point(mesh, step, plot=False):
@@ -56,7 +58,11 @@ def torque_point(mesh, step, plot=False):
     negative_part = None
     backtrack_num = 0
 
-    while neg_offset < abs(x_range_negative) or pos_offset < x_range_positive:
+    while neg_offset < abs(x_range_negative)+step or pos_offset < x_range_positive+step:
+        if check_values(negative_area_torque_value, positive_area_torque_value, precision=2):
+            if neg_offset >= abs(x_range_negative) and pos_offset >= x_range_positive:
+                return None, 0
+
         if negative_area_torque_value < positive_area_torque_value:
             if neg_offset <= abs(x_range_negative):
                 neg_offset = neg_offset + step
@@ -89,15 +95,14 @@ def torque_point(mesh, step, plot=False):
                     return remaining_part, neg_offset
                 backtrack_num += 1
         else:
-            positive_part, positive_area_torque_value = get_torque_value(mesh, pos_offset+step)
-            negative_part, negative_area_torque_value = get_torque_value(mesh, -(neg_offset+step))
+            pos_offset += step
+            neg_offset += step
+            positive_part, positive_area_torque_value = get_torque_value(mesh, pos_offset)
+            negative_part, negative_area_torque_value = get_torque_value(mesh, -neg_offset)
 
-        if check_values(negative_area_torque_value, positive_area_torque_value, precision=2):
-            if neg_offset >= abs(x_range_negative) and pos_offset >= x_range_positive:
-                return None, 0
-
-        print(f"Total: {positive_area_torque_value:.4f}/{x_range_positive:.4f} "
-              f"{negative_area_torque_value:.4f}/{x_range_negative:.4f}", end='\r')
+        print(f"Total: {pos_offset:.4f}/{x_range_positive:.4f} "
+              f"{neg_offset:.4f}/{-x_range_negative:.4f}", end='\r')
+        # print(f"{positive_area_torque_value} {negative_area_torque_value}")
         if plot:
             axes = pv.Axes(show_actor=True, actor_scale=2.0, line_width=5)
             axes.origin = com
@@ -115,8 +120,9 @@ def torque_point(mesh, step, plot=False):
 if __name__ == '__main__':
     draft = 0.45
     vereniki = pv.read("../../../../gz_ws/src/usv_simulation/models/vereniki/meshes/vereniki_scaled3.stl")
-    vereniki = vereniki.clip_closed_surface(normal=(0, 0, 1), origin=(0, 0, vereniki.center_of_mass()[2]))
+    vereniki = vereniki.clip_closed_surface(normal=(0, 0, -1), origin=(0, 0, vereniki.center_of_mass()[2]))
     com = vereniki.center_of_mass()
+    vereniki.plot()
 
     axes = pv.Axes(show_actor=True, actor_scale=2.0, line_width=5)
     axes.origin = com
@@ -126,38 +132,17 @@ if __name__ == '__main__':
         vr = vereniki.rotate_z(a, point=axes.origin, inplace=False)
         print(f"Angle {a}d: ")
         torque_part, offset = torque_point(vr, 0.1, plot=False)
+        # print()
+        # print(torque_part.n_points, offset)
         print()
         if torque_part:
-            p = pv.Plotter()
-            p.add_text(f"Angle: {a}d")
-            p.add_actor(axes.actor)
-            p.add_mesh(vr, style='wireframe')
-            p.add_mesh(torque_part)
-            p.add_points(np.array([[-1, 0, 0], [0, 0, 0]], dtype=float))
-            p.show()
-
-    # FOR DIFFERENT ANGLES
-    # axes = pv.Axes(show_actor=True, actor_scale=2.0, line_width=5)
-    # axes.origin = (0, 0, 0)
-
-    # step_size = 360 / 8
-    # for a in np.arange(0, 360, step_size):
-    #     vr = vereniki.rotate_z(a, point=axes.origin, inplace=False)
-    #
-    #     rc1, rc2 = part_from_com(vr, 0.4)
-    #     if rc1 and rc2:
-    #         p = pv.Plotter()
-    #         p.set_background('grey', 'black')
-    #         p.add_mesh(vereniki, style='wireframe')
-    #         p.add_mesh(vr, color='r', style='wireframe')
-    #         p.add_mesh(rc1, color='g')
-    #         p.add_mesh(rc2, color='b')
-    #         p.add_text(f"Cut1: {rc1.is_manifold}, Cut2: {rc2.is_manifold}", color='w')
-    #         p.add_actor(axes.actor)
-    #         p.add_points(np.array(vereniki.center_of_mass()), color='r')
-    #         p.show()
-    #
-    #         print(get_projection_area(rc1, normal=(0, 1, 0), plot=True))
-    #         print(get_projection_area(rc2, normal=(0, 1, 0), plot=True))
-    #     else:
-    #         print("Empty mesh, continuing")
+            if torque_part.n_points:
+                p = pv.Plotter()
+                p.add_text(f"Angle: {a}d")
+                p.add_actor(axes.actor)
+                p.add_mesh(vr, style='wireframe')
+                p.add_mesh(torque_part)
+                p.add_points(np.array([[-1, 0, 0], [0, 0, 0]], dtype=float))
+                p.show()
+            else:
+                print("Could not form mesh")
