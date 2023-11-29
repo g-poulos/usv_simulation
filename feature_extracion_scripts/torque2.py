@@ -39,38 +39,47 @@ def torque_point(mesh):
     step = 0.1
     neg_offset = step
     pos_offset = step
-    negative_area_total = 0
-    positive_area_total = 0
+    negative_area_torque_value = 0
+    positive_area_torque_value = 0
     positive_part = None
     negative_part = None
 
     while neg_offset < abs(x_range_negative) or pos_offset < x_range_positive:
-        if negative_area_total < positive_area_total:
+        if negative_area_torque_value < positive_area_torque_value:
             if neg_offset <= abs(x_range_negative):
                 neg_offset = neg_offset + step
                 negative_part = get_part_from_com(mesh, -neg_offset)
                 negative_area = get_projection_area(negative_part, normal=(0, 1, 0))
-                negative_area_total += negative_area*neg_offset
+                negative_area_torque_value = negative_area*neg_offset
+            else:
+                print("Backtracking...")
+                pos_offset = pos_offset - step/2
+                positive_part = get_part_from_com(mesh, pos_offset)
+                positive_area = get_projection_area(positive_part, normal=(0, 1, 0))
+                positive_area_torque_value = positive_area*pos_offset
 
-        elif negative_area_total > positive_area_total:
+        elif negative_area_torque_value > positive_area_torque_value:
             if pos_offset <= x_range_positive:
                 pos_offset = pos_offset + step
                 positive_part = get_part_from_com(mesh, pos_offset)
                 positive_area = get_projection_area(positive_part, normal=(0, 1, 0))
-                positive_area_total += positive_area*pos_offset
-                print(pos_offset, x_range_positive)
+                positive_area_torque_value = positive_area*pos_offset
             else:
-                print(pos_offset, x_range_positive)
+                print("Backtracking...")
+                neg_offset = neg_offset - step/2
+                negative_part = get_part_from_com(mesh, -neg_offset)
+                negative_area = get_projection_area(negative_part, normal=(0, 1, 0))
+                negative_area_torque_value = negative_area*neg_offset
 
         else:
             negative_part = get_part_from_com(mesh, -neg_offset)
             positive_part = get_part_from_com(mesh, pos_offset)
             negative_area = get_projection_area(negative_part, normal=(0, 1, 0))
-            negative_area_total += negative_area*neg_offset
+            negative_area_torque_value += negative_area*neg_offset
             positive_area = get_projection_area(positive_part, normal=(0, 1, 0))
-            positive_area_total += positive_area*pos_offset
+            positive_area_torque_value += positive_area*pos_offset
 
-        print(f"Total: {positive_area_total} {negative_area_total}")
+        print(f"Total: {positive_area_torque_value} {negative_area_torque_value}")
         axes = pv.Axes(show_actor=True, actor_scale=2.0, line_width=5)
         axes.origin = com
         p = pv.Plotter()
