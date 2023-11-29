@@ -62,7 +62,7 @@ def torque_point(mesh, step, plot=False):
                 neg_offset = neg_offset + step
                 negative_part, negative_area_torque_value = get_torque_value(mesh, -neg_offset)
             else:
-                print("Backtracking...")
+                # print("Backtracking...")
                 pos_offset = pos_offset - step/10
                 positive_part, positive_area_torque_value = get_torque_value(mesh, pos_offset)
                 if check_values(negative_area_torque_value,
@@ -78,7 +78,7 @@ def torque_point(mesh, step, plot=False):
                 pos_offset = pos_offset + step
                 positive_part, positive_area_torque_value = get_torque_value(mesh, pos_offset)
             else:
-                print("Backtracking...")
+                # print("Backtracking...")
                 neg_offset = neg_offset - step/10
                 negative_part, negative_area_torque_value = get_torque_value(mesh, -neg_offset)
                 if check_values(negative_area_torque_value,
@@ -94,11 +94,10 @@ def torque_point(mesh, step, plot=False):
 
         if check_values(negative_area_torque_value, positive_area_torque_value, precision=2):
             if neg_offset >= abs(x_range_negative) and pos_offset >= x_range_positive:
-                print("Equal")
+                return None, 0
 
-        print(pos_offset, x_range_positive)
-        print(neg_offset, x_range_negative)
-        print(f"Total: {positive_area_torque_value} {negative_area_torque_value}")
+        print(f"Total: {positive_area_torque_value:.4f}/{x_range_positive:.4f} "
+              f"{negative_area_torque_value:.4f}/{x_range_negative:.4f}", end='\r')
         if plot:
             axes = pv.Axes(show_actor=True, actor_scale=2.0, line_width=5)
             axes.origin = com
@@ -119,19 +118,23 @@ if __name__ == '__main__':
     vereniki = vereniki.clip_closed_surface(normal=(0, 0, 1), origin=(0, 0, vereniki.center_of_mass()[2]))
     com = vereniki.center_of_mass()
 
-    vereniki.rotate_z(120, inplace=True)
-
-    torque_part, offset = torque_point(vereniki, 0.1, plot=False)
-
     axes = pv.Axes(show_actor=True, actor_scale=2.0, line_width=5)
     axes.origin = com
 
-    p = pv.Plotter()
-    p.add_actor(axes.actor)
-    p.add_mesh(vereniki, style='wireframe')
-    p.add_mesh(torque_part)
-    p.add_points(np.array([[-1, 0, 0], [0, 0, 0]], dtype=float))
-    p.show()
+    step_size = 360 / 8
+    for a in np.arange(0, 360, step_size):
+        vr = vereniki.rotate_z(a, point=axes.origin, inplace=False)
+        print(f"Angle {a}d: ")
+        torque_part, offset = torque_point(vr, 0.1, plot=False)
+        print()
+        if torque_part:
+            p = pv.Plotter()
+            p.add_text(f"Angle: {a}d")
+            p.add_actor(axes.actor)
+            p.add_mesh(vr, style='wireframe')
+            p.add_mesh(torque_part)
+            p.add_points(np.array([[-1, 0, 0], [0, 0, 0]], dtype=float))
+            p.show()
 
     # FOR DIFFERENT ANGLES
     # axes = pv.Axes(show_actor=True, actor_scale=2.0, line_width=5)
