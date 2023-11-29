@@ -36,27 +36,41 @@ def torque_point(mesh):
     x_range = x_range_positive - x_range_negative
     print(x_range_negative, x_range_positive, x_range)
 
-    neg_offset = 0.1
-    pos_offset = 0.1
+    step = 0.1
+    neg_offset = step
+    pos_offset = step
     negative_area_total = 0
     positive_area_total = 0
-    step = 0.1
+    positive_part = None
+    negative_part = None
 
     while neg_offset < abs(x_range_negative) or pos_offset < x_range_positive:
         if negative_area_total < positive_area_total:
-            neg_offset = neg_offset + step
+            if neg_offset <= abs(x_range_negative):
+                neg_offset = neg_offset + step
+                negative_part = get_part_from_com(mesh, -neg_offset)
+                negative_area = get_projection_area(negative_part, normal=(0, 1, 0))
+                negative_area_total += negative_area*neg_offset
+
         elif negative_area_total > positive_area_total:
-            pos_offset = pos_offset + step
+            if pos_offset <= x_range_positive:
+                pos_offset = pos_offset + step
+                positive_part = get_part_from_com(mesh, pos_offset)
+                positive_area = get_projection_area(positive_part, normal=(0, 1, 0))
+                positive_area_total += positive_area*pos_offset
+                print(pos_offset, x_range_positive)
+            else:
+                print(pos_offset, x_range_positive)
 
-        positive_part, negative_part = split_from_com(mesh, neg_offset, pos_offset)
+        else:
+            negative_part = get_part_from_com(mesh, -neg_offset)
+            positive_part = get_part_from_com(mesh, pos_offset)
+            negative_area = get_projection_area(negative_part, normal=(0, 1, 0))
+            negative_area_total += negative_area*neg_offset
+            positive_area = get_projection_area(positive_part, normal=(0, 1, 0))
+            positive_area_total += positive_area*pos_offset
 
-        positive_area = get_projection_area(positive_part, normal=(0, 1, 0))
-        negative_area = get_projection_area(negative_part, normal=(0, 1, 0))
-        positive_area_total = positive_area_total + positive_area*pos_offset
-        negative_area_total = negative_area_total + negative_area*neg_offset
-
-        print(f"Total: {negative_area_total} {positive_area_total}")
-
+        print(f"Total: {positive_area_total} {negative_area_total}")
         axes = pv.Axes(show_actor=True, actor_scale=2.0, line_width=5)
         axes.origin = com
         p = pv.Plotter()
@@ -73,14 +87,14 @@ def torque_point(mesh):
 if __name__ == '__main__':
     draft = 0.45
     vereniki = pv.read("../../../../gz_ws/src/usv_simulation/models/vereniki/meshes/vereniki_scaled3.stl")
-    vereniki = vereniki.clip_closed_surface(normal=(0, 0, -1), origin=(0, 0, vereniki.center_of_mass()[2]))
+    vereniki = vereniki.clip_closed_surface(normal=(0, 0, 1), origin=(0, 0, vereniki.center_of_mass()[2]))
 
     p = pv.Plotter()
     p.add_mesh(vereniki, style='wireframe')
     p.add_points(np.array([[-1, 0, 0], [0, 0, 0]], dtype=float))
     p.show()
 
-    # torque_point(vereniki)
+    torque_point(vereniki)
 
     # FOR DIFFERENT ANGLES
     # axes = pv.Axes(show_actor=True, actor_scale=2.0, line_width=5)
