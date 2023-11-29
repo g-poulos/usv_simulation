@@ -28,6 +28,13 @@ def get_part_from_com(mesh, offset):
     return cut
 
 
+def check_values(val1, val2, precision=2):
+    val1 = round(val1, precision)
+    val2 = round(val2, precision)
+    print(val1, val2)
+    return val1 == val2
+
+
 def torque_point(mesh):
     bounds = mesh.bounds[:2]
     com = mesh.center_of_mass()
@@ -43,6 +50,7 @@ def torque_point(mesh):
     positive_area_torque_value = 0
     positive_part = None
     negative_part = None
+    backtrack_num = 0
 
     while neg_offset < abs(x_range_negative) or pos_offset < x_range_positive:
         if negative_area_torque_value < positive_area_torque_value:
@@ -53,10 +61,15 @@ def torque_point(mesh):
                 negative_area_torque_value = negative_area*neg_offset
             else:
                 print("Backtracking...")
-                pos_offset = pos_offset - step/2
+                pos_offset = pos_offset - step/10
                 positive_part = get_part_from_com(mesh, pos_offset)
                 positive_area = get_projection_area(positive_part, normal=(0, 1, 0))
                 positive_area_torque_value = positive_area*pos_offset
+                if check_values(negative_area_torque_value,
+                                positive_area_torque_value,
+                                precision=4-backtrack_num):
+                    break
+                backtrack_num += 1
 
         elif negative_area_torque_value > positive_area_torque_value:
             if pos_offset <= x_range_positive:
@@ -70,7 +83,8 @@ def torque_point(mesh):
                 negative_part = get_part_from_com(mesh, -neg_offset)
                 negative_area = get_projection_area(negative_part, normal=(0, 1, 0))
                 negative_area_torque_value = negative_area*neg_offset
-
+                if check_values(negative_area_torque_value, positive_area_torque_value):
+                    break
         else:
             negative_part = get_part_from_com(mesh, -neg_offset)
             positive_part = get_part_from_com(mesh, pos_offset)
