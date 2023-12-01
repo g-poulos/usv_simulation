@@ -2,6 +2,7 @@ import numpy as np
 import pyvista as pv
 import os
 import vtk
+import time
 
 
 def get_projection_area(mesh, normal=(1, 0, 0), iterations=10, alpha=0.5, plot=False):
@@ -12,6 +13,9 @@ def get_projection_area(mesh, normal=(1, 0, 0), iterations=10, alpha=0.5, plot=F
 
     pl = pv.Plotter()
     pl.add_mesh(mesh, style='wireframe')
+    axes = pv.Axes(show_actor=True, actor_scale=2.0, line_width=5)
+    axes.origin = mesh.center_of_mass()
+    pl.add_actor(axes.actor)
 
     for i in range(iterations):
         # Take mesh slice
@@ -32,11 +36,6 @@ def get_projection_area(mesh, normal=(1, 0, 0), iterations=10, alpha=0.5, plot=F
     if plot:
         pl.show()
     return total_area
-
-
-def angle_to_vector(angle):
-    vec = (np.cos(angle), np.sin(angle), 0)
-    return vec
 
 
 def project_points_to_plane(mesh, origin=None, normal=(1, 0, 0), inplace=False):
@@ -82,11 +81,13 @@ def create_angle_table(model, num_of_angles, plot=False):
     angle_list = []
     step_size = 2*np.pi / num_of_angles
 
-    for a in np.arange(0, 2 * np.pi, step_size):
-        area = get_projection_area(model, normal=angle_to_vector(a), plot=plot)
+    for a in np.arange(0, 2*np.pi, step_size):
+        rotated_model = model.rotate_z(a * (180/np.pi), inplace=False)
+        area = get_projection_area(rotated_model, normal=(1, 0, 0), plot=plot)
         angle_list.append(a)
         area_list.append(area)
-
+        print(f"{a:.3f}/{2*np.pi:.3f}", end='\r')
+    print()
     return angle_list, area_list
 
 
@@ -117,8 +118,9 @@ if __name__ == '__main__':
     stl_file = "../models/vereniki/meshes/vereniki_scaled3.stl"
     draft = 0.44
 
+    start = time.time()
     create_surface_angle_file(stl_file, draft, submerged_surface=True)
     create_surface_angle_file(stl_file, draft, submerged_surface=False)
-
-
+    end = time.time()
+    print(f"Elapsed time: {end-start:.3f}s")
 
