@@ -78,8 +78,9 @@ def torque_point(mesh, step, plot=False):
             positive_part, p_area_value = get_torque_value(mesh, pos_offset)
             negative_part, n_area_value = get_torque_value(mesh, -neg_offset)
 
-        print(f"Total: {pos_offset:.4f}/{positive_range:.4f} "
-              f"{neg_offset:.4f}/{-negative_range:.4f}", end='\r')
+        # DEBUG
+        # print(f"Total: {pos_offset:.4f}/{positive_range:.4f} "
+        #       f"{neg_offset:.4f}/{-negative_range:.4f}", end='\r')
         # print(f"{positive_area_torque_value} {negative_area_torque_value}")
         if plot:
             axes = pv.Axes(show_actor=True, actor_scale=2.0, line_width=5)
@@ -192,41 +193,20 @@ def project_points_to_plane(mesh, origin=None, normal=(1, 0, 0), inplace=False):
     return
 
 
-def write_file(filename, angle_list, area_list):
+def write_list_to_file(filename, force_info):
     f = open(filename, "w")
-    f.write(f"{len(area_list)}\n")
-    for angle in angle_list:
-        f.write(f"{angle}\n")
-    f.write("#\n")
-
-    for i in range(len(area_list)):
-        if i == len(area_list)-1:
-            f.write(f"{area_list[i]}")
-        else:
-            f.write(f"{area_list[i]}\n")
+    for line in force_info:
+        f.write(f"{line}\n")
     f.close()
 
 
-def create_angle_table(model, num_of_angles, plot=False):
-    area_list = []
-    angle_list = []
-    step_size = 2*np.pi / num_of_angles
-
-    for a in np.arange(0, 2*np.pi, step_size):
-        rotated_model = model.rotate_z(a * (180/np.pi), inplace=False)
-        area = get_projection_area(rotated_model, normal=(1, 0, 0), plot=plot)
-        angle_list.append(a)
-        area_list.append(area)
-        print(f"{a:.3f}/{2*np.pi:.3f}", end='\r')
-    print()
-    return angle_list, area_list
-
-
-def create_force_table(model, num_of_angles, plot=False):
+def create_force_table(model, angles, result_queue, thread_num=0, plot=False):
     force_info = []
-    step_size = 2*np.pi / num_of_angles
+    # step_size = 2*np.pi / num_of_angles
 
-    for a in np.arange(0, 2*np.pi, step_size):
+    i = 0
+    for a in angles:
+        i +=1
         rotated_model = model.rotate_z(a * (180/np.pi), inplace=False)
         area = get_projection_area(rotated_model, plot=plot)
         torque_part, offset = torque_point(rotated_model, 0.1, plot=False)
@@ -250,26 +230,29 @@ def create_force_table(model, num_of_angles, plot=False):
             torque_part_area = 0
             offset = 0
         force_info.append(f"{a},{area},{torque_part_area},{offset}")
-        print(f"{a:.3f}, {area}, {torque_part_area}, {offset}")
-    return force_info
+        print(f"{i}  /  {len(angles)}  - Thread Num : {thread_num}")
+        # print(f"{a:.3f}, {area}, {torque_part_area}, {offset}")
+    print()
+    # return force_info
+    result_queue.put(force_info)
 
 
 def create_surface_angle_file(stl_file, draft, num_of_angles=256, submerged_surface=True):
     poly = pv.read(stl_file)
-    height = abs(poly.bounds[5] - poly.bounds[4])
 
-    clipped = poly.clip('z', value=-(height/2)+draft, invert=submerged_surface)
-
+    clipped = poly.clip_closed_surface(normal=(0, 0, 1),
+                                       origin=(0, 0, poly.bounds[4]+draft))
+    print("Generating table...")
+    force_table = create_force_table(clipped, num_of_angles, plot=False)
     print("Writing file...")
-    angle_list, area_list = create_angle_table(clipped, num_of_angles, plot=False)
 
     parent_dir = os.path.dirname(stl_file) + "/"
     if submerged_surface:
-        filename = parent_dir + "current_surface.txt"
+        filename = parent_dir + "current_surface.csv"
     else:
-        filename = parent_dir + "wind_surface.txt"
+        filename = parent_dir + "wind_surface.csv"
 
-    write_file(filename, angle_list, area_list)
+    write_list_to_file(filename, force_table)
     print(f"Completed file: {filename}")
 
 
@@ -281,14 +264,8 @@ if __name__ == '__main__':
     stl_file = "../models/vereniki/meshes/vereniki_scaled3.stl"
     draft = 0.44
 
-    vereniki = pv.read(stl_file)
-    vereniki = vereniki.clip_closed_surface(normal=(0, 0, 1),
-                                            origin=(0, 0, vereniki.center_of_mass()[2]))
-
     start = time.time()
-    # create_surface_angle_file(stl_file, draft, submerged_surface=True)
-    # create_surface_angle_file(stl_file, draft, submerged_surface=False)
-    create_force_table(vereniki, 4, plot=False)
+    create_surface_angle_file(stl_file, draft, num_of_angles=256, submerged_surface=False)
     end = time.time()
     print(f"Elapsed time: {end-start:.3f}s")
 
