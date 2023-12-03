@@ -96,8 +96,8 @@ surfaceData* readAreaFile(std::string filename) {
 
     surfaceData* _surfaceData = new surfaceData;
     _surfaceData->size = arraySize;
-    _surfaceData->angle_p = new float[arraySize];
-    _surfaceData->area_p = new float[arraySize];
+    _surfaceData->angle = new float[arraySize];
+    _surfaceData->forceArea = new float[arraySize];
 
     bool foundSymb = false;
     int i = 0;
@@ -112,14 +112,71 @@ surfaceData* readAreaFile(std::string filename) {
         } else {
             value = std::stof(line);
             if (foundSymb) {
-                _surfaceData->area_p[i] = value;
+                _surfaceData->forceArea[i] = value;
             } else {
-                _surfaceData->angle_p[i] = value;
+                _surfaceData->angle[i] = value;
             }
         }
         i++;
     }
     readFile.close();
+    return _surfaceData;
+}
+
+//////////////////////////////////////////////////
+float* split(char arr[100], char separator){
+    static float splited[4];
+    int i = 0;
+    int array_index = 0;
+
+    string s;
+    while (arr[i] != '\0') {
+        if (arr[i] != separator) {
+            s += arr[i];
+
+        } else {
+            float num_float = std::stof(s);
+            splited[array_index] = num_float;
+            s.clear();
+            array_index++;
+        }
+        i++;
+    }
+
+    // Output the last stored word.
+    float num_float = std::stof(s);
+    splited[array_index] = num_float;
+    return splited;
+}
+
+//////////////////////////////////////////////////
+surfaceData* read_csv(std::string filename) {
+    surfaceData* _surfaceData = new surfaceData;
+    _surfaceData->size = 256;
+    _surfaceData->angle = new float[256];
+    _surfaceData->forceArea = new float[256];
+    _surfaceData->torqueArea = new float[256];
+    _surfaceData->offset = new float[256];
+
+    std::ifstream file(filename);
+    if (file.is_open()) {
+        std::string line;
+        int i = 0;
+        while (std::getline(file, line)) {
+
+            float* tokens = split((char*)line.c_str(), ',');
+            _surfaceData->angle[i] = tokens[0];
+            _surfaceData->forceArea[i] = tokens[1];
+            _surfaceData->torqueArea[i] = tokens[2];
+            _surfaceData->offset[i] = tokens[3];
+
+            i++;
+        }
+        file.close();
+    } else {
+        gzerr << "Could not open surface file: " << filename << std::endl;
+    }
+
     return _surfaceData;
 }
 
@@ -195,14 +252,14 @@ float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimut
     if (relative_angle < 0)
         relative_angle = relative_angle + 2 * M_PI;
 
-    int closest_i = findClosestMatchingValue(surfaceData->angle_p, surfaceData->size, relative_angle);
+    int closest_i = findClosestMatchingValue(surfaceData->angle, surfaceData->size, relative_angle);
 
     // DEBUG
 //    gzmsg << "Boat Yaw " << yaw <<
 //             " Total: " << relative_angle <<
-//             " A_matrix: " << angle_p[closest_i] <<
-//             " Area: " << area_p[closest_i] <<std::endl;
-    return surfaceData->area_p[closest_i];
+//             " A_matrix: " << angle[closest_i] <<
+//             " Area: " << forceArea[closest_i] <<std::endl;
+    return surfaceData->forceArea[closest_i];
 }
 
 //////////////////////////////////////////////////

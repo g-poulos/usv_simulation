@@ -11,8 +11,10 @@ using namespace gz;
 
 struct surfaceDataStruct{
     int size;
-    float *area_p;
-    float *angle_p;
+    float *angle;
+    float *forceArea;
+    float *torqueArea;
+    float *offset;
 };
 
 
@@ -38,6 +40,8 @@ public:
 int findClosestMatchingValue(float arr[], int n, float target);
 
 surfaceData* readAreaFile(std::string filename);
+
+surfaceData* read_csv(std::string filename);
 
 std::string findFileFromHome(const std::string& filename);
 

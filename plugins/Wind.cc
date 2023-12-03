@@ -213,8 +213,18 @@ void Wind::Configure(const sim::Entity &_entity,
                                                        this->dataPtr->dt);
 
     // Read file with area of application
-    std::string windSurfaceAreaFile = getModelFile(_ecm, this->dataPtr->surfaceAreaFile);
-    this->dataPtr->windSurfaceData = readAreaFile(windSurfaceAreaFile);
+//    std::string windSurfaceAreaFile = getModelFile(_ecm, this->dataPtr->surfaceAreaFile);
+//    this->dataPtr->windSurfaceData = readAreaFile(windSurfaceAreaFile);
+    std::string windSurfaceAreaFile = getModelFile(_ecm, "wind_table.csv");
+    this->dataPtr->windSurfaceData = read_csv(windSurfaceAreaFile);
+
+
+    for (int i=0; i<256; i++) {
+        gzmsg << this->dataPtr->windSurfaceData->angle[i] << "\n";
+//                 this->dataPtr->windSurfaceData->forceArea[i] << " " <<
+//                 this->dataPtr->windSurfaceData->torqueArea[i] << " " <<
+//                 this->dataPtr->windSurfaceData->offset[i] << std::endl;
+    }
 }
 
 //////////////////////////////////////////////////
