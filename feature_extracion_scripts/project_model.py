@@ -193,16 +193,15 @@ def project_points_to_plane(mesh, origin=None, normal=(1, 0, 0), inplace=False):
     return
 
 
-def write_list_to_file(filename, force_info):
+def write_list_to_file(filename, force_list):
     f = open(filename, "w")
-    for line in force_info:
+    for line in force_list:
         f.write(f"{line}\n")
     f.close()
 
 
 def create_force_table(model, angles, result_queue, thread_num=0, plot=False):
     force_info = []
-    # step_size = 2*np.pi / num_of_angles
 
     i = 0
     for a in angles:
@@ -230,30 +229,30 @@ def create_force_table(model, angles, result_queue, thread_num=0, plot=False):
             torque_part_area = 0
             offset = 0
         force_info.append(f"{a},{area},{torque_part_area},{offset}")
+
         print(f"{i}  /  {len(angles)}  - Thread Num : {thread_num}")
         # print(f"{a:.3f}, {area}, {torque_part_area}, {offset}")
-    print()
-    # return force_info
+    print(f"Thread {thread_num} finished")
     result_queue.put(force_info)
 
-
-def create_surface_angle_file(stl_file, draft, num_of_angles=256, submerged_surface=True):
-    poly = pv.read(stl_file)
-
-    clipped = poly.clip_closed_surface(normal=(0, 0, 1),
-                                       origin=(0, 0, poly.bounds[4]+draft))
-    print("Generating table...")
-    force_table = create_force_table(clipped, num_of_angles, plot=False)
-    print("Writing file...")
-
-    parent_dir = os.path.dirname(stl_file) + "/"
-    if submerged_surface:
-        filename = parent_dir + "current_surface.csv"
-    else:
-        filename = parent_dir + "wind_surface.csv"
-
-    write_list_to_file(filename, force_table)
-    print(f"Completed file: {filename}")
+#
+# def create_surface_angle_file(stl_file, draft, num_of_angles=256, submerged_surface=True):
+#     poly = pv.read(stl_file)
+#
+#     clipped = poly.clip_closed_surface(normal=(0, 0, 1),
+#                                        origin=(0, 0, poly.bounds[4]+draft))
+#     print("Generating table...")
+#     force_table = create_force_table(clipped, num_of_angles, plot=False)
+#     print("Writing file...")
+#
+#     parent_dir = os.path.dirname(stl_file) + "/"
+#     if submerged_surface:
+#         filename = parent_dir + "current_surface.csv"
+#     else:
+#         filename = parent_dir + "wind_surface.csv"
+#
+#     write_list_to_file(filename, force_table)
+#     print(f"Completed file: {filename}")
 
 
 if __name__ == '__main__':
@@ -265,7 +264,7 @@ if __name__ == '__main__':
     draft = 0.44
 
     start = time.time()
-    create_surface_angle_file(stl_file, draft, num_of_angles=256, submerged_surface=False)
+    # create_surface_angle_file(stl_file, draft, num_of_angles=256, submerged_surface=False)
     end = time.time()
     print(f"Elapsed time: {end-start:.3f}s")
 
