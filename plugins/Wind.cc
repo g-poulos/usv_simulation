@@ -87,9 +87,6 @@ public: wrenchFileData *windSurfaceData;
 
     /// \brief Name of file the with the surface area information
 public: std::string tableFileName = "wind_table.csv";
-
-    /// \brief Average distance of mesh points to CoM to compute torque
-public: math::Vector3d torqueVector;
 };
 
 //////////////////////////////////////////////////
@@ -164,11 +161,6 @@ void Wind::Configure(const sim::Entity &_entity,
                                      << ", Initial " << this->dataPtr->initAzimuth
                                      << ", stddev " << this->dataPtr->azimuthstddev << std::endl;
         }
-
-        if (windObjSDF->HasElement("torque_vec")) {
-            this->dataPtr->torqueVector = windObjSDF->Get<math::Vector3d>("torque_vec");
-        }
-        gzmsg << "[Wind] Torque Vector: " << this->dataPtr->torqueVector << std::endl;
     }
 
     if (_sdf->HasElement("density"))
@@ -183,9 +175,9 @@ void Wind::Configure(const sim::Entity &_entity,
         this->dataPtr->updateRate = _sdf->Get<float>("update_rate");
     gzmsg << "[Wind] Update rate: " << this->dataPtr->updateRate << std::endl;
 
-    if (_sdf->HasElement("surface_area_file"))
-        this->dataPtr->tableFileName = _sdf->Get<std::string>("surface_area_file");
-    gzmsg << "[Wind] Surface Area File: " << this->dataPtr->tableFileName << std::endl;
+    if (_sdf->HasElement("table_file"))
+        this->dataPtr->tableFileName = _sdf->Get<std::string>("table_file");
+    gzmsg << "[Wind] Table File: " << this->dataPtr->tableFileName << std::endl;
 
     // Set up the publishers
     double updateRate = this->dataPtr->updateRate;

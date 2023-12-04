@@ -122,13 +122,12 @@
                         <init>100</init>
                         <stddev>1</stddev>
                     </direction>
-                    <torque_vec>6.83799319e-01 1.22986475e-04 1.68711220e-01</torque_vec>
                 </current>
 
                 <density>1025</density>
                 <res_coef>1</res_coef>
                 <update_rate>30</update_rate>
-                <surface_area_file>current_surface.txt</surface_area_file>
+                <table_file>current_table.csv</table_file>
                 <surface_level>1.0</surface_level>
             </plugin>
 
@@ -147,12 +146,11 @@
                         <init>200</init>
                         <stddev>15</stddev>
                     </direction>
-                    <torque_vec>6.74889744e-01  1.94681727e-04 -1.42962716e-01</torque_vec>
                 </wind>
                 <density>1.225</density>
                 <res_coef>1</res_coef>
                 <update_rate>30</update_rate>
-                <surface_area_file>wind_surface.txt</surface_area_file>
+                <table_file>wind_table.csv</table_file>
             </plugin>
 
             <plugin filename="AddedMass" name="added_mass::AddedMass">

@@ -90,9 +90,6 @@ public: std::string tableFileName = "current_table.csv";
 
     /// \brief Level of the water surface below which the current applies
 public: float surfaceLevel = 1.0;
-
-    /// \brief Average distance of mesh points to CoM to compute torque
-public: math::Vector3d torqueVector;
 };
 
 //////////////////////////////////////////////////
@@ -167,11 +164,6 @@ void WaterCurrent::Configure(const sim::Entity &_entity,
                                                   << ", Initial " << this->dataPtr->initAzimuth
                                                   << ", stddev " << this->dataPtr->azimuthstddev << std::endl;
         }
-
-        if (currentObjSDF->HasElement("torque_vec")) {
-            this->dataPtr->torqueVector = currentObjSDF->Get<math::Vector3d>("torque_vec");
-        }
-        gzmsg << "[WaterCurrent] Torque Vector: " << this->dataPtr->torqueVector << std::endl;
     }
 
     if (_sdf->HasElement("density"))
@@ -186,9 +178,9 @@ void WaterCurrent::Configure(const sim::Entity &_entity,
         this->dataPtr->updateRate = _sdf->Get<float>("update_rate");
     gzmsg << "[Water Current] Update Rate: " << this->dataPtr->updateRate << std::endl;
 
-    if (_sdf->HasElement("surface_area_file"))
-        this->dataPtr->tableFileName = _sdf->Get<std::string>("surface_area_file");
-    gzmsg << "[WaterCurrent] Surface Area File: " << this->dataPtr->tableFileName << std::endl;
+    if (_sdf->HasElement("table_file"))
+        this->dataPtr->tableFileName = _sdf->Get<std::string>("table_file");
+    gzmsg << "[WaterCurrent] Table File: " << this->dataPtr->tableFileName << std::endl;
 
     if (_sdf->HasElement("surfaceLevel"))
         this->dataPtr->surfaceLevel = _sdf->Get<float>("surfaceLevel");
