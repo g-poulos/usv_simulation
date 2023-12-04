@@ -1,8 +1,6 @@
 import numpy as np
-from project_model import get_projection_area
+from force_torque_area import get_projection_area
 import pyvista as pv
-from scipy.spatial import Delaunay
-import matplotlib.pyplot as plt
 
 
 def h(h_uc, r_uc, m, r_lc, h_lc):

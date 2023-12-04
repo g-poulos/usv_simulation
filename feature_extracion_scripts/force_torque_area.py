@@ -1,6 +1,5 @@
 import numpy as np
 import pyvista as pv
-import os
 import vtk
 import time
 import pymeshfix
@@ -231,7 +230,7 @@ def create_force_table(model, angles, result_queue=None, thread_num=0, plot=Fals
         force_info.append(f"{a},{area},{torque_part_area},{offset}")
 
         print(f"{i:3d}  /  {len(angles):3d}  - Thread Num : {thread_num}   ", end='\r')
-        print(f"{a:.3f}, {area}, {torque_part_area}, {offset}")
+        # print(f"{a:.3f}, {area}, {torque_part_area}, {offset}")
     print(f"Thread {thread_num} finished              ")
     if result_queue:
         result_queue.put(force_info)
@@ -247,9 +246,8 @@ if __name__ == '__main__':
     ver = pv.read(stl_file)
     ver = ver.clip_closed_surface(normal=(0, 0, 1), origin=(0, 0, ver.bounds[4]+draft))
 
-
     start = time.time()
-    create_force_table(ver, [1.3], thread_num=0, plot=True)
+    create_force_table(ver, [1.3], plot=True)
     end = time.time()
     print(f"Elapsed time: {end-start:.3f}s")
 
