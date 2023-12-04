@@ -83,7 +83,7 @@ public: float fluidDensity = 1000;
 public: float resCoefficient = 1;
 
     /// \brief Structure with the surface area information
-public: surfaceData *currentSurfaceData;
+public: wrenchFileData *currentSurfaceData;
 
     /// \brief Name of file the with the surface area information
 public: std::string tableFileName = "current_table.csv";
@@ -222,14 +222,6 @@ void WaterCurrent::Configure(const sim::Entity &_entity,
     // Read file with area of application
     std::string currentTablrFile = getModelFile(_ecm, this->dataPtr->tableFileName);
     this->dataPtr->currentSurfaceData = read_csv(currentTablrFile);
-
-    gzmsg << "CURRENT TABLE" << std::endl;
-    for (int i=0; i<this->dataPtr->currentSurfaceData->size; i++) {
-        gzmsg << this->dataPtr->currentSurfaceData->angle[i] << "\n";
-//                 this->dataPtr->windSurfaceData->forceArea[i] << " " <<
-//                 this->dataPtr->windSurfaceData->torqueArea[i] << " " <<
-//                 this->dataPtr->windSurfaceData->offset[i] << std::endl;
-    }
 }
 
 //////////////////////////////////////////////////

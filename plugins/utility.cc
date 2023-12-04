@@ -88,42 +88,6 @@ int findClosestMatchingValue(float arr[], int n, float target) {
 }
 
 //////////////////////////////////////////////////
-surfaceData* readAreaFile(std::string filename) {
-    string line;
-    ifstream readFile(filename);
-    getline(readFile, line);
-    int arraySize = std::stoi(line);
-
-    surfaceData* _surfaceData = new surfaceData;
-    _surfaceData->size = arraySize;
-    _surfaceData->angle = new float[arraySize];
-    _surfaceData->forceArea = new float[arraySize];
-
-    bool foundSymb = false;
-    int i = 0;
-    const char * c2 = "#";
-
-    while (getline (readFile, line)) {
-        char *c = line.data();
-        float value;
-        if (strcmp(c, c2) == 0) {
-            foundSymb = true;
-            i = 0;
-        } else {
-            value = std::stof(line);
-            if (foundSymb) {
-                _surfaceData->forceArea[i] = value;
-            } else {
-                _surfaceData->angle[i] = value;
-            }
-        }
-        i++;
-    }
-    readFile.close();
-    return _surfaceData;
-}
-
-//////////////////////////////////////////////////
 float* split(char arr[100], char separator){
     static float splited[4];
     int i = 0;
@@ -150,13 +114,13 @@ float* split(char arr[100], char separator){
 }
 
 //////////////////////////////////////////////////
-surfaceData* read_csv(std::string filename) {
+wrenchFileData* read_csv(std::string filename) {
     string first_line;
     std::ifstream file(filename);
     getline(file, first_line);
     int arraySize = static_cast<int>(split((char*)first_line.c_str(), ',')[0]);
 
-    surfaceData* _surfaceData = new surfaceData;
+    wrenchFileData* _surfaceData = new wrenchFileData;
     _surfaceData->size = arraySize;
     _surfaceData->angle = new float[arraySize];
     _surfaceData->forceArea = new float[arraySize];
@@ -238,37 +202,7 @@ math::Vector3d toGZVec(std::optional<math::Vector3<double>> vec) {
 }
 
 //////////////////////////////////////////////////
-float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimuth, surfaceData* surfaceData) {
-    auto q = link.WorldPose(_ecm)->Rot().Normalized();
-
-    // Convert quaternion to yaw
-    double siny_cosp = 2 * (q.W() * q.Z() + q.X() * q.Y());
-    double cosy_cosp = 1 - 2 * (q.Y() * q.Y() + q.Z() * q.Z());
-    double yaw = std::atan2(siny_cosp, cosy_cosp);
-
-    // Convert negative radians to positive
-    if (yaw < 0)
-        yaw = yaw + 2 * M_PI;
-
-    // Find angle of the force relative to the model
-    float relative_angle = (azimuth * (M_PI / 180)) - yaw;
-
-    // Convert negative radians to positive
-    if (relative_angle < 0)
-        relative_angle = relative_angle + 2 * M_PI;
-
-    int closest_i = findClosestMatchingValue(surfaceData->angle, surfaceData->size, relative_angle);
-
-    // DEBUG
-//    gzmsg << "Boat Yaw " << yaw <<
-//             " Total: " << relative_angle <<
-//             " A_matrix: " << angle[closest_i] <<
-//             " Area: " << forceArea[closest_i] <<std::endl;
-    return surfaceData->forceArea[closest_i];
-}
-
-//////////////////////////////////////////////////
-float getSurfaceStructIndex(sim::Link link, sim::EntityComponentManager &_ecm, float azimuth, surfaceData* surfaceData) {
+float getSurfaceStructIndex(sim::Link link, sim::EntityComponentManager &_ecm, float azimuth, wrenchFileData* surfaceData) {
     auto q = link.WorldPose(_ecm)->Rot().Normalized();
 
     // Convert quaternion to yaw
@@ -292,9 +226,15 @@ float getSurfaceStructIndex(sim::Link link, sim::EntityComponentManager &_ecm, f
     return closest_i;
 }
 
+/////////////////////////////////////////////////
+double getForceMagnitude(math::Vector3d force) {
+    return sqrt(pow(force.X(), 2) + pow(force.Y(), 2) + pow(force.Z(), 2));
+}
+
+
 //////////////////////////////////////////////////
 wrenchData calculateWrench(sim::EntityComponentManager &_ecm, sim::Link link, float speed, float direction,
-                           surfaceData *surfaceData, float fluidDensity, float resCoefficient) {
+                           wrenchFileData *surfaceData, float fluidDensity, float resCoefficient) {
 
     math::Vector3d linkLinearVel = toGZVec(link.WorldLinearVelocity(_ecm));
     math::Vector3d forceLinearVel = sphericalToVector(speed, 90, direction);
@@ -310,7 +250,7 @@ wrenchData calculateWrench(sim::EntityComponentManager &_ecm, sim::Link link, fl
 
     // Torque
     math::Vector3d torqueForce = 0.5 * fluidDensity * resCoefficient * relativeVel * torqueSurface;
-    double torqueForceMag = sqrt(pow(torqueForce.X(), 2) + pow(torqueForce.Y(), 2) + pow(torqueForce.Z(), 2));
+    double torqueForceMag = getForceMagnitude(torqueForce);
     math::Vector3d torque = torqueForceMag * math::Vector3d(0, 0, offset);
 
     wrenchData wrench = {force, torque};
@@ -332,4 +272,5 @@ wrenchData calculateWrench(sim::EntityComponentManager &_ecm, sim::Link link, fl
 
     return wrench;
 }
+
 

@@ -9,7 +9,7 @@
 
 using namespace gz;
 
-struct surfaceDataStruct{
+struct wrenchDataStruct{
     int size;
     float *angle;
     float *forceArea;
@@ -22,7 +22,7 @@ struct wrenchStruct{
     math::Vector3d torque;
 };
 
-typedef struct surfaceDataStruct surfaceData;
+typedef struct wrenchDataStruct wrenchFileData;
 typedef struct wrenchStruct wrenchData;
 
 class IntegratedWhiteNoise {
@@ -43,9 +43,7 @@ public:
 
 int findClosestMatchingValue(float arr[], int n, float target);
 
-surfaceData* readAreaFile(std::string filename);
-
-surfaceData* read_csv(std::string filename);
+wrenchFileData* read_csv(std::string filename);
 
 std::string findFileFromHome(const std::string& filename);
 
@@ -55,8 +53,6 @@ math::Vector3d sphericalToVector(double magnitude, double elevation, double azim
 
 math::Vector3d toGZVec(std::optional<math::Vector3<double>> vec);
 
-float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimuth, surfaceData* surfaceData);
-
 wrenchData calculateWrench(sim::EntityComponentManager &_ecm, sim::Link link, float speed, float direction,
-                           surfaceData *surfaceData, float fluidDensity, float resCoefficient);
+                           wrenchFileData *surfaceData, float fluidDensity, float resCoefficient);
 #endif

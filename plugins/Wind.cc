@@ -83,7 +83,7 @@ public: float airDensity = 1.225;
 public: float resCoefficient = 1;
 
     /// \brief Structure with the surface area information
-public: surfaceData *windSurfaceData;
+public: wrenchFileData *windSurfaceData;
 
     /// \brief Name of file the with the surface area information
 public: std::string tableFileName = "wind_table.csv";
