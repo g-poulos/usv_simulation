@@ -86,7 +86,7 @@ public: float resCoefficient = 1;
 public: surfaceData *currentSurfaceData;
 
     /// \brief Name of file the with the surface area information
-public: std::string surfaceAreaFile = "current_surface.txt";
+public: std::string tableFileName = "current_table.csv";
 
     /// \brief Level of the water surface below which the current applies
 public: float surfaceLevel = 1.0;
@@ -187,8 +187,8 @@ void WaterCurrent::Configure(const sim::Entity &_entity,
     gzmsg << "[Water Current] Update Rate: " << this->dataPtr->updateRate << std::endl;
 
     if (_sdf->HasElement("surface_area_file"))
-        this->dataPtr->surfaceAreaFile = _sdf->Get<std::string>("surface_area_file");
-    gzmsg << "[WaterCurrent] Surface Area File: " << this->dataPtr->surfaceAreaFile << std::endl;
+        this->dataPtr->tableFileName = _sdf->Get<std::string>("surface_area_file");
+    gzmsg << "[WaterCurrent] Surface Area File: " << this->dataPtr->tableFileName << std::endl;
 
     if (_sdf->HasElement("surfaceLevel"))
         this->dataPtr->surfaceLevel = _sdf->Get<float>("surfaceLevel");
@@ -220,8 +220,16 @@ void WaterCurrent::Configure(const sim::Entity &_entity,
                                                        this->dataPtr->dt);
 
     // Read file with area of application
-    std::string currentSurfaceAreaFile = getModelFile(_ecm, "current_surface.txt");
-    this->dataPtr->currentSurfaceData = readAreaFile(currentSurfaceAreaFile);
+    std::string currentTablrFile = getModelFile(_ecm, this->dataPtr->tableFileName);
+    this->dataPtr->currentSurfaceData = read_csv(currentTablrFile);
+
+    gzmsg << "CURRENT TABLE" << std::endl;
+    for (int i=0; i<this->dataPtr->currentSurfaceData->size; i++) {
+        gzmsg << this->dataPtr->currentSurfaceData->angle[i] << "\n";
+//                 this->dataPtr->windSurfaceData->forceArea[i] << " " <<
+//                 this->dataPtr->windSurfaceData->torqueArea[i] << " " <<
+//                 this->dataPtr->windSurfaceData->offset[i] << std::endl;
+    }
 }
 
 //////////////////////////////////////////////////
@@ -242,16 +250,15 @@ void WaterCurrent::PreUpdate(const sim::UpdateInfo &_info,
     double azimuth = this->dataPtr->azimuthDistr.getValue();
 
     if (this->dataPtr->link.WorldPose(_ecm)->Z() < this->dataPtr->surfaceLevel) {
-        math::Vector3d force = calculateForce(_ecm,
-                                                this->dataPtr->link,
-                                                speed,
-                                                azimuth,
-                                                this->dataPtr->currentSurfaceData,
-                                                this->dataPtr->fluidDensity,
-                                                this->dataPtr->resCoefficient);
+        wrenchData wrench = calculateWrench(_ecm,
+                                            this->dataPtr->link,
+                                            speed,
+                                            azimuth,
+                                            this->dataPtr->currentSurfaceData,
+                                            this->dataPtr->fluidDensity,
+                                            this->dataPtr->resCoefficient);
 
-        auto torque = this->dataPtr->torqueVector.Cross(force);
-        this->dataPtr->link.AddWorldWrench(_ecm, force, torque);
+        this->dataPtr->link.AddWorldWrench(_ecm, wrench.force, wrench.torque);
     }
 
     // Publish the messages

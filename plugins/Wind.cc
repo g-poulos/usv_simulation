@@ -86,7 +86,7 @@ public: float resCoefficient = 1;
 public: surfaceData *windSurfaceData;
 
     /// \brief Name of file the with the surface area information
-public: std::string surfaceAreaFile = "wind_surface.txt";
+public: std::string tableFileName = "wind_table.csv";
 
     /// \brief Average distance of mesh points to CoM to compute torque
 public: math::Vector3d torqueVector;
@@ -184,8 +184,8 @@ void Wind::Configure(const sim::Entity &_entity,
     gzmsg << "[Wind] Update rate: " << this->dataPtr->updateRate << std::endl;
 
     if (_sdf->HasElement("surface_area_file"))
-        this->dataPtr->surfaceAreaFile = _sdf->Get<std::string>("surface_area_file");
-    gzmsg << "[Wind] Surface Area File: " << this->dataPtr->surfaceAreaFile << std::endl;
+        this->dataPtr->tableFileName = _sdf->Get<std::string>("surface_area_file");
+    gzmsg << "[Wind] Surface Area File: " << this->dataPtr->tableFileName << std::endl;
 
     // Set up the publishers
     double updateRate = this->dataPtr->updateRate;
@@ -213,18 +213,8 @@ void Wind::Configure(const sim::Entity &_entity,
                                                        this->dataPtr->dt);
 
     // Read file with area of application
-//    std::string windSurfaceAreaFile = getModelFile(_ecm, this->dataPtr->surfaceAreaFile);
-//    this->dataPtr->windSurfaceData = readAreaFile(windSurfaceAreaFile);
-    std::string windSurfaceAreaFile = getModelFile(_ecm, "wind_table.csv");
-    this->dataPtr->windSurfaceData = read_csv(windSurfaceAreaFile);
-
-
-    for (int i=0; i<256; i++) {
-        gzmsg << this->dataPtr->windSurfaceData->angle[i] << "\n";
-//                 this->dataPtr->windSurfaceData->forceArea[i] << " " <<
-//                 this->dataPtr->windSurfaceData->torqueArea[i] << " " <<
-//                 this->dataPtr->windSurfaceData->offset[i] << std::endl;
-    }
+    std::string windTableFile = getModelFile(_ecm, this->dataPtr->tableFileName);
+    this->dataPtr->windSurfaceData = read_csv(windTableFile);
 }
 
 //////////////////////////////////////////////////
@@ -244,15 +234,15 @@ void Wind::PreUpdate(const sim::UpdateInfo &_info,
     double speed = this->dataPtr->speedDistr.getValue();
     double azimuth = this->dataPtr->azimuthDistr.getValue();
 
-    math::Vector3d force = calculateForce(_ecm,
-                                              this->dataPtr->link,
-                                              speed,
-                                              azimuth,
-                                              this->dataPtr->windSurfaceData,
-                                              this->dataPtr->airDensity,
-                                              this->dataPtr->resCoefficient);
-    auto torque = this->dataPtr->torqueVector.Cross(force);
-    this->dataPtr->link.AddWorldWrench(_ecm, force, torque);
+    wrenchData wrench = calculateWrench(_ecm,
+                                        this->dataPtr->link,
+                                        speed,
+                                        azimuth,
+                                        this->dataPtr->windSurfaceData,
+                                        this->dataPtr->airDensity,
+                                        this->dataPtr->resCoefficient);
+
+    this->dataPtr->link.AddWorldWrench(_ecm, wrench.force, wrench.torque);
 
     // Publish the messages
     msgs::Float forceMsg;

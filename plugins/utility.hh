@@ -17,9 +17,13 @@ struct surfaceDataStruct{
     float *offset;
 };
 
+struct wrenchStruct{
+    math::Vector3d force;
+    math::Vector3d torque;
+};
 
 typedef struct surfaceDataStruct surfaceData;
-
+typedef struct wrenchStruct wrenchData;
 
 class IntegratedWhiteNoise {
 private:
@@ -53,6 +57,6 @@ math::Vector3d toGZVec(std::optional<math::Vector3<double>> vec);
 
 float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimuth, surfaceData* surfaceData);
 
-math::Vector3d calculateForce(sim::EntityComponentManager &_ecm, sim::Link link, float speed, float direction,
-                              surfaceData *surfaceData, float fluidDensity, float resCoefficient);
+wrenchData calculateWrench(sim::EntityComponentManager &_ecm, sim::Link link, float speed, float direction,
+                           surfaceData *surfaceData, float fluidDensity, float resCoefficient);
 #endif

@@ -151,14 +151,19 @@ float* split(char arr[100], char separator){
 
 //////////////////////////////////////////////////
 surfaceData* read_csv(std::string filename) {
-    surfaceData* _surfaceData = new surfaceData;
-    _surfaceData->size = 256;
-    _surfaceData->angle = new float[256];
-    _surfaceData->forceArea = new float[256];
-    _surfaceData->torqueArea = new float[256];
-    _surfaceData->offset = new float[256];
-
+    string first_line;
     std::ifstream file(filename);
+    getline(file, first_line);
+    int arraySize = static_cast<int>(split((char*)first_line.c_str(), ',')[0]);
+
+    surfaceData* _surfaceData = new surfaceData;
+    _surfaceData->size = arraySize;
+    _surfaceData->angle = new float[arraySize];
+    _surfaceData->forceArea = new float[arraySize];
+    _surfaceData->torqueArea = new float[arraySize];
+    _surfaceData->offset = new float[arraySize];
+
+
     if (file.is_open()) {
         std::string line;
         int i = 0;
@@ -263,18 +268,60 @@ float getSurface(sim::Link link, sim::EntityComponentManager &_ecm, float azimut
 }
 
 //////////////////////////////////////////////////
-math::Vector3d calculateForce(sim::EntityComponentManager &_ecm, sim::Link link, float speed, float direction,
-                              surfaceData *surfaceData, float fluidDensity, float resCoefficient) {
+float getSurfaceStructIndex(sim::Link link, sim::EntityComponentManager &_ecm, float azimuth, surfaceData* surfaceData) {
+    auto q = link.WorldPose(_ecm)->Rot().Normalized();
+
+    // Convert quaternion to yaw
+    double siny_cosp = 2 * (q.W() * q.Z() + q.X() * q.Y());
+    double cosy_cosp = 1 - 2 * (q.Y() * q.Y() + q.Z() * q.Z());
+    double yaw = std::atan2(siny_cosp, cosy_cosp);
+
+    // Convert negative radians to positive
+    if (yaw < 0)
+        yaw = yaw + 2 * M_PI;
+
+    // Find angle of the force relative to the model
+    float relative_angle = (azimuth * (M_PI / 180)) - yaw;
+
+    // Convert negative radians to positive
+    if (relative_angle < 0)
+        relative_angle = relative_angle + 2 * M_PI;
+
+    int closest_i = findClosestMatchingValue(surfaceData->angle, surfaceData->size, relative_angle);
+
+    return closest_i;
+}
+
+//////////////////////////////////////////////////
+wrenchData calculateWrench(sim::EntityComponentManager &_ecm, sim::Link link, float speed, float direction,
+                           surfaceData *surfaceData, float fluidDensity, float resCoefficient) {
 
     math::Vector3d linkLinearVel = toGZVec(link.WorldLinearVelocity(_ecm));
     math::Vector3d forceLinearVel = sphericalToVector(speed, 90, direction);
     math::Vector3d relativeVel = forceLinearVel.operator-(linkLinearVel);
 
-    float surface = getSurface(link, _ecm, direction, surfaceData);
+    int index = getSurfaceStructIndex(link, _ecm, direction, surfaceData);
+    float forceSurface = surfaceData->forceArea[index];
+    float torqueSurface = surfaceData->torqueArea[index];
+    float offset = surfaceData->offset[index];
 
-    math::Vector3d currentVector = 0.5 * fluidDensity * resCoefficient * relativeVel * surface;
+    // Force
+    math::Vector3d force = 0.5 * fluidDensity * resCoefficient * relativeVel * forceSurface;
 
-    //DEBUG
+    // Torque
+    math::Vector3d torqueForce = 0.5 * fluidDensity * resCoefficient * relativeVel * torqueSurface;
+    double torqueForceMag = sqrt(pow(torqueForce.X(), 2) + pow(torqueForce.Y(), 2) + pow(torqueForce.Z(), 2));
+    math::Vector3d torque = torqueForceMag * math::Vector3d(0, 0, offset);
+
+    wrenchData wrench = {force, torque};
+
+    // TORQUE DEBUG
+//    gzmsg << "T force: " << torqueForce << endl;
+//    gzmsg << "T force Mag: " << torqueForceMag << endl;
+//    gzmsg << "Offset: " << offset << endl;
+//    gzmsg << "Torque: " << torque << endl;
+
+    // FORCE DEBUG
 //    float relativeVelMagnitude = sqrt(relativeVel.Dot(relativeVel));
 //    gzmsg << "linkLinearVel     : " << linkLinearVel << std::endl;
 //    gzmsg << "forceLinearVel : " << forceLinearVel << std::endl;
@@ -283,5 +330,6 @@ math::Vector3d calculateForce(sim::EntityComponentManager &_ecm, sim::Link link,
 //    gzmsg << "Magnitude : " << sqrt(currentVector.Dot(currentVector)) << " N"<<std::endl;
 //    gzmsg << "Force           : " << currentVector << std::endl;
 
-    return currentVector;
+    return wrench;
 }
+
