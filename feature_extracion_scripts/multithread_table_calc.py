@@ -61,14 +61,16 @@ if __name__ == '__main__':
     draft = 0.44
     stl_file = "../models/vereniki/meshes/vereniki_scaled3.stl"
     poly = pv.read(stl_file)
-    clipped = poly.clip_closed_surface(normal=(0, 0, 1),
+    clipped = poly.clip_closed_surface(normal=(0, 0, -1),
                                        origin=(0, 0, poly.bounds[4]+draft))
+    clipped.rotate_z(-90, inplace=True)
+    clipped.plot()
     start = time.time()
     table = calculate_force_table(clipped, 256, 16)
     end = time.time()
-    print(f"Elapsed time: {end-start:.3f}s")
+    print(f"Elapsed time: {(end-start)/60:.3f} mins")
 
-    write_list_to_file("wind_table.csv", table)
+    write_list_to_file("../models/vereniki/meshes/wind_table.csv", table)
 
 
 

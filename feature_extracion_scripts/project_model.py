@@ -68,7 +68,7 @@ def torque_point(mesh, step, plot=False):
                                 precision=4-backtrack_num):
                     remaining_part = mesh.clip_closed_surface(normal=(-1, 0, 0),
                                                               origin=[com[0]-neg_offset, 0, 0])
-                    return remaining_part, neg_offset
+                    return remaining_part, -neg_offset
                 backtrack_num += 1
 
         # Equal values: increment both offsets
@@ -200,18 +200,18 @@ def write_list_to_file(filename, force_list):
     f.close()
 
 
-def create_force_table(model, angles, result_queue, thread_num=0, plot=False):
+def create_force_table(model, angles, result_queue=None, thread_num=0, plot=False):
     force_info = []
 
     i = 0
     for a in angles:
-        i +=1
+        i += 1
         rotated_model = model.rotate_z(a * (180/np.pi), inplace=False)
-        area = get_projection_area(rotated_model, plot=plot)
-        torque_part, offset = torque_point(rotated_model, 0.1, plot=False)
+        area = get_projection_area(rotated_model, normal=(0, 1, 0), plot=plot)
+        torque_part, offset = torque_point(rotated_model, 0.1)
         if torque_part:
             if torque_part.n_points:
-                torque_part_area = get_projection_area(torque_part)
+                torque_part_area = get_projection_area(torque_part, normal=(0, 1, 0), plot=plot)
 
                 if plot:
                     p = pv.Plotter()
@@ -230,41 +230,26 @@ def create_force_table(model, angles, result_queue, thread_num=0, plot=False):
             offset = 0
         force_info.append(f"{a},{area},{torque_part_area},{offset}")
 
-        print(f"{i}  /  {len(angles)}  - Thread Num : {thread_num}")
-        # print(f"{a:.3f}, {area}, {torque_part_area}, {offset}")
-    print(f"Thread {thread_num} finished")
-    result_queue.put(force_info)
-
-#
-# def create_surface_angle_file(stl_file, draft, num_of_angles=256, submerged_surface=True):
-#     poly = pv.read(stl_file)
-#
-#     clipped = poly.clip_closed_surface(normal=(0, 0, 1),
-#                                        origin=(0, 0, poly.bounds[4]+draft))
-#     print("Generating table...")
-#     force_table = create_force_table(clipped, num_of_angles, plot=False)
-#     print("Writing file...")
-#
-#     parent_dir = os.path.dirname(stl_file) + "/"
-#     if submerged_surface:
-#         filename = parent_dir + "current_surface.csv"
-#     else:
-#         filename = parent_dir + "wind_surface.csv"
-#
-#     write_list_to_file(filename, force_table)
-#     print(f"Completed file: {filename}")
+        print(f"{i:3d}  /  {len(angles):3d}  - Thread Num : {thread_num}   ", end='\r')
+        print(f"{a:.3f}, {area}, {torque_part_area}, {offset}")
+    print(f"Thread {thread_num} finished              ")
+    if result_queue:
+        result_queue.put(force_info)
 
 
 if __name__ == '__main__':
-    # stl_file = "..models/boat/meshes/boat3.stl"
+    # stl_file = "../models/boat/meshes/boat3.stl"
     # model_height = 1.5
     # draft = compute_draft(800, 1025, 4.28, 2)
 
-    stl_file = "../models/vereniki/meshes/vereniki_scaled3.stl"
     draft = 0.44
+    stl_file = "../models/vereniki/meshes/vereniki_scaled3.stl"
+    ver = pv.read(stl_file)
+    ver = ver.clip_closed_surface(normal=(0, 0, 1), origin=(0, 0, ver.bounds[4]+draft))
+
 
     start = time.time()
-    # create_surface_angle_file(stl_file, draft, num_of_angles=256, submerged_surface=False)
+    create_force_table(ver, [1.3], thread_num=0, plot=True)
     end = time.time()
     print(f"Elapsed time: {end-start:.3f}s")
 
