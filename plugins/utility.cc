@@ -246,7 +246,8 @@ wrenchData calculateWrench(sim::EntityComponentManager &_ecm, sim::Link link, fl
     float offset = surfaceData->offset[index];
 
     // Force
-    math::Vector3d force = 0.5 * fluidDensity * resCoefficient * relativeVel * forceSurface;
+    math::Vector3d force =
+        0.5 * fluidDensity * resCoefficient * relativeVel * getForceMagnitude(relativeVel) * forceSurface;
 
     // Torque
     math::Vector3d torqueForce = 0.5 * fluidDensity * resCoefficient * relativeVel * torqueSurface;
