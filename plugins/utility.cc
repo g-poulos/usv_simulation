@@ -39,7 +39,7 @@ double IntegratedWhiteNoise::getValue() {
     double nextValue = prevValue + this->dt * whiteNoise;
 
     if (nextValue > this->maxValue || nextValue < this->minValue) {
-        nextValue = nextValue - this->dt * whiteNoise;
+        nextValue = prevValue - this->dt * whiteNoise;
     }
 
     this->prevValue = nextValue;
