@@ -342,6 +342,8 @@
         </joint>
 
         <!-- Thruster plugins -->
+
+        <!-- gz topic -t /model/vereniki/joint/propeller_jointA/cmd_thrust -m gz.msgs.Double -p 'data: 100'-->
         <plugin
                 filename="gz-sim-thruster-system"
                 name="gz::sim::systems::Thruster">
@@ -406,6 +408,21 @@
             <joint_name>engine_jointC</joint_name>
             <p_gain>1</p_gain>
             <topic>/model/vereniki/joint/engine_jointC/cmd_steer</topic>
+        </plugin>
+
+        <plugin filename="libgz-sim-odometry-publisher-system.so"
+                name="gz::sim::systems::OdometryPublisher">
+        </plugin>
+
+        <plugin filename="gz-sim-joint-state-publisher-system"
+                name="gz::sim::systems::JointStatePublisher">
+            <update_rate>30</update_rate>
+            <joint_name>engine_jointA</joint_name>
+            <joint_name>engine_jointB</joint_name>
+            <joint_name>engine_jointC</joint_name>
+            <joint_name>propeller_jointA</joint_name>
+            <joint_name>propeller_jointB</joint_name>
+            <joint_name>propeller_jointC</joint_name>
         </plugin>
 
 

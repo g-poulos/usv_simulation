@@ -250,7 +250,7 @@ wrenchData calculateWrench(sim::EntityComponentManager &_ecm, sim::Link link, fl
         0.5 * fluidDensity * resCoefficient * relativeVel * getForceMagnitude(relativeVel) * forceSurface;
 
     // Torque
-    math::Vector3d torqueForce = 0.5 * fluidDensity * resCoefficient * relativeVel * torqueSurface;
+    math::Vector3d torqueForce = 0.5 * fluidDensity * resCoefficient * relativeVel * getForceMagnitude(relativeVel) * torqueSurface;
     double torqueForceMag = getForceMagnitude(torqueForce);
     math::Vector3d torque = torqueForceMag * math::Vector3d(0, 0, offset);
 
@@ -269,7 +269,7 @@ wrenchData calculateWrench(sim::EntityComponentManager &_ecm, sim::Link link, fl
 //    gzmsg << "relativeVel       : " << relativeVel << std::endl;
 //    gzmsg << "Relative Vel Speed: " << relativeVelMagnitude << " m/s" << std::endl;
 //    gzmsg << "Magnitude : " << sqrt(currentVector.Dot(currentVector)) << " N"<<std::endl;
-//    gzmsg << "Force           : " << currentVector << std::endl;
+//    gzmsg << "Force           : " << force << std::endl;
 
     return wrench;
 }
