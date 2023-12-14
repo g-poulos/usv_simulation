@@ -80,17 +80,6 @@
             <child>engine_linkA</child>
             <axis>
                 <xyz>0 0 1</xyz>
-                <limit>
-                    <lower>-1.57</lower>
-                    <upper>1.57</upper>
-                    <stifness>10</stifness>
-                </limit>
-                <dynamics>
-                    <damping>30</damping>
-                    <spring_stiffness>100.0</spring_stiffness>
-                    <spring_reference>0</spring_reference>
-                    <friction>1.0</friction>
-                </dynamics>
             </axis>
         </joint>
 
@@ -181,17 +170,6 @@
             <child>engine_linkB</child>
             <axis>
                 <xyz>0 0 1</xyz>
-                <limit>
-                    <lower>-1.57</lower>
-                    <upper>1.57</upper>
-                    <stifness>10</stifness>
-                </limit>
-                <dynamics>
-                    <damping>30</damping>
-                    <spring_stiffness>100.0</spring_stiffness>
-                    <spring_reference>0</spring_reference>
-                    <friction>1.0</friction>
-                </dynamics>
             </axis>
         </joint>
 
@@ -282,17 +260,6 @@
             <child>engine_linkC</child>
             <axis>
                 <xyz>0 0 1</xyz>
-                <limit>
-                    <lower>-1.57</lower>
-                    <upper>1.57</upper>
-                    <stifness>10</stifness>
-                </limit>
-                <dynamics>
-                    <damping>30</damping>
-                    <spring_stiffness>100.0</spring_stiffness>
-                    <spring_reference>0</spring_reference>
-                    <friction>1.0</friction>
-                </dynamics>
             </axis>
         </joint>
 
@@ -391,7 +358,9 @@
                 name="gz::sim::systems::JointPositionController">
             <joint_name>engine_jointA</joint_name>
             <p_gain>1</p_gain>
+            <use_velocity_commands>True</use_velocity_commands>
             <topic>/model/vereniki/joint/engine_jointA/cmd_steer</topic>
+            <cmd_max>1</cmd_max>
         </plugin>
 
         <plugin
@@ -399,7 +368,9 @@
                 name="gz::sim::systems::JointPositionController">
             <joint_name>engine_jointB</joint_name>
             <p_gain>1</p_gain>
+            <use_velocity_commands>True</use_velocity_commands>
             <topic>/model/vereniki/joint/engine_jointB/cmd_steer</topic>
+            <cmd_max>1</cmd_max>
         </plugin>
 
         <plugin
@@ -407,7 +378,9 @@
                 name="gz::sim::systems::JointPositionController">
             <joint_name>engine_jointC</joint_name>
             <p_gain>1</p_gain>
+            <use_velocity_commands>True</use_velocity_commands>
             <topic>/model/vereniki/joint/engine_jointC/cmd_steer</topic>
+            <cmd_max>1</cmd_max>
         </plugin>
 
         <plugin filename="libgz-sim-odometry-publisher-system.so"
