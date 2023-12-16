@@ -48,32 +48,6 @@
                     </mesh>
                 </geometry>
             </visual>
-            <collision name="engine_vertical_axis_collision">
-                <pose>-0.16 0 -0.215 0 0 0</pose>
-                <geometry>
-                    <box>
-                        <size>0.2 0.1 0.83</size>
-                    </box>
-                </geometry>
-            </collision>
-            <collision name="engine_rear_end_collision">
-                <pose>-0.34 0 0.12 0 0 0</pose>
-                <geometry>
-                    <box>
-                        <size>0.12 0.15 0.12</size>
-                    </box>
-                </geometry>
-            </collision>
-            <inertial>
-                <mass>15</mass>
-                <inertia>
-                    <ixx>0.88924</ixx>
-                    <ixy>0</ixy>
-                    <iyy>0.911125</iyy>
-                    <iyz>0</iyz>
-                    <izz>0.078125</izz>
-                </inertia>
-            </inertial>
         </link>
         <joint name="engine_jointA" type="revolute">
             <parent>platform_body</parent>
@@ -92,25 +66,6 @@
                     </mesh>
                 </geometry>
             </visual>
-            <collision name="collision">
-                <pose>-0.11 0 0 0 1.570796 0</pose>
-                <geometry>
-                    <cylinder>
-                        <length>0.08</length>
-                        <radius>0.24</radius>
-                    </cylinder>
-                </geometry>
-            </collision>
-            <inertial>
-                <mass>0.5</mass>
-                <inertia>
-                    <ixx>0.008545</ixx>
-                    <ixy>0</ixy>
-                    <iyy>0.008545</iyy>
-                    <iyz>0</iyz>
-                    <izz>0.0144</izz>
-                </inertia>
-            </inertial>
         </link>
         <joint name="propeller_jointA" type="revolute">
             <pose relative_to="engine_linkA">-0.278156 0 -0.509371 0 0 0</pose>
@@ -138,32 +93,6 @@
                     </mesh>
                 </geometry>
             </visual>
-            <collision name="engine_vertical_axis_collision">
-                <pose>-0.16 0 -0.215 0 0 0</pose>
-                <geometry>
-                    <box>
-                        <size>0.2 0.1 0.83</size>
-                    </box>
-                </geometry>
-            </collision>
-            <collision name="engine_rear_end_collision">
-                <pose>-0.34 0 0.12 0 0 0</pose>
-                <geometry>
-                    <box>
-                        <size>0.12 0.15 0.12</size>
-                    </box>
-                </geometry>
-            </collision>
-            <inertial>
-                <mass>15</mass>
-                <inertia>
-                    <ixx>0.88924</ixx>
-                    <ixy>0</ixy>
-                    <iyy>0.911125</iyy>
-                    <iyz>0</iyz>
-                    <izz>0.078125</izz>
-                </inertia>
-            </inertial>
         </link>
         <joint name="engine_jointB" type="revolute">
             <parent>platform_body</parent>
@@ -182,25 +111,6 @@
                     </mesh>
                 </geometry>
             </visual>
-            <collision name="collision">
-                <pose>-0.11 0 0 0 1.570796 0</pose>
-                <geometry>
-                    <cylinder>
-                        <length>0.08</length>
-                        <radius>0.24</radius>
-                    </cylinder>
-                </geometry>
-            </collision>
-            <inertial>
-                <mass>0.5</mass>
-                <inertia>
-                    <ixx>0.008545</ixx>
-                    <ixy>0</ixy>
-                    <iyy>0.008545</iyy>
-                    <iyz>0</iyz>
-                    <izz>0.0144</izz>
-                </inertia>
-            </inertial>
         </link>
         <joint name="propeller_jointB" type="revolute">
             <pose relative_to="engine_linkB">-0.278156 0 -0.509371 0 0 0</pose>
@@ -228,32 +138,6 @@
                     </mesh>
                 </geometry>
             </visual>
-            <collision name="engine_vertical_axis_collision">
-                <pose>-0.16 0 -0.215 0 0 0</pose>
-                <geometry>
-                    <box>
-                        <size>0.2 0.1 0.83</size>
-                    </box>
-                </geometry>
-            </collision>
-            <collision name="engine_rear_end_collision">
-                <pose>-0.34 0 0.12 0 0 0</pose>
-                <geometry>
-                    <box>
-                        <size>0.12 0.15 0.12</size>
-                    </box>
-                </geometry>
-            </collision>
-            <inertial>
-                <mass>15</mass>
-                <inertia>
-                    <ixx>0.88924</ixx>
-                    <ixy>0</ixy>
-                    <iyy>0.911125</iyy>
-                    <iyz>0</iyz>
-                    <izz>0.078125</izz>
-                </inertia>
-            </inertial>
         </link>
         <joint name="engine_jointC" type="revolute">
             <parent>platform_body</parent>
@@ -272,25 +156,6 @@
                     </mesh>
                 </geometry>
             </visual>
-            <collision name="collision">
-                <pose>-0.11 0 0 0 1.570796 0</pose>
-                <geometry>
-                    <cylinder>
-                        <length>0.08</length>
-                        <radius>0.24</radius>
-                    </cylinder>
-                </geometry>
-            </collision>
-            <inertial>
-                <mass>0.5</mass>
-                <inertia>
-                    <ixx>0.008545</ixx>
-                    <ixy>0</ixy>
-                    <iyy>0.008545</iyy>
-                    <iyz>0</iyz>
-                    <izz>0.0144</izz>
-                </inertia>
-            </inertial>
         </link>
         <joint name="propeller_jointC" type="revolute">
             <pose relative_to="engine_linkC">-0.278156 0 -0.509371 0 0 0</pose>
@@ -310,7 +175,7 @@
 
         <!-- Thruster plugins -->
 
-        <!-- gz topic -t /model/vereniki/joint/propeller_jointA/cmd_thrust -m gz.msgs.Double -p 'data: 100'-->
+        <!-- gz topic -t /model/vereniki/joint/propeller_jointA/cmd_vel -m gz.msgs.Double -p 'data: 100'-->
         <plugin
                 filename="gz-sim-thruster-system"
                 name="gz::sim::systems::Thruster">
@@ -319,7 +184,8 @@
             <fluid_density>1025</fluid_density>
             <propeller_diameter>0.48</propeller_diameter>
             <thrust_coefficient>0.01</thrust_coefficient>
-            <p_gain>1</p_gain>
+            <use_angvel_cmd>True</use_angvel_cmd>
+            <velocity_control>True</velocity_control>
 
             <max_thrust_cmd>2000.0</max_thrust_cmd>
             <min_thrust_cmd>-2000.0</min_thrust_cmd>
@@ -333,7 +199,8 @@
             <fluid_density>1025</fluid_density>
             <propeller_diameter>0.48</propeller_diameter>
             <thrust_coefficient>0.01</thrust_coefficient>
-            <p_gain>1</p_gain>
+            <use_angvel_cmd>True</use_angvel_cmd>
+            <velocity_control>True</velocity_control>
 
             <max_thrust_cmd>2000.0</max_thrust_cmd>
             <min_thrust_cmd>-2000.0</min_thrust_cmd>
@@ -347,7 +214,8 @@
             <fluid_density>1025</fluid_density>
             <propeller_diameter>0.48</propeller_diameter>
             <thrust_coefficient>0.01</thrust_coefficient>
-            <p_gain>1</p_gain>
+            <use_angvel_cmd>True</use_angvel_cmd>
+            <velocity_control>True</velocity_control>
 
             <max_thrust_cmd>2000.0</max_thrust_cmd>
             <min_thrust_cmd>-2000.0</min_thrust_cmd>
@@ -398,6 +266,34 @@
             <joint_name>propeller_jointC</joint_name>
         </plugin>
 
+        <plugin filename="gz-sim-imu-system"
+                name="gz::sim::systems::Imu">
+        </plugin>
+
+        <!-- Sensors -->
+        <link name="imu_link">
+            <sensor name="imu_sensor" type="imu">
+                <pose>0 0 0 0 0 0</pose>
+                <always_on>1</always_on>
+                <update_rate>1000.0</update_rate>
+            </sensor>
+        </link>
+        <joint name="imu_joint" type="revolute">
+            <child>imu_link</child>
+            <parent>platform_body</parent>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <lower>0</lower>
+                    <upper>0</upper>
+                    <effort>0</effort>
+                    <velocity>0</velocity>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                </dynamics>
+            </axis>
+        </joint>
 
         <!-- Hydrodynamics plugin -->
         <plugin
