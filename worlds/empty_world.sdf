@@ -39,6 +39,15 @@
                             <size>100 100</size>
                         </plane>
                     </geometry>
+                    <surface>
+                        <friction>
+                            <ode>
+                                <mu>0</mu>
+                                <mu2>0</mu2>
+                                <slip1>0</slip1>
+                            </ode>
+                        </friction>
+                    </surface>
                 </collision>
                 <visual name="visual">
                     <geometry>
@@ -56,13 +65,20 @@
             </link>
         </model>
 
-        <include>
-            <uri>model://models/boat</uri>
-        </include>
-
 <!--        <include>-->
-<!--            <uri>model://models/box</uri>-->
+<!--            <uri>model://models/boat</uri>-->
 <!--        </include>-->
+
+        <include>
+            <pose>0 0 1 0 0 0</pose>
+            <uri>model://vereniki</uri>
+            <plugin filename="AddedMass" name="added_mass::AddedMass">
+                <link_name>platform_body</link_name>
+                <coef>0.8</coef>
+                <density>1025</density>
+                <sub_volume>0.41477</sub_volume>
+            </plugin>
+        </include>
 
     </world>
 </sdf>
