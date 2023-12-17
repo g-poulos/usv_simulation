@@ -26,56 +26,6 @@
                 name="gz::sim::systems::Imu">
         </plugin>
 
-
-        <!-- Load the plugin for the wind -->
-        <plugin
-                filename="gz-sim-wind-effects-system"
-                name="gz::sim::systems::WindEffects">
-<!--            <force_approximation_scaling_factor>1</force_approximation_scaling_factor>-->
-            <force_approximation_scaling_factor>
-                <!-- No wind below sea surface -->
-                <when zlt="-1">0</when>
-                <!-- NOTE(hidmic): enable wind forces slightly
-                     below sea surface for the partially submerged
-                     vehicle hull to be affected by them -->
-                <when zge="-1">1</when>
-            </force_approximation_scaling_factor>
-            <horizontal>
-                <magnitude>
-                    <time_for_rise>5</time_for_rise>
-                    <sin>
-                        <amplitude_percent>0.05</amplitude_percent>
-                        <period>20</period>
-                    </sin>
-                    <noise type="gaussian">
-                        <mean>0</mean>
-                        <stddev>0.0002</stddev>
-                    </noise>
-                </magnitude>
-                <direction>
-                    <time_for_rise>5</time_for_rise>
-                    <sin>
-                        <amplitude>5</amplitude>
-                        <period>10</period>
-                    </sin>
-                    <noise type="gaussian">
-                        <mean>0</mean>
-                        <stddev>0.03</stddev>
-                    </noise>
-                </direction>
-            </horizontal>
-            <vertical>
-                <noise type="gaussian">
-                    <mean>0</mean>
-                    <stddev>0.03</stddev>
-                </noise>
-            </vertical>
-        </plugin>
-
-        <wind>
-            <linear_velocity>0 0 0</linear_velocity>
-        </wind>
-
         <scene>
             <ambient>1.0 1.0 1.0</ambient>
             <background>0.8 0.8 0.8</background>
@@ -98,60 +48,57 @@
 <!--        <include>-->
 <!--            <pose>0 0 2 0 0 0</pose>-->
 <!--            <uri>model://boat</uri>-->
-<!--            <plugin filename="AddedMass" name="added_mass::AddedMass">-->
-<!--                <link_name>boat_body</link_name>-->
-<!--            </plugin>-->
 <!--        </include>-->
 
         <include>
             <pose>0 0 1 0 0 0</pose>
             <uri>model://vereniki</uri>
 
-            <plugin filename="WaterCurrent" name="water_current::WaterCurrent">
-                <link_name>platform_body</link_name>
-                <current>
-                    <speed>
-                        <min>0.0</min>
-                        <max>0.51</max>
-                        <init>0.1</init>
-                        <stddev>0.01</stddev>
-                    </speed>
-                    <direction>
-                        <min>0</min>
-                        <max>360</max>
-                        <init>100</init>
-                        <stddev>1</stddev>
-                    </direction>
-                </current>
+<!--            <plugin filename="WaterCurrent" name="water_current::WaterCurrent">-->
+<!--                <link_name>platform_body</link_name>-->
+<!--                <current>-->
+<!--                    <speed>-->
+<!--                        <min>0.0</min>-->
+<!--                        <max>0.51</max>-->
+<!--                        <init>0.1</init>-->
+<!--                        <stddev>0.01</stddev>-->
+<!--                    </speed>-->
+<!--                    <direction>-->
+<!--                        <min>0</min>-->
+<!--                        <max>360</max>-->
+<!--                        <init>100</init>-->
+<!--                        <stddev>1</stddev>-->
+<!--                    </direction>-->
+<!--                </current>-->
 
-                <density>1025</density>
-                <res_coef>1</res_coef>
-                <update_rate>30</update_rate>
-                <table_file>current_table.csv</table_file>
-                <surface_level>1.0</surface_level>
-            </plugin>
+<!--                <density>1025</density>-->
+<!--                <res_coef>1</res_coef>-->
+<!--                <update_rate>30</update_rate>-->
+<!--                <table_file>current_table.csv</table_file>-->
+<!--                <surface_level>1.0</surface_level>-->
+<!--            </plugin>-->
 
-            <plugin filename="Wind" name="wind::Wind">
-                <link_name>platform_body</link_name>
-                <wind>
-                    <speed>
-                        <min>0</min>
-                        <max>10</max>
-                        <init>3</init>
-                        <stddev>1</stddev>
-                    </speed>
-                    <direction>
-                        <min>0</min>
-                        <max>360</max>
-                        <init>200</init>
-                        <stddev>15</stddev>
-                    </direction>
-                </wind>
-                <density>1.225</density>
-                <res_coef>1</res_coef>
-                <update_rate>30</update_rate>
-                <table_file>wind_table.csv</table_file>
-            </plugin>
+<!--            <plugin filename="Wind" name="wind::Wind">-->
+<!--                <link_name>platform_body</link_name>-->
+<!--                <wind>-->
+<!--                    <speed>-->
+<!--                        <min>0</min>-->
+<!--                        <max>10</max>-->
+<!--                        <init>3</init>-->
+<!--                        <stddev>1</stddev>-->
+<!--                    </speed>-->
+<!--                    <direction>-->
+<!--                        <min>0</min>-->
+<!--                        <max>360</max>-->
+<!--                        <init>200</init>-->
+<!--                        <stddev>15</stddev>-->
+<!--                    </direction>-->
+<!--                </wind>-->
+<!--                <density>1.225</density>-->
+<!--                <res_coef>1</res_coef>-->
+<!--                <update_rate>30</update_rate>-->
+<!--                <table_file>wind_table.csv</table_file>-->
+<!--            </plugin>-->
 
             <plugin filename="AddedMass" name="added_mass::AddedMass">
                 <link_name>platform_body</link_name>
