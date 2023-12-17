@@ -276,6 +276,7 @@
                 <pose>0 0 0 0 0 0</pose>
                 <always_on>1</always_on>
                 <update_rate>1000.0</update_rate>
+                <topic>/model/vereniki/imu</topic>
             </sensor>
         </link>
         <joint name="imu_joint" type="revolute">
