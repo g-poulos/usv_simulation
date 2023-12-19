@@ -257,7 +257,7 @@
 
         <plugin filename="gz-sim-joint-state-publisher-system"
                 name="gz::sim::systems::JointStatePublisher">
-            <update_rate>30</update_rate>
+            <update_rate>10</update_rate>
             <joint_name>engine_jointA</joint_name>
             <joint_name>engine_jointB</joint_name>
             <joint_name>engine_jointC</joint_name>
