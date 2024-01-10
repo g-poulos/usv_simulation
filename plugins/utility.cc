@@ -202,7 +202,7 @@ math::Vector3d toGZVec(std::optional<math::Vector3<double>> vec) {
 }
 
 //////////////////////////////////////////////////
-float getSurfaceStructIndex(sim::Link link, sim::EntityComponentManager &_ecm, float azimuth, wrenchFileData* surfaceData) {
+float getSurfaceStructIndex(sim::Link link, sim::EntityComponentManager &_ecm, float direction, wrenchFileData* surfaceData) {
     auto q = link.WorldPose(_ecm)->Rot().Normalized();
 
     // Convert quaternion to yaw
@@ -215,7 +215,7 @@ float getSurfaceStructIndex(sim::Link link, sim::EntityComponentManager &_ecm, f
         yaw = yaw + 2 * M_PI;
 
     // Find angle of the force relative to the model
-    float relative_angle = (azimuth * (M_PI / 180)) - yaw;
+    float relative_angle = (direction * (M_PI / 180)) - yaw;
 
     // Convert negative radians to positive
     if (relative_angle < 0)

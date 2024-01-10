@@ -28,17 +28,17 @@ public: transport::Node node;
     /// \brief Transport node publisher for the wind speed
 public: transport::Node::Publisher windSpeedPub;
 
-    /// \brief Transport node publisher for the wind azimuth
-public: transport::Node::Publisher azimuthPub;
+    /// \brief Transport node publisher for the wind direction
+public: transport::Node::Publisher directionPub;
 
     /// \brief Topic where the wind speed is published
 public: std::string magnitudeTopic = "/wind/speed";
 
-    /// \brief Topic where the wind azimuth is published
-public: std::string azimuthTopic = "/wind/azimuth";
+    /// \brief Topic where the wind direction is published
+public: std::string directionTopic = "/wind/direction";
 
-    /// \brief Integrated white noise distribution to generate the wind's azimuth
-public: IntegratedWhiteNoise azimuthDistr;
+    /// \brief Integrated white noise distribution to generate the wind's direction
+public: IntegratedWhiteNoise directionDistr;
 
     /// \brief Integrated white noise distribution to generate the wind's speed
 public: IntegratedWhiteNoise speedDistr;
@@ -55,17 +55,17 @@ public: float initSpeed = 0;
     /// \brief Standard deviation for the wind's speed
 public: float speedstddev = 0;
 
-    /// \brief Wind minimum azimuth
-public: float minAzimuth = 0;
+    /// \brief Wind minimum direction
+public: float minDirection = 0;
 
-    /// \brief Wind maximum azimuth
-public: float maxAzimuth = 0;
+    /// \brief Wind maximum direction
+public: float maxDirection = 0;
 
-    /// \brief Wind initial azimuth
-public: float initAzimuth = 0;
+    /// \brief Wind initial direction
+public: float initDirection = 0;
 
-    /// \brief Standard deviation for the wind's azimuth
-public: float azimuthstddev = 0;
+    /// \brief Standard deviation for the wind's direction
+public: float directionstddev = 0;
 
     /// \brief Time passed between iterations (overwritten in preUpdate)
 public: double dt = 0.01;
@@ -145,21 +145,21 @@ void Wind::Configure(const sim::Entity &_entity,
             sdf::ElementPtr directionObjSDF = windObjSDF->GetElementImpl("direction");
 
             if (directionObjSDF->HasElement("min")) {
-                this->dataPtr->minAzimuth = directionObjSDF->Get<float>("min");
+                this->dataPtr->minDirection = directionObjSDF->Get<float>("min");
             }
             if (directionObjSDF->HasElement("max")) {
-                this->dataPtr->maxAzimuth = directionObjSDF->Get<float>("max");
+                this->dataPtr->maxDirection = directionObjSDF->Get<float>("max");
             }
             if (directionObjSDF->HasElement("init")) {
-                this->dataPtr->initAzimuth = directionObjSDF->Get<float>("init");
+                this->dataPtr->initDirection = directionObjSDF->Get<float>("init");
             }
             if (directionObjSDF->HasElement("stddev")) {
-                this->dataPtr->azimuthstddev = directionObjSDF->Get<float>("stddev");
+                this->dataPtr->directionstddev = directionObjSDF->Get<float>("stddev");
             }
-            gzmsg << "[Wind] Direction: " << " Min " << this->dataPtr->minAzimuth
-                                     << ", Max " << this->dataPtr->maxAzimuth
-                                     << ", Initial " << this->dataPtr->initAzimuth
-                                     << ", stddev " << this->dataPtr->azimuthstddev << std::endl;
+            gzmsg << "[Wind] Direction: " << " Min " << this->dataPtr->minDirection
+                  << ", Max " << this->dataPtr->maxDirection
+                  << ", Initial " << this->dataPtr->initDirection
+                  << ", stddev " << this->dataPtr->directionstddev << std::endl;
         }
     }
 
@@ -187,8 +187,8 @@ void Wind::Configure(const sim::Entity &_entity,
     this->dataPtr->windSpeedPub =
         this->dataPtr->node.Advertise<msgs::Float>(this->dataPtr->magnitudeTopic, opts);
 
-    this->dataPtr->azimuthPub =
-        this->dataPtr->node.Advertise<msgs::Float>(this->dataPtr->azimuthTopic, opts);
+    this->dataPtr->directionPub =
+        this->dataPtr->node.Advertise<msgs::Float>(this->dataPtr->directionTopic, opts);
 
     // Set up the noise distributions
     this->dataPtr->speedDistr = IntegratedWhiteNoise(0,
@@ -197,12 +197,12 @@ void Wind::Configure(const sim::Entity &_entity,
                                                      this->dataPtr->maxSpeed,
                                                      this->dataPtr->initSpeed,
                                                      this->dataPtr->dt);
-    this->dataPtr->azimuthDistr = IntegratedWhiteNoise(0,
-                                                       this->dataPtr->azimuthstddev,
-                                                       this->dataPtr->minAzimuth,
-                                                       this->dataPtr->maxAzimuth,
-                                                       this->dataPtr->initAzimuth,
-                                                       this->dataPtr->dt);
+    this->dataPtr->directionDistr = IntegratedWhiteNoise(0,
+                                                         this->dataPtr->directionstddev,
+                                                         this->dataPtr->minDirection,
+                                                         this->dataPtr->maxDirection,
+                                                         this->dataPtr->initDirection,
+                                                         this->dataPtr->dt);
 
     // Read file with area of application
     std::string windTableFile = getModelFile(_ecm, this->dataPtr->tableFileName);
@@ -224,12 +224,12 @@ void Wind::PreUpdate(const sim::UpdateInfo &_info,
 
     // Get values for speed and direction
     double speed = this->dataPtr->speedDistr.getValue();
-    double azimuth = this->dataPtr->azimuthDistr.getValue();
+    double direction = this->dataPtr->directionDistr.getValue();
 
     wrenchData wrench = calculateWrench(_ecm,
                                         this->dataPtr->link,
                                         speed,
-                                        azimuth,
+                                        direction,
                                         this->dataPtr->windSurfaceData,
                                         this->dataPtr->airDensity,
                                         this->dataPtr->resCoefficient);
@@ -241,9 +241,9 @@ void Wind::PreUpdate(const sim::UpdateInfo &_info,
     forceMsg.set_data(speed);
     this->dataPtr->windSpeedPub.Publish(forceMsg);
 
-    msgs::Float azimuthMsg;
-    azimuthMsg.set_data(azimuth);
-    this->dataPtr->azimuthPub.Publish(azimuthMsg);
+    msgs::Float directionMsg;
+    directionMsg.set_data(direction);
+    this->dataPtr->directionPub.Publish(directionMsg);
 }
 
 GZ_ADD_PLUGIN(wind::Wind,
