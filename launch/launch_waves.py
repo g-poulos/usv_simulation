@@ -81,7 +81,13 @@ def bridges():
                    f'/model/vereniki/joint/propeller_jointA/cmd_vel@std_msgs/msg/Float64]gz.msgs.Double',
                    f'/model/vereniki/joint/propeller_jointB/cmd_vel@std_msgs/msg/Float64]gz.msgs.Double',
                    f'/model/vereniki/joint/propeller_jointC/cmd_vel@std_msgs/msg/Float64]gz.msgs.Double',
-                   f'/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock'],
+                   f'/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
+                   f'/added_mass/force@std_msgs/msg/Float64[gz.msgs.Double',
+                   f'/added_mass/torque@std_msgs/msg/Float64[gz.msgs.Double',
+                   f'/waterCurrent/direction@std_msgs/msg/Float64[gz.msgs.Double',
+                   f'/waterCurrent/speed@std_msgs/msg/Float64[gz.msgs.Double',
+                   f'/wind/direction@std_msgs/msg/Float64[gz.msgs.Double',
+                   f'/wind/speed@std_msgs/msg/Float64[gz.msgs.Double'],
         output='screen')
     return waves_bridge
 
