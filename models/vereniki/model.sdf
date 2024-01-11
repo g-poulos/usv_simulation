@@ -324,5 +324,9 @@
                 <vRDrag>1.0</vRDrag>
             </hydrodynamics>
         </plugin>
+
+        <plugin filename="ModelStatePublisher" name="model_state_publisher::ModelStatePublisher">
+            <link_name>platform_body</link_name>
+        </plugin>
     </model>
 </sdf>
