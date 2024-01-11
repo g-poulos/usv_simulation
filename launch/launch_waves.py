@@ -75,6 +75,8 @@ def bridges():
                    f'/world/waves/model/vereniki/joint_state@sensor_msgs/msg/JointState[gz.msgs.Model',
                    f'/model/vereniki/odometry@nav_msgs/msg/Odometry[gz.msgs.Odometry',
                    f'/model/vereniki/imu@sensor_msgs/msg/Imu[gz.msgs.IMU',
+                   f'/model/vereniki/acceleration/linear@geometry_msgs/msg/Vector3[gz.msgs.Vector3d',
+                   f'/model/vereniki/acceleration/angular@geometry_msgs/msg/Vector3[gz.msgs.Vector3d',
                    f'/model/vereniki/joint/engine_jointA/cmd_steer@std_msgs/msg/Float64]gz.msgs.Double',
                    f'/model/vereniki/joint/engine_jointB/cmd_steer@std_msgs/msg/Float64]gz.msgs.Double',
                    f'/model/vereniki/joint/engine_jointC/cmd_steer@std_msgs/msg/Float64]gz.msgs.Double',

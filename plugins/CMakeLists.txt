@@ -31,3 +31,10 @@ set_property(TARGET AddedMass PROPERTY CXX_STANDARD 17)
 target_link_libraries(AddedMass
         PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
         PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
+
+# Model State Publisher
+add_library(ModelStatePublisher SHARED ModelStatePublisher.cc)
+set_property(TARGET ModelStatePublisher PROPERTY CXX_STANDARD 17)
+target_link_libraries(ModelStatePublisher
+        PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
+        PRIVATE gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER})
