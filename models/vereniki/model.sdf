@@ -266,36 +266,6 @@
             <joint_name>propeller_jointC</joint_name>
         </plugin>
 
-        <plugin filename="gz-sim-imu-system"
-                name="gz::sim::systems::Imu">
-        </plugin>
-
-        <!-- Sensors -->
-        <link name="imu_link">
-            <sensor name="imu_sensor" type="imu">
-                <pose>0 0 0 0 0 0</pose>
-                <always_on>1</always_on>
-                <update_rate>1000.0</update_rate>
-                <topic>/model/vereniki/imu</topic>
-            </sensor>
-        </link>
-        <joint name="imu_joint" type="revolute">
-            <child>imu_link</child>
-            <parent>platform_body</parent>
-            <axis>
-                <xyz>0 0 1</xyz>
-                <limit>
-                    <lower>0</lower>
-                    <upper>0</upper>
-                    <effort>0</effort>
-                    <velocity>0</velocity>
-                </limit>
-                <dynamics>
-                    <damping>1.0</damping>
-                </dynamics>
-            </axis>
-        </joint>
-
         <!-- Hydrodynamics plugin -->
         <plugin
                 filename="gz-waves1-hydrodynamics-system"

@@ -15,7 +15,7 @@ IntegratedWhiteNoise::IntegratedWhiteNoise() {
     this->distribution = std::normal_distribution<double> (0, 1);
     this->minValue = 1;
     this->maxValue = 2;
-    this->dt = 0.01;
+    this->dt = 0.001;
     this->prevValue = 0.5 * (this->minValue + this->maxValue);
 
 }
