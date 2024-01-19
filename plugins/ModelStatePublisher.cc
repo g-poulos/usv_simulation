@@ -68,16 +68,20 @@ void ModelStatePublisher::PostUpdate(const gz::sim::UpdateInfo &_info, const gz:
     auto linearAcceleration = this->dataPtr->link.WorldLinearAcceleration(_ecm);
     auto angularAcceleration = this->dataPtr->link.WorldAngularAcceleration(_ecm);
 
+    auto pose = this->dataPtr->link.WorldPose(_ecm);
+    auto localLinearAcceleration = pose->Rot().Inverse() * *linearAcceleration;
+    auto localAngularAcceleration = pose->Rot().Inverse() * *angularAcceleration;
+
     msgs::Vector3d linearAccMsg;
-    linearAccMsg.set_x(linearAcceleration->X());
-    linearAccMsg.set_y(linearAcceleration->Y());
-    linearAccMsg.set_z(linearAcceleration->Z());
+    linearAccMsg.set_x(localLinearAcceleration.X());
+    linearAccMsg.set_y(localLinearAcceleration.Y());
+    linearAccMsg.set_z(localLinearAcceleration.Z());
     this->dataPtr->linearAccPublisher.Publish(linearAccMsg);
 
     msgs::Vector3d angularAccMsg;
-    angularAccMsg.set_x(angularAcceleration->X());
-    angularAccMsg.set_y(angularAcceleration->Y());
-    angularAccMsg.set_z(angularAcceleration->Z());
+    angularAccMsg.set_x(localAngularAcceleration.X());
+    angularAccMsg.set_y(localAngularAcceleration.Y());
+    angularAccMsg.set_z(localAngularAcceleration.Z());
     this->dataPtr->angularAccPublisher.Publish(angularAccMsg);
 }
 
