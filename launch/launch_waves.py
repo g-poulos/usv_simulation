@@ -74,7 +74,6 @@ def bridges():
                    '/wave/torque@geometry_msgs/msg/Vector3[gz.msgs.Vector3d',
                    f'/world/waves/model/vereniki/joint_state@sensor_msgs/msg/JointState[gz.msgs.Model',
                    f'/model/vereniki/odometry@nav_msgs/msg/Odometry[gz.msgs.Odometry',
-                   f'/model/vereniki/imu@sensor_msgs/msg/Imu[gz.msgs.IMU',
                    f'/model/vereniki/acceleration/linear@geometry_msgs/msg/Vector3[gz.msgs.Vector3d',
                    f'/model/vereniki/acceleration/angular@geometry_msgs/msg/Vector3[gz.msgs.Vector3d',
                    f'/model/vereniki/joint/engine_jointA/cmd_steer@std_msgs/msg/Float64]gz.msgs.Double',
@@ -84,12 +83,12 @@ def bridges():
                    f'/model/vereniki/joint/propeller_jointB/cmd_vel@std_msgs/msg/Float64]gz.msgs.Double',
                    f'/model/vereniki/joint/propeller_jointC/cmd_vel@std_msgs/msg/Float64]gz.msgs.Double',
                    f'/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
-                   f'/added_mass/force@std_msgs/msg/Float64[gz.msgs.Double',
-                   f'/added_mass/torque@std_msgs/msg/Float64[gz.msgs.Double',
-                   f'/waterCurrent/direction@std_msgs/msg/Float64[gz.msgs.Double',
-                   f'/waterCurrent/speed@std_msgs/msg/Float64[gz.msgs.Double',
-                   f'/wind/direction@std_msgs/msg/Float64[gz.msgs.Double',
-                   f'/wind/speed@std_msgs/msg/Float64[gz.msgs.Double'],
+                   f'/added_mass/force@std_msgs/msg/Float32[gz.msgs.Float',
+                   f'/added_mass/torque@std_msgs/msg/Float32[gz.msgs.Float',
+                   f'/waterCurrent/direction@std_msgs/msg/Float32[gz.msgs.Float',
+                   f'/waterCurrent/speed@std_msgs/msg/Float32[gz.msgs.Float',
+                   f'/wind/direction@std_msgs/msg/Float32[gz.msgs.Float',
+                   f'/wind/speed@std_msgs/msg/Float32[gz.msgs.Float'],
         output='screen')
     return waves_bridge
 

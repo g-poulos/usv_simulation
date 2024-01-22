@@ -51,54 +51,54 @@
 <!--        </include>-->
 
         <include>
-            <pose>0 0 1 0 0 0</pose>
+            <pose>0 0 0 0 0 0</pose>
             <uri>model://vereniki</uri>
 
-<!--            <plugin filename="WaterCurrent" name="water_current::WaterCurrent">-->
-<!--                <link_name>platform_body</link_name>-->
-<!--                <current>-->
-<!--                    <speed>-->
-<!--                        <min>0.0</min>-->
-<!--                        <max>0.51</max>-->
-<!--                        <init>0.1</init>-->
-<!--                        <stddev>0.01</stddev>-->
-<!--                    </speed>-->
-<!--                    <direction>-->
-<!--                        <min>0</min>-->
-<!--                        <max>360</max>-->
-<!--                        <init>100</init>-->
-<!--                        <stddev>1</stddev>-->
-<!--                    </direction>-->
-<!--                </current>-->
+            <plugin filename="WaterCurrent" name="water_current::WaterCurrent">
+                <link_name>platform_body</link_name>
+                <current>
+                    <speed>
+                        <min>0.0</min>
+                        <max>0.3</max>
+                        <init>0.1</init>
+                        <stddev>0.05</stddev>
+                    </speed>
+                    <direction>
+                        <min>155</min>
+                        <max>205</max>
+                        <init>180</init>
+                        <stddev>20</stddev>
+                    </direction>
+                </current>
 
-<!--                <density>1025</density>-->
-<!--                <res_coef>1</res_coef>-->
-<!--                <update_rate>30</update_rate>-->
-<!--                <table_file>current_table.csv</table_file>-->
-<!--                <surface_level>1.0</surface_level>-->
-<!--            </plugin>-->
+                <density>1025</density>
+                <res_coef>1</res_coef>
+                <update_rate>30</update_rate>
+                <table_file>current_table.csv</table_file>
+                <surface_level>1.0</surface_level>
+            </plugin>
 
-<!--            <plugin filename="Wind" name="wind::Wind">-->
-<!--                <link_name>platform_body</link_name>-->
-<!--                <wind>-->
-<!--                    <speed>-->
-<!--                        <min>0</min>-->
-<!--                        <max>10</max>-->
-<!--                        <init>3</init>-->
-<!--                        <stddev>1</stddev>-->
-<!--                    </speed>-->
-<!--                    <direction>-->
-<!--                        <min>0</min>-->
-<!--                        <max>360</max>-->
-<!--                        <init>200</init>-->
-<!--                        <stddev>15</stddev>-->
-<!--                    </direction>-->
-<!--                </wind>-->
-<!--                <density>1.225</density>-->
-<!--                <res_coef>1</res_coef>-->
-<!--                <update_rate>30</update_rate>-->
-<!--                <table_file>wind_table.csv</table_file>-->
-<!--            </plugin>-->
+            <plugin filename="Wind" name="wind::Wind">
+                <link_name>platform_body</link_name>
+                <wind>
+                    <speed>
+                        <min>0</min>
+                        <max>7</max>
+                        <init>2</init>
+                        <stddev>2</stddev>
+                    </speed>
+                    <direction>
+                        <min>245</min>
+                        <max>295</max>
+                        <init>270</init>
+                        <stddev>20</stddev>
+                    </direction>
+                </wind>
+                <density>1.225</density>
+                <res_coef>1</res_coef>
+                <update_rate>30</update_rate>
+                <table_file>wind_table.csv</table_file>
+            </plugin>
 
             <plugin filename="AddedMass" name="added_mass::AddedMass">
                 <link_name>platform_body</link_name>

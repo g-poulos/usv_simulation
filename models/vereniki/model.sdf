@@ -274,7 +274,7 @@
             <enable>vereniki::platform_body</enable>
 
             <hydrodynamics>
-                <damping_on>1</damping_on>
+                <damping_on>0</damping_on>
                 <viscous_drag_on>1</viscous_drag_on>
                 <pressure_drag_on>1</pressure_drag_on>
 
@@ -291,7 +291,7 @@
                 <cSDrag1>1.0E+2</cSDrag1>
                 <cSDrag2>1.0E+2</cSDrag2>
                 <fSDrag>0.4</fSDrag>
-                <vRDrag>1.0</vRDrag>
+                <vRDrag>1.2</vRDrag>
             </hydrodynamics>
         </plugin>
 
