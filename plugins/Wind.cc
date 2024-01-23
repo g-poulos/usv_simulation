@@ -68,7 +68,7 @@ public: float initDirection = 0;
 public: float directionstddev = 0;
 
     /// \brief Time passed between iterations (overwritten in preUpdate)
-public: double dt = 0.01;
+public: double dt = 0.001;
 
     /// \brief WInd elevation (not used)
 public: float elevation = 90;

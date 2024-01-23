@@ -73,7 +73,7 @@
 
                 <density>1025</density>
                 <res_coef>1</res_coef>
-                <update_rate>30</update_rate>
+                <update_rate>1500</update_rate>
                 <table_file>current_table.csv</table_file>
                 <surface_level>1.0</surface_level>
             </plugin>
@@ -96,7 +96,7 @@
                 </wind>
                 <density>1.225</density>
                 <res_coef>1</res_coef>
-                <update_rate>30</update_rate>
+                <update_rate>1500</update_rate>
                 <table_file>wind_table.csv</table_file>
             </plugin>
 
