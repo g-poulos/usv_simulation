@@ -85,9 +85,9 @@ def torque_point(mesh, step, plot=False):
             axes = pv.Axes(show_actor=True, actor_scale=2.0, line_width=5)
             axes.origin = com
             p = pv.Plotter()
-            p.set_background('grey', 'black')
+            # p.set_background('grey', 'black')
             p.add_mesh(mesh, style='wireframe')
-            p.add_mesh(positive_part, color='g')
+            p.add_mesh(positive_part, color='b')
             p.add_mesh(negative_part, color='r')
             p.add_text(f"Cut1: {positive_part.is_manifold}, Cut2: {negative_part.is_manifold}",
                        color='w')
@@ -194,6 +194,8 @@ def project_points_to_plane(mesh, origin=None, normal=(1, 0, 0), inplace=False):
 
 def write_list_to_file(filename, force_list):
     f = open(filename, "w")
+    f.write(f"{len(force_list)},0,0,0")
+
     for line in force_list:
         f.write(f"{line}\n")
     f.close()
@@ -207,7 +209,7 @@ def create_force_table(model, angles, result_queue=None, thread_num=0, plot=Fals
         i += 1
         rotated_model = model.rotate_z(a * (180/np.pi), inplace=False)
         area = get_projection_area(rotated_model, normal=(0, 1, 0), plot=plot)
-        torque_part, offset = torque_point(rotated_model, 0.1)
+        torque_part, offset = torque_point(rotated_model, 0.1, plot=True)
         if torque_part:
             if torque_part.n_points:
                 torque_part_area = get_projection_area(torque_part, normal=(0, 1, 0), plot=plot)
@@ -247,7 +249,7 @@ if __name__ == '__main__':
     ver = ver.clip_closed_surface(normal=(0, 0, 1), origin=(0, 0, ver.bounds[4]+draft))
 
     start = time.time()
-    create_force_table(ver, [1.3], plot=True)
+    create_force_table(ver, [0], plot=True)
     end = time.time()
     print(f"Elapsed time: {end-start:.3f}s")
 

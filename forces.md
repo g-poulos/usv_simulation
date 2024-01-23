@@ -179,7 +179,7 @@ math::Vector3d linkLinearVel = toGZVec(link.WorldLinearVelocity(_ecm));
 math::Vector3d forceLinearVel = sphericalToVector(speed, 90, direction);
 math::Vector3d relativeVel = forceLinearVel.operator-(linkLinearVel);
 
-float surface = getSurface(link, _ecm, direction, surfaceData);
+float surface = getSurface(link, _ecm, direction, wrenchFileData);
 
 math::Vector3d forceVector = 
       0.5 * fluidDensity * resCoefficient * relativeVel * surface;
