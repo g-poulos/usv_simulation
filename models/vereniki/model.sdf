@@ -285,13 +285,13 @@
                 <cDampR2>1.0E-6</cDampR2>
 
                 <!-- 'Pressure' Drag -->
-                <cPDrag1>1.0E+2</cPDrag1>
-                <cPDrag2>1.0E+2</cPDrag2>
+                <cPDrag1>82</cPDrag1>
+                <cPDrag2>65</cPDrag2>
                 <fPDrag>0.4</fPDrag>
-                <cSDrag1>1.0E+2</cSDrag1>
-                <cSDrag2>1.0E+2</cSDrag2>
+                <cSDrag1>82</cSDrag1>
+                <cSDrag2>65</cSDrag2>
                 <fSDrag>0.4</fSDrag>
-                <vRDrag>1.2</vRDrag>
+                <vRDrag>1.0</vRDrag>
             </hydrodynamics>
         </plugin>
 
