@@ -274,22 +274,22 @@
             <enable>vereniki::platform_body</enable>
 
             <hydrodynamics>
-                <damping_on>0</damping_on>
+                <damping_on>1</damping_on>
                 <viscous_drag_on>1</viscous_drag_on>
                 <pressure_drag_on>1</pressure_drag_on>
 
                 <!-- Linear and Angular Damping -->
-                <cDampL1>1.0E-6</cDampL1>
-                <cDampL2>1.0E-6</cDampL2>
-                <cDampR1>1.0E-6</cDampR1>
-                <cDampR2>1.0E-6</cDampR2>
+                <cDampL1>170</cDampL1>
+                <cDampL2>170</cDampL2>
+                <cDampR1>2000</cDampR1>
+                <cDampR2>2000</cDampR2>
 
                 <!-- 'Pressure' Drag -->
-                <cPDrag1>82</cPDrag1>
-                <cPDrag2>65</cPDrag2>
+                <cPDrag1>55</cPDrag1>
+                <cPDrag2>45</cPDrag2>
                 <fPDrag>0.4</fPDrag>
-                <cSDrag1>82</cSDrag1>
-                <cSDrag2>65</cSDrag2>
+                <cSDrag1>55</cSDrag1>
+                <cSDrag2>45</cSDrag2>
                 <fSDrag>0.4</fSDrag>
                 <vRDrag>1.0</vRDrag>
             </hydrodynamics>
