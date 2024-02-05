@@ -87,8 +87,12 @@ def bridges():
                    f'/added_mass/torque@std_msgs/msg/Float32[gz.msgs.Float',
                    f'/waterCurrent/direction@std_msgs/msg/Float32[gz.msgs.Float',
                    f'/waterCurrent/speed@std_msgs/msg/Float32[gz.msgs.Float',
+                   f'/waterCurrent/force@geometry_msgs/msg/Vector3[gz.msgs.Vector3d',
+                   f'/waterCurrent/torque@geometry_msgs/msg/Vector3[gz.msgs.Vector3d',
                    f'/wind/direction@std_msgs/msg/Float32[gz.msgs.Float',
-                   f'/wind/speed@std_msgs/msg/Float32[gz.msgs.Float'],
+                   f'/wind/speed@std_msgs/msg/Float32[gz.msgs.Float',
+                   f'/wind/force@geometry_msgs/msg/Vector3[gz.msgs.Vector3d',
+                   f'/wind/torque@geometry_msgs/msg/Vector3[gz.msgs.Vector3d'],
         output='screen')
     return waves_bridge
 
