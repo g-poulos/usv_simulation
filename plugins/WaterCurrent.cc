@@ -10,6 +10,7 @@
 #include <gz/sim/components/Volume.hh>
 #include <gz/sim/components/World.hh>
 #include <filesystem>
+#include <gz/msgs/details/vector3d.pb.h>
 
 #include "WaterCurrent.hh"
 #include "utility.hh"
@@ -31,11 +32,23 @@ public: transport::Node::Publisher currentSpeedPub;
     /// \brief Transport node publisher for the current direction
 public: transport::Node::Publisher directionPub;
 
+    /// \brief Transport node publisher for the current force
+public: transport::Node::Publisher forcePub;
+
+    /// \brief Transport node publisher for the torque force
+public: transport::Node::Publisher torquePub;
+
     /// \brief Topic where the current speed is published
 public: std::string magnitudeTopic = "/waterCurrent/speed";
 
     /// \brief Topic where the current direction is published
 public: std::string directionTopic = "/waterCurrent/direction";
+
+    /// \brief Topic where the current force is published
+public: std::string forceTopic = "/waterCurrent/force";
+
+    /// \brief Topic where the current torque is published
+public: std::string torqueTopic = "/waterCurrent/torque";
 
     /// \brief Integrated white noise distribution to generate the current's direction
 public: IntegratedWhiteNoise directionDistr;
@@ -197,6 +210,12 @@ void WaterCurrent::Configure(const sim::Entity &_entity,
     this->dataPtr->directionPub =
         this->dataPtr->node.Advertise<msgs::Float>(this->dataPtr->directionTopic, opts);
 
+    this->dataPtr->forcePub =
+        this->dataPtr->node.Advertise<msgs::Vector3d>(this->dataPtr->forceTopic, opts);
+
+    this->dataPtr->torquePub =
+        this->dataPtr->node.Advertise<msgs::Vector3d>(this->dataPtr->torqueTopic, opts);
+
     // Set up the noise distributions
     this->dataPtr->speedDistr = IntegratedWhiteNoise(0,
                                                      this->dataPtr->speedstddev,
@@ -235,26 +254,38 @@ void WaterCurrent::PreUpdate(const sim::UpdateInfo &_info,
     double speed = this->dataPtr->speedDistr.getValue();
     double direction = this->dataPtr->directionDistr.getValue();
 
-    if (this->dataPtr->link.WorldPose(_ecm)->Z() < this->dataPtr->surfaceLevel) {
-        wrenchData wrench = calculateWrench(_ecm,
-                                            this->dataPtr->link,
-                                            speed,
-                                            direction,
-                                            this->dataPtr->currentSurfaceData,
-                                            this->dataPtr->fluidDensity,
-                                            this->dataPtr->resCoefficient);
+    wrenchData wrench = calculateWrench(_ecm,
+                                        this->dataPtr->link,
+                                        speed,
+                                        direction,
+                                        this->dataPtr->currentSurfaceData,
+                                        this->dataPtr->fluidDensity,
+                                        this->dataPtr->resCoefficient);
 
+    if (this->dataPtr->link.WorldPose(_ecm)->Z() < this->dataPtr->surfaceLevel) {
         this->dataPtr->link.AddWorldWrench(_ecm, wrench.force, wrench.torque);
     }
 
     // Publish the messages
-    msgs::Float forceMsg;
-    forceMsg.set_data(speed);
-    this->dataPtr->currentSpeedPub.Publish(forceMsg);
+    msgs::Float speedMsg;
+    speedMsg.set_data(speed);
+    this->dataPtr->currentSpeedPub.Publish(speedMsg);
 
     msgs::Float directionMsg;
     directionMsg.set_data(direction);
     this->dataPtr->directionPub.Publish(directionMsg);
+
+    msgs::Vector3d forceMsg;
+    forceMsg.set_x(wrench.force.X());
+    forceMsg.set_y(wrench.force.Y());
+    forceMsg.set_z(wrench.force.Z());
+    this->dataPtr->forcePub.Publish(forceMsg);
+
+    msgs::Vector3d torqueMsg;
+    torqueMsg.set_x(wrench.torque.X());
+    torqueMsg.set_y(wrench.torque.Y());
+    torqueMsg.set_z(wrench.torque.Z());
+    this->dataPtr->torquePub.Publish(torqueMsg);
 }
 
 GZ_ADD_PLUGIN(water_current::WaterCurrent,

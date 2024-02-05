@@ -10,6 +10,7 @@
 #include <gz/sim/components/Volume.hh>
 #include <gz/sim/components/World.hh>
 #include <filesystem>
+#include <gz/msgs/details/vector3d.pb.h>
 
 #include "Wind.hh"
 #include "utility.hh"
@@ -31,11 +32,23 @@ public: transport::Node::Publisher windSpeedPub;
     /// \brief Transport node publisher for the wind direction
 public: transport::Node::Publisher directionPub;
 
+    /// \brief Transport node publisher for the wind force
+public: transport::Node::Publisher forcePub;
+
+    /// \brief Transport node publisher for the wind force
+public: transport::Node::Publisher torquePub;
+
     /// \brief Topic where the wind speed is published
 public: std::string magnitudeTopic = "/wind/speed";
 
     /// \brief Topic where the wind direction is published
 public: std::string directionTopic = "/wind/direction";
+
+    /// \brief Topic where the wind force is published
+public: std::string forceTopic = "/wind/force";
+
+    /// \brief Topic where the wind torque is published
+public: std::string torqueTopic = "/wind/torque";
 
     /// \brief Integrated white noise distribution to generate the wind's direction
 public: IntegratedWhiteNoise directionDistr;
@@ -190,6 +203,12 @@ void Wind::Configure(const sim::Entity &_entity,
     this->dataPtr->directionPub =
         this->dataPtr->node.Advertise<msgs::Float>(this->dataPtr->directionTopic, opts);
 
+    this->dataPtr->forcePub =
+        this->dataPtr->node.Advertise<msgs::Vector3d>(this->dataPtr->forceTopic, opts);
+
+    this->dataPtr->torquePub =
+        this->dataPtr->node.Advertise<msgs::Vector3d>(this->dataPtr->torqueTopic, opts);
+
     // Set up the noise distributions
     this->dataPtr->speedDistr = IntegratedWhiteNoise(0,
                                                      this->dataPtr->speedstddev,
@@ -237,13 +256,25 @@ void Wind::PreUpdate(const sim::UpdateInfo &_info,
     this->dataPtr->link.AddWorldWrench(_ecm, wrench.force, wrench.torque);
 
     // Publish the messages
-    msgs::Float forceMsg;
-    forceMsg.set_data(speed);
-    this->dataPtr->windSpeedPub.Publish(forceMsg);
+    msgs::Float speedMsg;
+    speedMsg.set_data(speed);
+    this->dataPtr->windSpeedPub.Publish(speedMsg);
 
     msgs::Float directionMsg;
     directionMsg.set_data(direction);
     this->dataPtr->directionPub.Publish(directionMsg);
+
+    msgs::Vector3d forceMsg;
+    forceMsg.set_x(wrench.force.X());
+    forceMsg.set_y(wrench.force.Y());
+    forceMsg.set_z(wrench.force.Z());
+    this->dataPtr->forcePub.Publish(forceMsg);
+
+    msgs::Vector3d torqueMsg;
+    torqueMsg.set_x(wrench.torque.X());
+    torqueMsg.set_y(wrench.torque.Y());
+    torqueMsg.set_z(wrench.torque.Z());
+    this->dataPtr->torquePub.Publish(torqueMsg);
 }
 
 GZ_ADD_PLUGIN(wind::Wind,
