@@ -20,9 +20,9 @@ def compute_draft(stl_file, mass, water_density, step_size=0.01, plot=False):
             volume = submerged_part.volume
 
             if plot:
-                print(f"Draft: {draft}")
-                print(f"Calculated Volume: {volume}\n"
-                      f"Correct Volume:    {mass/water_density}")
+                print(f"Draft:              {draft}")
+                print(f"Calculated Volume:  {volume}\n"
+                      f"Theoretical Volume: {mass/water_density}")
 
                 ground_plane = pv.Plane(center=[center[0], center[1], poly.bounds[4]], i_size=7, j_size=7)
                 water_surface = pv.Plane(center=[center[0], center[1], submerged_part.bounds[5]], i_size=7, j_size=7)

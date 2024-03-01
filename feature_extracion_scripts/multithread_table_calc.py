@@ -56,16 +56,18 @@ def calculate_force_torque_table(mesh, num_of_angles, num_of_threads):
 if __name__ == '__main__':
     draft = 0.4520999938249588
     stl_file = "../models/vereniki/meshes/vereniki_scaled3.stl"
+    num_of_angles = 128
+
     poly = pv.read(stl_file)
     surface_part = poly.clip_closed_surface(normal=(0, 0, 1),
                                             origin=(0, 0, poly.bounds[4]+draft))
     submerged_part = poly.clip_closed_surface(normal=(0, 0, -1),
                                               origin=(0, 0, poly.bounds[4]+draft))
 
-    table = calculate_force_torque_table(surface_part, 128, 16)
+    table = calculate_force_torque_table(surface_part, num_of_angles, 16)
     write_list_to_file("../models/vereniki/meshes/wind_table.csv", table)
 
-    table = calculate_force_torque_table(submerged_part, 128, 16)
+    table = calculate_force_torque_table(submerged_part, num_of_angles, 16)
     write_list_to_file("../models/vereniki/meshes/current_table.csv", table)
 
 
