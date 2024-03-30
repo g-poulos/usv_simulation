@@ -9,7 +9,7 @@ mesh. The forces are calculated for each triangle of the body and then summed to
 to its center of mass.
 
 ### **1. Buoyancy** : hydrostatic force acting on a small planar surface $dS$
-$$d \overrightarrow{F} = \rho g z dS \overrightarrow{n}$$
+_$$d \overrightarrow{F} = \rho g z dS \overrightarrow{n}$$_
 
 Where $\rho$ is the density of water, $z$ the depth in the water and $\overrightarrow{n}$
 the normal to the surface
@@ -105,24 +105,28 @@ Where:
 
 Where `subTriProps.xr` $=centroid - CoM$ of the triangle 
 
-<ins>Slamming Forces/ Damping</ins>
+<ins>Damping</ins>
 
-A force to capture the violence of the response of the fluid to sudden accelerations
-or penetrations, which are almost like rigid collision. The sum of all the slamming
-forces on all the submerged triangles must be just enough to stop the motion on the 
-boat entirely, not more.  
+Forces that are used to dampen the linear and angular movement indepentantly 
 
 
-$$\overrightarrow{F}_{slamming} = \frac{2 \sum A_{j}^{submerged}cos\theta_j}{S^{total}} m \overrightarrow{v}$$
+$$	\overrightarrow{F}_{lin} = \overrightarrow{v} (-rs * cDampL1 + cDampL2 * linSpeed)$$
 
 Where: 
 
-+ $A_{j}^{submerged}cos\theta_j$ : is the surface area of the submerged part of a triangle 
-  projected onto a plane perpendicular to the velocity $\overrightarrow{v}$
-+ $S_{total}$ : the total surface area of the boat
-+ $\overrightarrow{v}$ : the velocity of the boat
-+ $m$ : the boat's mass 
- 
++ $\overrightarrow{v}$ : the linear velocity of the vehicle
++ $rs$                 : the ratio between the submerged area and the total surface area of the model 
++ $cDampL1, cDampL2$   : linear movement coefficients
++ $linSpeed$           : the linear speed of the vehicle
+
+$$ \overrightarrow{F}_{ang} = \overrightarrow{\omega} (-rs * cDampR1 + cDampR2 * angSpeed)$$
+
++ $\overrightarrow{\omega}$ : the angular velocity of the vehicle
++ $rs$                 : the ratio between the submerged area and the total surface area of the model 
++ $cDampR1, cDampR2$   : angular movement coefficients
++ $angSpeed$           : the angular speed of the vehicle
+
+
 
 #### Implementation 
 
@@ -171,7 +175,6 @@ Where:
 + $S$      : a reference surface area where the resistance applies
 + $V$      : the relative speed between the body and the wind
 
-
 #### Implementation 
 
 ```cpp
@@ -185,21 +188,15 @@ math::Vector3d forceVector =
       0.5 * fluidDensity * resCoefficient * relativeVel * surface;
 ```
 
-<br>
-<br>
-<br>
-<br>
-<br>
-
-
 ## Added Mass 
 
 The added mass force is calculated using Newton's second law of motion:
 
-$$\overrightarrow{F} = m_a \overrightarrow{a}$$
+$$\overrightarrow{F} = -C_a m_a \overrightarrow{a}$$
 
 Where:
 
++ $C_a$ : the added mass coefficient
 + $m_a$ : the mass of the displaced fluid
 + $a$   : the acceleration of the body
 

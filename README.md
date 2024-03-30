@@ -30,7 +30,8 @@ source source.bash
 
 To use the ocean current and wind plugins, two data tables must be first created 
 using the Python scripts in `feature_extraction_scripts` directory. Only the model
-STL and mass are required to create the tables. The final csv files must be 
+STL and mass are required to create the tables. The final CSV files must be located 
+to the model `meshes` directory.
 
 For the scripts to work properly:
 + Model origin must be at CoM
@@ -56,6 +57,9 @@ Theoretical Volume: 0.4146341463414634
 By defining the `STL file`, `draft` and `number of angles` in the `multithread_table_calc.py` 
 the two tables for the ocean current and wind are generated. Note that complex meshes 
 require more time to be processed.
+
+After the tables have been created the plugins can be used by adding the following code to the 
+model SDF.
 
 ```html
 <plugin filename="WaterCurrent" name="water_current::WaterCurrent">
@@ -105,6 +109,17 @@ require more time to be processed.
 </plugin>
 ```
 
+### Parameters
+
++ The `link_name` attribute sets the link on which the plugin applies
++ The `min`, `max`, `init` and `stddev` attributes control the Integrated White Gaussian Noise that
+  generates the speed and direction for both plugins  
++ The `density` attribute sets the fluid density
++ The `res_coef` attribute is the drag coefficient in the [drag equation](https://en.wikipedia.org/wiki/Drag_equation)
++ The `update_rate` attribute is the rate of messages per second for the speed and direction topics
++ The `table_file` attribute is the table file name that was generated in step 2
++ The `surface_level` attribute sets the level above which the wind plugin applies
+
 ## Added Mass 
 
 Using the submerged volume calculated in the previous section the added mass plugin can be 
@@ -118,6 +133,14 @@ used by adding the following code to the model SDF.
     <sub_volume>0.41477</sub_volume>
 </plugin>
 ```
+
+### Parameters
+
++ The `link_name` attribute sets the link on which the plugin applies
++ The `res_coef` attribute is the added mass coefficient 
++ The `density` attribute sets the fluid density
++ The `sub_volume` attribute sets the submerged volume of the vehicle calculated using the  
+  draft script in step 1
 
 # Example 
 
@@ -135,4 +158,10 @@ cd ~/gz_ws/src/usv_simulation/launch
 gz sim launch launch_waves.py
 ```
 
-The launch file works only for the vereniki model and bridges GZ and ROS topics.
+The launch file only works for the vereniki model and bridges GZ and ROS topics.
+
+# Extras
+
++ The repository [usv_controller](https://github.com/g-poulos/usv_controller) contains:
+  + Two controllers for the vereniki platform 
+  + The dynamic model simulation of the platform that was used to develop the `usv_simulation` package
