@@ -144,6 +144,11 @@ used by adding the following code to the model SDF.
 
 # Example 
 
+### Source the workspace before first execution
+```
+cd ~/gz_ws/src/usv_simulation
+source source.bash
+```
 ### Using SDF world file directly
 
 ```
