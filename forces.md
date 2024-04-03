@@ -9,7 +9,7 @@ mesh. The forces are calculated for each triangle of the body and then summed to
 to its center of mass.
 
 ### **1. Buoyancy** : hydrostatic force acting on a small planar surface $dS$
-_$$d \overrightarrow{F} = \rho g z dS \overrightarrow{n}$$_
+$$d \overrightarrow{F} = \rho g z dS \overrightarrow{n}$$
 
 Where $\rho$ is the density of water, $z$ the depth in the water and $\overrightarrow{n}$
 the normal to the surface

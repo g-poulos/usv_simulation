@@ -4,7 +4,13 @@ A generic simulation environment for surface vehicles in Gazebo. The wave simula
 plugins are provided by the [ASV Wave Sim](https://github.com/srmainwaring/asv_wave_sim)
 package.
 
-# Setup
+## Environment
+
++ Ubuntu 22.04 (Jammy)
++ Gazebo Sim, version 7.1.0 (Garden)
++ ROS2 Humble 
+
+## Setup
 
 ### Build the ASV Wave Simulation package
 
@@ -24,9 +30,9 @@ cd ~/gz_ws/src/usv_simulation
 source source.bash
 ```
 
-# Plugin setup
+## Plugin setup
 
-## Ocean Current and Wind
+### Ocean Current and Wind
 
 To use the ocean current and wind plugins, two data tables must be first created 
 using the Python scripts in `feature_extraction_scripts` directory. Only the model
@@ -165,7 +171,7 @@ gz sim launch launch_waves.py
 
 The launch file only works for the vereniki model and bridges GZ and ROS topics.
 
-# Extras
+## Extras
 
 + The repository [usv_controller](https://github.com/g-poulos/usv_controller) contains:
   + Two controllers for the vereniki platform 
