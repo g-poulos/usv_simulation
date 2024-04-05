@@ -110,7 +110,7 @@ Where `subTriProps.xr` $=centroid - CoM$ of the triangle
 Forces that are used to dampen the linear and angular movement indepentantly 
 
 
-$$	\overrightarrow{F}_{lin} = \overrightarrow{v} (-rs * cDampL1 + cDampL2 * linSpeed)$$
+$$\overrightarrow{F}_{lin} = \overrightarrow{v} (-rs * cDampL1 + cDampL2 * linSpeed)$$
 
 Where: 
 
@@ -119,7 +119,7 @@ Where:
 + $cDampL1, cDampL2$   : linear movement coefficients
 + $linSpeed$           : the linear speed of the vehicle
 
-$$ \overrightarrow{F}_{ang} = \overrightarrow{\omega} (-rs * cDampR1 + cDampR2 * angSpeed)$$
+$$\overrightarrow{F}_{ang} = \overrightarrow{\omega} (-rs * cDampR1 + cDampR2 * angSpeed)$$
 
 + $\overrightarrow{\omega}$ : the angular velocity of the vehicle
 + $rs$                 : the ratio between the submerged area and the total surface area of the model 
