@@ -7,7 +7,7 @@ package.
 ## Environment
 
 + Ubuntu 22.04 (Jammy)
-+ Gazebo Sim, version 7.1.0 (Garden)
++ Gazebo Sim, version 7.6.0 (Garden)
 + ROS2 Humble 
 
 ## Setup
@@ -32,11 +32,14 @@ source source.bash
 
 ## Plugin setup
 
+All the Python scripts used for the plugins are based on the [PyVista](https://github.com/pyvista/pyvista)
+library.
+
 ### Ocean Current and Wind
 
-To use the ocean current and wind plugins, two data tables must be first created 
-using the Python scripts in `feature_extraction_scripts` directory. Only the model
-STL and mass are required to create the tables. The final CSV files must be located 
+To use the ocean current and wind plugins, two data tables must first be created 
+using the Python scripts in `feature_extraction_scripts` directory. The **model
+STL** and **mass** are required to create the tables. The final CSV files must be located 
 to the model `meshes` directory.
 
 For the scripts to work properly:
@@ -47,9 +50,22 @@ For the scripts to work properly:
 ### Steps to create the data tables
 ### 1. Draft calculation
 
-By defining the STL file and mass in the `compute_draft.py` main the vehicle draft and
-submerged volume can be calculated. The submerged volume is also used for the added mass
+By defining the STL file and mass in the `compute_draft.py` main, the vehicle draft and
+submerged volume can be calculated. The submerged volume is used for the added mass
 plugin.
+
+```python
+vereniki = "../models/vereniki/meshes/vereniki_scaled3.stl"
+print(compute_draft(vereniki, 425, 1025, step_size=0.0001, plot=True))
+```
+
+### Parameters 
+
++ `stl_file`: the STL file of the model 
++ `model_mass`: the mass of the model 
++ `water_density`: the density of the water 
++ `step_size`: step size of the algorithm. Accuracy increases with smaller steps
++ `plot`: if **True** plots the vehicle at   
 
 Example output:
 ```
@@ -58,12 +74,38 @@ Calculated Volume:  0.41467056646739586
 Theoretical Volume: 0.4146341463414634
 ```
 
-### 2. Projection area and Torque table
+### 2. Projection Area and Torque table
 
 By defining the `STL file`, `draft` and `number of angles` in the `multithread_table_calc.py` 
 the two tables for the ocean current and wind are generated. Note that complex meshes 
 require more time to be processed.
 
+```python
+draft = 0.4520999938249588
+stl_file = "../models/vereniki/meshes/vereniki_scaled3.stl"
+num_of_angles = 128
+
+poly = pv.read(stl_file)
+surface_part = poly.clip_closed_surface(normal=(0, 0, 1),
+                                        origin=(0, 0, poly.bounds[4]+draft))
+submerged_part = poly.clip_closed_surface(normal=(0, 0, -1),
+                                          origin=(0, 0, poly.bounds[4]+draft))
+
+table = calculate_force_torque_table(surface_part, num_of_angles, 16)
+write_list_to_file("../models/vereniki/meshes/wind_table.csv", table)
+
+table = calculate_force_torque_table(submerged_part, num_of_angles, 16)
+write_list_to_file("../models/vereniki/meshes/current_table.csv", table)
+```
+
+### Parameters (calculate_force_torque_table) 
+
++ `mesh`: the part of the vehicle to calculate the table
++ `num_of_angles`: number of angles around the vehicle for which the algorithm will calculate force/torque 
+                   information. More angles equal greater accuracy and more time to calculate
++ `num_of_threads`: number of threads used for the operation
+
+### 3. Model SDF
 After the tables have been created the plugins can be used by adding the following code to the 
 model SDF.
 
