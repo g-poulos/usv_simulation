@@ -9,7 +9,8 @@ mesh. The forces are calculated for each triangle of the body and then summed to
 to its center of mass.
 
 ### **1. Buoyancy** : hydrostatic force acting on a small planar surface $dS$
-$$d \overrightarrow{F} = \rho g z dS \overrightarrow{n}$$
+
+$$d\overrightarrow{F} = \rho g z dS \overrightarrow{n}$$
 
 Where $\rho$ is the density of water, $z$ the depth in the water and $\overrightarrow{n}$
 the normal to the surface
@@ -20,7 +21,7 @@ the normal to the surface
 
 Resistance as water flows across a surface. Tangential to the surface
 
-$$\overrightarrow{F}_{vi} = \frac{1}{2} \rho C_F(R_n) S_i v_{fi} \overrightarrow{v}_{fi}$$
+$$\overrightarrow{F}_{vi}= \frac{1}{2} \rho C_F(R_n) S_i v_{fi} \overrightarrow{v}_{fi}$$
 
 Where:
 
@@ -51,7 +52,7 @@ The pressure drag forces are trying to capture both the forces allowing a boat t
  limiting its ability to drift sideways, and the planing forces which push the boat out
 of the water. These forces act along the normal of the surface. 
 
-$$\overrightarrow{F}_{Di} = -(C_{PD1} \frac{v_i}{v_r} + C_{PD2}(\frac{v_i}{v_r})^2)S_i(cos\theta_i)^{f_p}\overrightarrow{n}_i$$
+$$\overrightarrow{F}_{Di}= -(C_{PD1} \frac{v_i}{v_r} + C_{PD2}(\frac{v_i}{v_r})^2)S_i(cos\theta_i)^{f_p}\overrightarrow{n}_i$$
 
 if $cos\theta_i$ positive
 
@@ -68,7 +69,7 @@ the drag force should reach its peak intensity, to perpendicular to it when the 
 
 Similarly for the suction drag we have: 
 
-$$\overrightarrow{F}_{Di} = (C_{SD1} \frac{v_i}{v_r} + C_{SD2}(\frac{v_i}{v_r})^2)S_i(cos\theta_i)^{f_s}\overrightarrow{n}_i$$
+$$\overrightarrow{F}_{Di}= (C_{SD1} \frac{v_i}{v_r} + C_{SD2}(\frac{v_i}{v_r})^2)S_i(cos\theta_i)^{f_s}\overrightarrow{n}_i$$
 
 if $cos\theta_i$ negative
 
