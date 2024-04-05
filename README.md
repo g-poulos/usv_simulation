@@ -65,7 +65,7 @@ print(compute_draft(vereniki, 425, 1025, step_size=0.0001, plot=True))
 + `model_mass`: the mass of the model 
 + `water_density`: the density of the water 
 + `step_size`: step size of the algorithm. Accuracy increases with smaller steps
-+ `plot`: if **True** plots the vehicle at   
++ `plot`: if **True**, plots the vehicle floating at the calculated equilibrium  
 
 Example output:
 ```
@@ -102,11 +102,11 @@ write_list_to_file("../models/vereniki/meshes/current_table.csv", table)
 
 + `mesh`: the part of the vehicle to calculate the table
 + `num_of_angles`: number of angles around the vehicle for which the algorithm will calculate force/torque 
-                   information. More angles equal greater accuracy and more time to calculate
+                   information. More angles generate tables with greater accuracy but need more time to calculate
 + `num_of_threads`: number of threads used for the operation
 
 ### 3. Model SDF
-After the tables have been created the plugins can be used by adding the following code to the 
+After the tables have been created the plugins can be used by adding the following lines to the 
 model SDF.
 
 ```html
@@ -171,7 +171,7 @@ model SDF.
 ## Added Mass 
 
 Using the submerged volume calculated in the previous section the added mass plugin can be 
-used by adding the following code to the model SDF.
+used by adding the following lines to the model SDF.
 
 ```html
 <plugin filename="AddedMass" name="added_mass::AddedMass">
@@ -211,10 +211,10 @@ cd ~/gz_ws/src/usv_simulation/launch
 gz sim launch launch_waves.py
 ```
 
-The launch file only works for the vereniki model and bridges GZ and ROS topics.
+The launch file only works for the triangular platform model (vereniki) and bridges GZ and ROS topics.
 
 ## Extras
 
 + The repository [usv_controller](https://github.com/g-poulos/usv_controller) contains:
-  + Two controllers for the vereniki platform 
+  + Two controllers for the triangular platform 
   + The dynamic model simulation of the platform that was used to develop the `usv_simulation` package
