@@ -21,7 +21,9 @@ the normal to the surface
 
 Resistance as water flows across a surface. Tangential to the surface
 
-$$\overrightarrow{F}_{vi}= \frac{1}{2} \rho C_F(R_n) S_i v_{fi} \overrightarrow{v}_{fi}$$
+$$
+\overrightarrow{F}_{vi}= \frac{1}{2} \rho C_F(R_n) S_i v_{fi} \overrightarrow{v}_{fi}
+$$
 
 Where:
 
@@ -52,7 +54,9 @@ The pressure drag forces are trying to capture both the forces allowing a boat t
  limiting its ability to drift sideways, and the planing forces which push the boat out
 of the water. These forces act along the normal of the surface. 
 
-$$\overrightarrow{F}_{Di}= -(C_{PD1} \frac{v_i}{v_r} + C_{PD2}(\frac{v_i}{v_r})^2)S_i(cos\theta_i)^{f_p}\overrightarrow{n}_i$$
+$$
+\overrightarrow{F}_{Di}= -(C_{PD1} \frac{v_i}{v_r} + C_{PD2}(\frac{v_i}{v_r})^2)S_i(cos\theta_i)^{f_p}\overrightarrow{n}_i
+$$
 
 if $cos\theta_i$ positive
 
@@ -69,7 +73,9 @@ the drag force should reach its peak intensity, to perpendicular to it when the 
 
 Similarly for the suction drag we have: 
 
-$$\overrightarrow{F}_{Di}= (C_{SD1} \frac{v_i}{v_r} + C_{SD2}(\frac{v_i}{v_r})^2)S_i(cos\theta_i)^{f_s}\overrightarrow{n}_i$$
+$$
+\overrightarrow{F}_{Di}= (C_{SD1} \frac{v_i}{v_r} + C_{SD2}(\frac{v_i}{v_r})^2)S_i(cos\theta_i)^{f_s}\overrightarrow{n}_i
+$$
 
 if $cos\theta_i$ negative
 
@@ -111,7 +117,9 @@ Where `subTriProps.xr` $=centroid - CoM$ of the triangle
 Forces that are used to dampen the linear and angular movement indepentantly 
 
 
-$$\overrightarrow{F}_{lin} = \overrightarrow{v} (-rs * cDampL1 + cDampL2 * linSpeed)$$
+$$
+\overrightarrow{F}_{lin} = \overrightarrow{v} (-rs * cDampL1 + cDampL2 * linSpeed)
+$$
 
 Where: 
 
@@ -120,7 +128,9 @@ Where:
 + $cDampL1, cDampL2$   : linear movement coefficients
 + $linSpeed$           : the linear speed of the vehicle
 
-$$\overrightarrow{F}_{ang} = \overrightarrow{\omega} (-rs * cDampR1 + cDampR2 * angSpeed)$$
+$$
+\overrightarrow{F}_{ang} = \overrightarrow{\omega} (-rs * cDampR1 + cDampR2 * angSpeed)
+$$
 
 + $\overrightarrow{\omega}$ : the angular velocity of the vehicle
 + $rs$                 : the ratio between the submerged area and the total surface area of the model 
@@ -156,7 +166,9 @@ this->data->torque += torque;
 For the force acting on the floating body due to water current we use the drag 
 equation assuming that $V$ is the relative speed between the body and the water: 
 
-$$\overrightarrow{F}_{current} = \frac{1}{2} \rho_w C S \overrightarrow{V_{rel}^2}$$
+$$
+\overrightarrow{F}_{current} = \frac{1}{2} \rho_w C S \overrightarrow{V_{rel}^2}
+$$
 
 Where: 
 
@@ -167,7 +179,9 @@ Where:
 
 The same formula is used for the wind force acting on the body.
 
-$$\overrightarrow{F}_{wind} = \frac{1}{2} \rho_a C S \overrightarrow{V_{rel}^2}$$
+$$
+\overrightarrow{F}_{wind} = \frac{1}{2} \rho_a C S \overrightarrow{V_{rel}^2}
+$$
 
 Where: 
 
